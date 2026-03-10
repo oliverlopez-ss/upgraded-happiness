@@ -3,293 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Structsales — Revenue Architecture Diagnostic</title>
+    <title>Structsales — Apps</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f1117;
+            color: #f0f1f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container { max-width: 700px; width: 100%; text-align: center; }
+        .brand {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.75rem; margin-bottom: 3rem;
+        }
+        .brand-logo {
+            width: 44px; height: 44px; background: #4a7cff; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.2rem; color: white;
+        }
+        .brand-name { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.15em; color: #8b8fa3; }
+        h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
+        .sub { color: #8b8fa3; font-size: 1rem; margin-bottom: 3rem; }
+        .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .app-card {
+            background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 14px;
+            padding: 2rem 1.5rem; text-decoration: none; color: inherit;
+            transition: all 0.2s ease; display: flex; flex-direction: column;
+            align-items: center; gap: 1rem;
+        }
+        .app-card:hover {
+            border-color: #4a7cff; transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(74, 124, 255, 0.15);
+        }
+        .app-icon {
+            width: 64px; height: 64px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
+        }
+        .app-card:first-child .app-icon { background: rgba(74, 124, 255, 0.12); }
+        .app-card:last-child .app-icon { background: rgba(74, 222, 128, 0.12); }
+        .app-name { font-size: 1.1rem; font-weight: 700; }
+        .app-desc { font-size: 0.85rem; color: #8b8fa3; line-height: 1.5; }
+        .app-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
+        .app-card:first-child .app-badge { background: rgba(74, 124, 255, 0.12); color: #4a7cff; }
+        .app-card:last-child .app-badge { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        @media (max-width: 600px) { .apps { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
+    </style>
 </head>
 <body>
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="screen active">
-        <div class="login-container">
-            <div class="login-left">
-                <div class="login-brand">
-                    <div class="brand-logo">S</div>
-                    <span class="brand-name">STRUCTSALES</span>
-                </div>
-                <h1 class="login-headline">Revenue Architecture<br><span class="accent">Diagnostic</span></h1>
-                <p class="login-sub">Strukturerad analys av er kommersiella arkitektur. Identifiera gaps, prioritera insatser och bygg en skalbar intäktsmotor.</p>
-                <div class="login-features">
-                    <div class="login-feature">
-                        <span class="feature-icon">&#9670;</span>
-                        <span>Stakeholder-intervjuer &amp; gap-analys</span>
-                    </div>
-                    <div class="login-feature">
-                        <span class="feature-icon">&#9670;</span>
-                        <span>7 diagnostiska signaler</span>
-                    </div>
-                    <div class="login-feature">
-                        <span class="feature-icon">&#9670;</span>
-                        <span>Prioriterad roadmap &amp; RAP-moduler</span>
-                    </div>
-                </div>
-            </div>
-            <div class="login-right">
-                <div class="login-card">
-                    <h2>Logga in</h2>
-                    <p class="login-card-sub">Ange dina uppgifter för att komma åt din diagnostik</p>
-                    <form id="login-form" autocomplete="off">
-                        <div class="form-group">
-                            <label for="login-email">E-post</label>
-                            <input type="email" id="login-email" placeholder="namn@foretag.se" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password">Lösenord</label>
-                            <div class="password-wrapper">
-                                <input type="password" id="login-password" placeholder="Ange lösenord" required>
-                                <button type="button" class="toggle-pw" onclick="togglePassword()">Visa</button>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="remember-me">
-                                <span>Kom ihåg mig</span>
-                            </label>
-                            <a href="#" class="forgot-link" onclick="showForgotPassword(event)">Glömt lösenord?</a>
-                        </div>
-                        <button type="submit" class="btn-primary btn-login">Logga in</button>
-                        <div id="login-error" class="login-error hidden"></div>
-                    </form>
-                    <div class="login-footer">
-                        <p>Inget konto? <a href="https://www.structsales.se" target="_blank" rel="noopener noreferrer">Kontakta Structsales</a></p>
-                    </div>
-                </div>
-            </div>
+    <div class="container">
+        <div class="brand">
+            <div class="brand-logo">S</div>
+            <span class="brand-name">STRUCTSALES</span>
+        </div>
+        <h1>Välj applikation</h1>
+        <p class="sub">Välj vilken app du vill använda</p>
+        <div class="apps">
+            <a href="diagnostic/" class="app-card">
+                <div class="app-icon">&#9878;</div>
+                <span class="app-badge">Revenue Tool</span>
+                <span class="app-name">Revenue Diagnostic</span>
+                <span class="app-desc">Strukturerad analys av kommersiell arkitektur med intervjuer, gap-analys och rapport</span>
+            </a>
+            <a href="futbollingo/" class="app-card">
+                <div class="app-icon">&#9917;</div>
+                <span class="app-badge">Lärande</span>
+                <span class="app-name">FutbolLingo</span>
+                <span class="app-desc">Lär dig fotbollsspanska med flashcards, quiz, skriv- och lyssningsövningar</span>
+            </a>
         </div>
     </div>
-
-    <!-- MAIN APP -->
-    <div id="app-screen" class="screen">
-        <!-- Top Nav -->
-        <nav class="top-nav">
-            <div class="nav-left">
-                <div class="brand-logo small">S</div>
-                <span class="brand-name">STRUCTSALES</span>
-                <span class="nav-separator">|</span>
-                <span class="nav-title">Revenue Diagnostic</span>
-            </div>
-            <div class="nav-right">
-                <span class="nav-client" id="nav-client-name"></span>
-                <div class="nav-avatar" id="nav-avatar"></div>
-                <button class="btn-ghost" onclick="handleLogout()">Logga ut</button>
-            </div>
-        </nav>
-
-        <!-- Sidebar + Content -->
-        <div class="app-layout">
-            <aside class="sidebar">
-                <div class="sidebar-section">
-                    <div class="sidebar-label">ÖVERSIKT</div>
-                    <button class="sidebar-item active" data-view="dashboard" onclick="switchView('dashboard')">
-                        <span class="si-icon">&#9632;</span> Dashboard
-                    </button>
-                </div>
-                <div class="sidebar-section">
-                    <div class="sidebar-label">DISCOVERY</div>
-                    <button class="sidebar-item" data-view="stakeholders" onclick="switchView('stakeholders')">
-                        <span class="si-icon">&#9673;</span> Stakeholders
-                    </button>
-                    <button class="sidebar-item" data-view="interviews" onclick="switchView('interviews')">
-                        <span class="si-icon">&#9998;</span> Intervjuer
-                    </button>
-                    <button class="sidebar-item" data-view="signals" onclick="switchView('signals')">
-                        <span class="si-icon">&#9888;</span> Signaler
-                    </button>
-                </div>
-                <div class="sidebar-section">
-                    <div class="sidebar-label">ANALYS</div>
-                    <button class="sidebar-item" data-view="gaps" onclick="switchView('gaps')">
-                        <span class="si-icon">&#10006;</span> Gap-analys
-                    </button>
-                    <button class="sidebar-item" data-view="report" onclick="switchView('report')">
-                        <span class="si-icon">&#9776;</span> Rapport
-                    </button>
-                    <button class="sidebar-item" data-view="roadmap" onclick="switchView('roadmap')">
-                        <span class="si-icon">&#10148;</span> Roadmap
-                    </button>
-                </div>
-                <div class="sidebar-section sidebar-bottom">
-                    <div class="sidebar-label">TIDSLINJE</div>
-                    <div class="timeline-mini" id="timeline-mini"></div>
-                </div>
-            </aside>
-
-            <main class="main-content">
-                <!-- DASHBOARD VIEW -->
-                <div id="view-dashboard" class="view active">
-                    <div class="view-header">
-                        <div>
-                            <h2>Dashboard</h2>
-                            <p class="view-sub" id="dashboard-sub"></p>
-                        </div>
-                        <div class="header-actions">
-                            <span class="assessment-badge" id="assessment-status"></span>
-                        </div>
-                    </div>
-
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-label">Stakeholders</div>
-                            <div class="metric-value" id="m-stakeholders">0 / 5</div>
-                            <div class="metric-bar"><div class="metric-fill" id="mf-stakeholders"></div></div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Intervjuer genomförda</div>
-                            <div class="metric-value" id="m-interviews">0 / 5</div>
-                            <div class="metric-bar"><div class="metric-fill" id="mf-interviews"></div></div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Gaps identifierade</div>
-                            <div class="metric-value" id="m-gaps">0</div>
-                            <div class="metric-sub">Varav <span id="m-gaps-high">0</span> Hög severitet</div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-label">Assessment-dag</div>
-                            <div class="metric-value" id="m-day">Dag 1</div>
-                            <div class="metric-sub">av 12 arbetsdagar</div>
-                        </div>
-                    </div>
-
-                    <div class="dashboard-grid">
-                        <div class="card">
-                            <h3>Diagnostiska signaler</h3>
-                            <div id="signal-summary" class="signal-summary"></div>
-                        </div>
-                        <div class="card">
-                            <h3>Gap-taggar (frekvens)</h3>
-                            <div id="gap-tag-chart" class="gap-tag-chart"></div>
-                        </div>
-                        <div class="card card-wide">
-                            <h3>Senaste aktivitet</h3>
-                            <div id="activity-feed" class="activity-feed"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STAKEHOLDERS VIEW -->
-                <div id="view-stakeholders" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Stakeholder-karta</h2>
-                            <p class="view-sub">Kartlägg och hantera alla intressenter i diagnostiken</p>
-                        </div>
-                        <button class="btn-primary" onclick="openStakeholderModal()">+ Lägg till stakeholder</button>
-                    </div>
-                    <div class="stakeholder-grid" id="stakeholder-grid"></div>
-                </div>
-
-                <!-- INTERVIEWS VIEW -->
-                <div id="view-interviews" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Intervjuer</h2>
-                            <p class="view-sub">Spåra och dokumentera alla discovery-samtal</p>
-                        </div>
-                        <div class="header-actions" style="display:flex;gap:0.5rem;">
-                            <button class="btn-primary" onclick="startLiveInterview()">Starta intervju</button>
-                            <button class="btn-ghost" onclick="openInterviewModal()">+ Logga manuellt</button>
-                        </div>
-                    </div>
-                    <div id="interview-list" class="interview-list"></div>
-                </div>
-
-                <!-- LIVE INTERVIEW VIEW -->
-                <div id="view-live-interview" class="view">
-                    <div id="live-interview-content"></div>
-                </div>
-
-                <!-- SIGNALS VIEW -->
-                <div id="view-signals" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Diagnostiska signaler</h2>
-                            <p class="view-sub">De 7 mönstren att identifiera under intervjuer</p>
-                        </div>
-                    </div>
-                    <div id="signals-grid" class="signals-grid"></div>
-                </div>
-
-                <!-- GAP ANALYSIS VIEW -->
-                <div id="view-gaps" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Strukturell gap-analys</h2>
-                            <p class="view-sub">Dokumentera och kategorisera identifierade gaps</p>
-                        </div>
-                        <button class="btn-primary" onclick="openGapModal()">+ Registrera gap</button>
-                    </div>
-                    <div id="gaps-list" class="gaps-list"></div>
-                </div>
-
-                <!-- REPORT VIEW -->
-                <div id="view-report" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Assessment-rapport</h2>
-                            <p class="view-sub">Revenue Architecture Assessment Report</p>
-                        </div>
-                        <button class="btn-primary" onclick="exportReport()">Exportera</button>
-                    </div>
-                    <div id="report-content" class="report-content"></div>
-                </div>
-
-                <!-- ROADMAP VIEW -->
-                <div id="view-roadmap" class="view">
-                    <div class="view-header">
-                        <div>
-                            <h2>Prioriterad Roadmap</h2>
-                            <p class="view-sub">Rekommenderad åtgärdsordning baserad på gap-analysen</p>
-                        </div>
-                    </div>
-                    <div id="roadmap-content" class="roadmap-content"></div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- MODALS -->
-    <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
-        <div class="modal" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3 id="modal-title"></h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body" id="modal-body"></div>
-        </div>
-    </div>
-
-    <!-- FORGOT PASSWORD MODAL -->
-    <div id="forgot-overlay" class="modal-overlay hidden" onclick="closeForgot(event)">
-        <div class="modal modal-sm" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3>Återställ lösenord</h3>
-                <button class="modal-close" onclick="closeForgot()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom:1rem;color:var(--text-secondary);">Ange din e-post så skickar vi en återställningslänk.</p>
-                <div class="form-group">
-                    <label>E-post</label>
-                    <input type="email" id="forgot-email" placeholder="namn@foretag.se">
-                </div>
-                <button class="btn-primary" style="width:100%;margin-top:0.5rem;" onclick="handleForgot()">Skicka länk</button>
-                <div id="forgot-msg" class="forgot-msg hidden"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="data.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>
