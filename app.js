@@ -538,9 +538,31 @@ function updateProgress(fillId, textId, streakId) {
     document.getElementById(streakId).textContent = state.streak;
 }
 
+// === Confetti ===
+function launchConfetti() {
+    const container = document.getElementById('confetti-container');
+    const colors = ['#4ade80', '#38bdf8', '#fbbf24', '#fb923c', '#c084fc', '#f87171'];
+
+    for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.width = (Math.random() * 8 + 6) + 'px';
+        piece.style.height = (Math.random() * 8 + 6) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        piece.style.animationDelay = (Math.random() * 0.5) + 's';
+        container.appendChild(piece);
+
+        setTimeout(() => piece.remove(), 4000);
+    }
+}
+
 // === Results ===
 function showResults() {
     showScreen('results-screen');
+    launchConfetti();
 
     document.getElementById('result-correct').textContent = state.sessionCorrect;
     document.getElementById('result-wrong').textContent = state.sessionWrong;
