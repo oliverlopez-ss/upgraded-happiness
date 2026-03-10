@@ -197,9 +197,17 @@
                             <h2>Intervjuer</h2>
                             <p class="view-sub">Spåra och dokumentera alla discovery-samtal</p>
                         </div>
-                        <button class="btn-primary" onclick="openInterviewModal()">+ Ny intervju</button>
+                        <div class="header-actions" style="display:flex;gap:0.5rem;">
+                            <button class="btn-primary" onclick="startLiveInterview()">Starta intervju</button>
+                            <button class="btn-ghost" onclick="openInterviewModal()">+ Logga manuellt</button>
+                        </div>
                     </div>
                     <div id="interview-list" class="interview-list"></div>
+                </div>
+
+                <!-- LIVE INTERVIEW VIEW -->
+                <div id="view-live-interview" class="view">
+                    <div id="live-interview-content"></div>
                 </div>
 
                 <!-- SIGNALS VIEW -->
