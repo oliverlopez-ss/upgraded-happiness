@@ -1,211 +1,273 @@
-const VOCABULARY = [
-    // === UTRUSTNING ===
-    { es: "el balón", sv: "bollen", category: "utrustning", example: "¡Pásame el balón!", context: "Skicka bollen till mig!" },
-    { es: "la pelota", sv: "bollen (vardagligt)", category: "utrustning", example: "Dame la pelota.", context: "Ge mig bollen." },
-    { es: "los conos", sv: "konorna", category: "utrustning", example: "Pon los conos en línea.", context: "Ställ konorna på rad." },
-    { es: "el cono", sv: "konen", category: "utrustning", example: "Rodea el cono.", context: "Gå runt konen." },
-    { es: "los petos", sv: "västar (träningsvästar)", category: "utrustning", example: "Ponte el peto amarillo.", context: "Ta på dig den gula västen." },
-    { es: "el peto", sv: "västen", category: "utrustning", example: "Equipo con peto contra equipo sin peto.", context: "Lag med väst mot lag utan väst." },
-    { es: "las picas", sv: "pinnarna (träningspinnar)", category: "utrustning", example: "Haz zigzag entre las picas.", context: "Sicksacka mellan pinnarna." },
-    { es: "la portería", sv: "målet (stolparna)", category: "utrustning", example: "Tira a portería.", context: "Skjut mot mål." },
-    { es: "la red", sv: "nätet", category: "utrustning", example: "El balón entró en la red.", context: "Bollen gick in i nätet." },
-    { es: "los guantes", sv: "handskarna", category: "utrustning", example: "El portero se pone los guantes.", context: "Målvakten tar på sig handskarna." },
-    { es: "las botas", sv: "fotbollsskorna", category: "utrustning", example: "Necesitas botas de tacos.", context: "Du behöver skor med dubbar." },
-    { es: "los tacos", sv: "dubbarna", category: "utrustning", example: "Los tacos se clavan en el césped.", context: "Dubbarna griper tag i gräset." },
-    { es: "las espinilleras", sv: "benskydden", category: "utrustning", example: "Ponte las espinilleras.", context: "Ta på dig benskydden." },
-    { es: "la escalera de agilidad", sv: "stegen (snabbhetsstege)", category: "utrustning", example: "Trabaja la velocidad en la escalera.", context: "Jobba snabbhet i stegen." },
-    { es: "las vallas", sv: "häckarna", category: "utrustning", example: "Salta las vallas.", context: "Hoppa över häckarna." },
-    { es: "el silbato", sv: "visselpipan", category: "utrustning", example: "Cuando suene el silbato, empezáis.", context: "När det visslas, börjar ni." },
+// ============================================================
+// Structsales Revenue Architecture Diagnostic — Data Layer
+// ============================================================
 
-    // === PLANEN ===
-    { es: "el campo", sv: "planen", category: "plan", example: "Sal al campo.", context: "Gå ut på planen." },
-    { es: "el césped", sv: "gräsmattan", category: "plan", example: "El césped está mojado.", context: "Gräsmattan är blöt." },
-    { es: "el centro del campo", sv: "mittplan", category: "plan", example: "Saca desde el centro del campo.", context: "Börja från mittplan." },
-    { es: "el área", sv: "straffområdet", category: "plan", example: "No hagas falta en el área.", context: "Gör inte frispark i straffområdet." },
-    { es: "el área grande", sv: "stora straffområdet", category: "plan", example: "Defiende en el área grande.", context: "Försvara i stora straffområdet." },
-    { es: "el área pequeña", sv: "lilla straffområdet (målområdet)", category: "plan", example: "El portero domina el área pequeña.", context: "Målvakten dominerar målområdet." },
-    { es: "la banda", sv: "sidlinjen / kanten", category: "plan", example: "Juega por la banda.", context: "Spela via kanten." },
-    { es: "la línea de fondo", sv: "ändlinjen", category: "plan", example: "Llega a la línea de fondo.", context: "Ta dig till ändlinjen." },
-    { es: "el córner", sv: "hörnsparkplatsen / hörnan", category: "plan", example: "Saca el córner.", context: "Slå hörnan." },
-    { es: "el punto de penalti", sv: "straffpunkten", category: "plan", example: "Coloca el balón en el punto de penalti.", context: "Lägg bollen på straffpunkten." },
-    { es: "el banquillo", sv: "avbytarbänken", category: "plan", example: "Siéntate en el banquillo.", context: "Sätt dig på bänken." },
-    { es: "el vestuario", sv: "omklädningsrummet", category: "plan", example: "Vamos al vestuario.", context: "Vi går till omklädningsrummet." },
-    { es: "el larguero", sv: "ribban", category: "plan", example: "El tiro pegó en el larguero.", context: "Skottet träffade ribban." },
-    { es: "el palo", sv: "stolpen", category: "plan", example: "Le dio al palo.", context: "Den träffade stolpen." },
+// Demo users for login
+const DEMO_USERS = [
+    {
+        email: 'oliver@structsales.se',
+        password: 'structsales2026',
+        name: 'Oliver Lopez',
+        role: 'Advisor',
+        company: 'Structsales'
+    },
+    {
+        email: 'demo@kund.se',
+        password: 'demo1234',
+        name: 'Anna Eriksson',
+        role: 'CEO',
+        company: 'TechCorp AB'
+    }
+];
 
-    // === POSITIONER ===
-    { es: "el portero", sv: "målvakten", category: "positioner", example: "El portero para todo.", context: "Målvakten räddar allt." },
-    { es: "el defensa", sv: "backen", category: "positioner", example: "El defensa despeja el balón.", context: "Backen rensar bollen." },
-    { es: "el defensa central", sv: "mittbacken", category: "positioner", example: "El central corta el pase.", context: "Mittbacken bryter passningen." },
-    { es: "el lateral derecho", sv: "högerbacken", category: "positioner", example: "El lateral sube por la banda.", context: "Backen går upp på kanten." },
-    { es: "el lateral izquierdo", sv: "vänsterbacken", category: "positioner", example: "El lateral izquierdo centra.", context: "Vänsterbacken slår in bollen." },
-    { es: "el centrocampista", sv: "mittfältaren", category: "positioner", example: "El centrocampista organiza el juego.", context: "Mittfältaren organiserar spelet." },
-    { es: "el mediocampista", sv: "mittfältaren (alt.)", category: "positioner", example: "Un mediocampista con buen pase.", context: "En mittfältare med bra passning." },
-    { es: "el pivote", sv: "sexan / den defensiva mittfältaren", category: "positioner", example: "El pivote recupera balones.", context: "Sexan återvinner bollar." },
-    { es: "el mediapunta", sv: "tian / den offensiva mittfältaren", category: "positioner", example: "El mediapunta busca el último pase.", context: "Tian letar sista passningen." },
-    { es: "el extremo", sv: "yttern", category: "positioner", example: "El extremo desborda por la banda.", context: "Yttern tar sig förbi på kanten." },
-    { es: "el delantero", sv: "anfallaren", category: "positioner", example: "El delantero marca goles.", context: "Anfallaren gör mål." },
-    { es: "el delantero centro", sv: "centern / mittanfallaren", category: "positioner", example: "El nueve remata de cabeza.", context: "Nian nickar." },
-    { es: "el capitán", sv: "kaptenen", category: "positioner", example: "El capitán lleva el brazalete.", context: "Kaptenen bär bindeln." },
-    { es: "el árbitro", sv: "domaren", category: "positioner", example: "El árbitro pita falta.", context: "Domaren blåser för frispark." },
-    { es: "el míster", sv: "tränaren (vardagligt)", category: "positioner", example: "El míster pide un cambio.", context: "Tränaren begär ett byte." },
-    { es: "el entrenador", sv: "tränaren", category: "positioner", example: "El entrenador da instrucciones.", context: "Tränaren ger instruktioner." },
+// Stakeholder role templates from Field Guide
+const STAKEHOLDER_ROLES = [
+    {
+        role: 'CEO / Founder',
+        priority: 'Owner',
+        order: 1,
+        why: 'Sätter strategisk kontext. Avslöjar om tillväxtmål är strukturellt stöttade eller personberoende.',
+        questions: [
+            'Hur beskriver du er intäktsmodell för en nyanställd? Gå igenom den.',
+            'Vad är ert nuvarande tillväxtmål för de kommande 12 månaderna, och vad är planen?',
+            'Var kommer majoriteten av nya intäkter ifrån idag — inbound, outbound, referral, eller annat?',
+            'Om er bästa säljare sa upp sig imorgon, vad skulle hända med er pipeline på 90 dagar?',
+            'Hur trygg är du i er nuvarande forecast? Vad ger dig den tryggheten?',
+            'Vilken del av den kommersiella motorn har du minst insyn i just nu?',
+            'Hur skulle en framgångsrik kommersiell arkitektur se ut för er — om 18 månader?'
+        ],
+        probe: 'System vs. personer — fråga om svaret beskriver en process eller om det beror på specifika individer.'
+    },
+    {
+        role: 'Head of Sales',
+        priority: 'Core',
+        order: 2,
+        why: 'Exponerar pipeline-verklighet, forecast-vanor och individ- vs. systemberoende.',
+        questions: [
+            'Gå igenom en typisk affär från första kontakt till stängning. Vilka steg och vad definierar varje?',
+            'Hur kvalificerar ni affärer innan de kommer in i pipelinen? Finns det ett ramverk eller är det magkänsla?',
+            'Hur ser er nuvarande pipeline ut vad gäller fördelning över stages?',
+            'Hur bygger du din forecast för månaden/kvartalet? Vilka inputs förlitar du dig på?',
+            'Var fastnar affärer oftast eller blir tysta? Vad händer då?',
+            'Hur beskriver du kvaliteten på leads ni får från marketing? Vad saknas?',
+            'Om du skulle peka på en sak som mest begränsar teamets förmåga att stänga mer — vad?'
+        ],
+        probe: 'Forecast-konfidens — fråga om numret baseras på deal-by-deal-analys eller viktad sannolikhet.'
+    },
+    {
+        role: 'Marketing Lead',
+        priority: 'Core',
+        order: 3,
+        why: 'Synliggör attributionsgaps, MQL-kvalitetsproblem och alignment med säljrörelsen.',
+        questions: [
+            'Hur definierar ni en marketing-qualified lead i er nuvarande setup?',
+            'Vad händer med en lead efter att marketing lämnat över den till sales?',
+            'Hur mäter ni marketings bidrag till stängd intäkt idag? Vilka mätvärden?',
+            'Vilken kanal genererar den högsta kvaliteten på pipeline, enligt dig? Hur vet du det?',
+            'Var upplever du störst glapp mellan vad marketing producerar och vad sales behöver?',
+            'När en affär förloras, får marketing reda på varför? Hur?',
+            'Hur skulle bättre alignment med säljteamet se ut i praktiken?'
+        ],
+        probe: 'Attribution — fråga specifikt hur de rapporterar länken mellan en kampanj och en stängd affär.'
+    },
+    {
+        role: 'CS / Retention Lead',
+        priority: 'Supporting',
+        order: 4,
+        why: 'Avslöjar churn-drivare, expansion-readiness och huruvida onboarding speglar produktvärde.',
+        questions: [
+            'Hur ser de första 90 dagarna ut för en ny kund efter signering? Vem äger processen?',
+            'Vilka är de vanligaste orsakerna till att kunder churnar eller minskar vid förnyelse?',
+            'Hur tidigt upptäcker ni typiskt en kund som är i riskzonen? Vilka signaler letar ni efter?',
+            'Hur stor andel av er nuvarande intäktsbas är genuint hälsosam — engagerad, expanderande, eller låg churn-risk?',
+            'Finns det en formell expansion- eller upsell-rörelse i ert team? Hur triggas den?',
+            'Hur alignat är CS-teamet med de löften som gavs under säljprocessen?',
+            'Om du kunde ändra en sak i hur företaget lämnar kunder från sälj till CS, vad?'
+        ],
+        probe: 'Sälj-till-CS handoff — fråga om det finns en formell intern brief eller bara verbal kontext.'
+    },
+    {
+        role: 'CFO / Finance',
+        priority: 'Supporting',
+        order: 5,
+        why: 'Validerar intäktsförutsägbarhet, enhetsekonomi-förståelse och KPI-klarhet på styrelsenivå.',
+        questions: [
+            'Hur tänker du kring intäktsförutsägbarhet idag? Är er prognos tillförlitlig?',
+            'Vilka KPI:er spårar ni på styrelse-/ledningsnivå för kommersiell prestation?',
+            'Har ni synlighet i CAC och LTV på en meningsfull granularitetsnivå? Hur används de?',
+            'Vad är er nuvarande bruttomarginal, och hur har den trendat de senaste 12 månaderna?',
+            'Hur trygg är du att headcount i sälj och marketing är rätt dimensionerat?',
+            'Var i den kommersiella modellen upplever du störst finansiell risk just nu?',
+            'Om tillväxten avtar, vilken kommersiell hävstång drar du i först?'
+        ],
+        probe: 'Kommersiellt headcount vs. intäktsmål — fråga om ratio känns effektivt.'
+    }
+];
 
-    // === AKTIONER ===
-    { es: "chutar", sv: "skjuta", category: "aktioner", example: "¡Chuta a puerta!", context: "Skjut mot mål!" },
-    { es: "tirar", sv: "skjuta / slå", category: "aktioner", example: "Tira con la izquierda.", context: "Skjut med vänstern." },
-    { es: "rematar", sv: "avsluta", category: "aktioner", example: "Remata de cabeza.", context: "Nicka/avsluta med huvudet." },
-    { es: "cabecear", sv: "nicka", category: "aktioner", example: "Cabecea al segundo palo.", context: "Nicka mot bortre stolpen." },
-    { es: "regatear", sv: "dribbla", category: "aktioner", example: "Regatea al defensa.", context: "Dribbla förbi backen." },
-    { es: "driblar", sv: "dribbla", category: "aktioner", example: "Dribla al rival.", context: "Dribbla förbi motståndaren." },
-    { es: "controlar", sv: "ta emot (bollen)", category: "aktioner", example: "Controla con el pecho.", context: "Ta emot med bröstet." },
-    { es: "parar", sv: "stoppa / stanna", category: "aktioner", example: "Para el balón.", context: "Stoppa bollen." },
-    { es: "centrar", sv: "slå in (inlägg)", category: "aktioner", example: "Centra al área.", context: "Slå in i straffområdet." },
-    { es: "marcar", sv: "göra mål / markera", category: "aktioner", example: "Marca al delantero.", context: "Markera anfallaren." },
-    { es: "meter un gol", sv: "göra mål", category: "aktioner", example: "¡He metido un gol!", context: "Jag har gjort mål!" },
-    { es: "celebrar", sv: "fira", category: "aktioner", example: "Celebra el gol con el equipo.", context: "Fira målet med laget." },
-    { es: "correr", sv: "springa", category: "aktioner", example: "¡Corre más rápido!", context: "Spring snabbare!" },
-    { es: "esprintar", sv: "spurta", category: "aktioner", example: "Esprinta hacia el balón.", context: "Spurta mot bollen." },
-    { es: "saltar", sv: "hoppa", category: "aktioner", example: "Salta para cabecear.", context: "Hoppa för att nicka." },
-    { es: "caer", sv: "falla", category: "aktioner", example: "Se cayó en el área.", context: "Han föll i straffområdet." },
-    { es: "levantarse", sv: "resa sig", category: "aktioner", example: "¡Levántate rápido!", context: "Res dig snabbt!" },
-    { es: "pisar el balón", sv: "trampa bollen", category: "aktioner", example: "Pisa el balón y gira.", context: "Trampa bollen och vänd." },
+// 7 Diagnostic Signals from Field Guide
+const DIAGNOSTIC_SIGNALS = [
+    {
+        id: 'forecast-vagueness',
+        number: '01',
+        name: 'Forecast Vagueness',
+        tag: 'Forecast',
+        tagColor: '#f59e0b',
+        description: 'Intäktsprognoser beskrivs i termer av optimism, ansträngning eller allmän trend snarare än strukturerad metodik. Ingen deal-baserad sannolikhetslogik finns.',
+        listenFor: '"vi känner oss bra inför Q2", "pipelinen ser hälsosam ut", eller tystnad vid frågor om konverteringstal per stage'
+    },
+    {
+        id: 'hero-dependency',
+        number: '02',
+        name: 'Hero Dependency',
+        tag: 'Dependency',
+        tagColor: '#ef4444',
+        description: 'En eller två högpresterande individer genererar en oproportionerligt stor del av pipeline eller stängd intäkt. Systemet fungerar medan de finns men har ingen strukturell redundans.',
+        listenFor: '"[Namn] hanterar det", "när hon slutar vet jag inte vad vi gör", tvekan kring hur processer ser ut utan en specifik person'
+    },
+    {
+        id: 'stage-ambiguity',
+        number: '03',
+        name: 'Stage Ambiguity',
+        tag: 'Pipeline',
+        tagColor: '#3b82f6',
+        description: 'Pipeline-steg finns men saknar beteendemässiga definitioner. Affärer rör sig mellan stages baserat på tid eller subjektiv bedömning snarare än objektiva kriterier.',
+        listenFor: '"det rör sig liksom framåt", odefinierade exit-kriterier, eller olika svar från samma team'
+    },
+    {
+        id: 'attribution-blindness',
+        number: '04',
+        name: 'Attribution Blindness',
+        tag: 'Alignment',
+        tagColor: '#8b5cf6',
+        description: 'Marketing kan inte spåra det direkta bidraget från specifika aktiviteter till stängd intäkt. Kanalattribution saknas, är anekdotisk, eller baseras på last-touch-logik.',
+        listenFor: '"vi vet att det fungerar men det är svårt att bevisa", beroende av korrelation snarare än kausal attribution'
+    },
+    {
+        id: 'conversion-silence',
+        number: '05',
+        name: 'Conversion Silence',
+        tag: 'Pipeline',
+        tagColor: '#3b82f6',
+        description: 'Ingen kan artikulera konverteringstal mellan pipeline-stages med precision. Data finns i CRM men granskas eller betros inte.',
+        listenFor: '"jag får kolla det", oförmåga att citera stage-konvertering utan att logga in, CRM-data som "inte riktigt uppdaterat"'
+    },
+    {
+        id: 'qualification-drift',
+        number: '06',
+        name: 'Qualification Drift',
+        tag: 'Foundation',
+        tagColor: '#10b981',
+        description: 'ICP är vagt definierat eller används inte som filter i praktiken. Sälj tar möten baserat på tillgänglighet snarare än strukturell passning.',
+        listenFor: '"vi tar ett möte med vem som helst", ICP beskrivet olika av olika personer, affärer öppna 6+ månader'
+    },
+    {
+        id: 'misaligned-expectations',
+        number: '07',
+        name: 'Misaligned Expectations',
+        tag: 'Alignment',
+        tagColor: '#8b5cf6',
+        description: 'Kunder uttrycker förvåning efter signering. Löftet i säljprocessen skiljer sig materiellt från vad CS levererar. Onboarding-problem eller tidig churn signalerar detta.',
+        listenFor: '"sälj lovar för mycket", tidig churn koncentrerad till månad 1-3, CS-frustration över att inte vara involverade före signering'
+    }
+];
 
-    // === PASSNINGAR & LÖPNINGAR ===
-    { es: "pasar", sv: "passa", category: "passningar", example: "¡Pásala!", context: "Passa den!" },
-    { es: "el pase", sv: "passningen", category: "passningar", example: "Buen pase.", context: "Bra passning." },
-    { es: "el pase en profundidad", sv: "djupledspassningen", category: "passningar", example: "Mete un pase en profundidad.", context: "Slå en djupledspassning." },
-    { es: "el pase largo", sv: "den långa passningen", category: "passningar", example: "Un pase largo al extremo.", context: "En lång passning till yttern." },
-    { es: "el pase corto", sv: "den korta passningen", category: "passningar", example: "Juega pases cortos.", context: "Spela korta passningar." },
-    { es: "el pase al hueco", sv: "passningen i luckan", category: "passningar", example: "Busca el pase al hueco.", context: "Leta efter passningen i luckan." },
-    { es: "el pase de la muerte", sv: "den tvärpassning i straffområdet", category: "passningar", example: "Mete un pase de la muerte.", context: "Slår en tvärs genom straffområdet." },
-    { es: "el centro", sv: "inlägget", category: "passningar", example: "Mete un centro al área.", context: "Slår in i straffområdet." },
-    { es: "la pared", sv: "väggpassningen", category: "passningar", example: "Haz una pared conmigo.", context: "Gör en vägg med mig." },
-    { es: "jugar de primera", sv: "spela direkt (utan att ta emot)", category: "passningar", example: "Juega de primera.", context: "Spela direkt." },
-    { es: "el desmarque", sv: "frigörelsen (löpning fri)", category: "passningar", example: "Buen desmarque al espacio.", context: "Bra löpning i utrymmet." },
-    { es: "la carrera", sv: "löpningen", category: "passningar", example: "Haz una carrera al espacio.", context: "Gör en löpning i utrymmet." },
-    { es: "el desmarque de ruptura", sv: "djuplöpningen", category: "passningar", example: "Haz un desmarque de ruptura.", context: "Gör en djuplöpning." },
-    { es: "desmarcarse", sv: "frigöra sig", category: "passningar", example: "¡Desmárcate!", context: "Frigör dig!" },
-    { es: "el hueco", sv: "luckan / ytan", category: "passningar", example: "Busca el hueco.", context: "Leta efter luckan." },
-    { es: "el espacio", sv: "utrymmet", category: "passningar", example: "Hay espacio por la derecha.", context: "Det finns utrymme till höger." },
-    { es: "el apoyo", sv: "stödet", category: "passningar", example: "Dame un apoyo.", context: "Ge mig ett stöd (passningsalternativ)." },
-    { es: "la diagonal", sv: "diagonallöpningen", category: "passningar", example: "Haz una diagonal.", context: "Gör en diagonallöpning." },
-    { es: "el movimiento", sv: "rörelsen", category: "passningar", example: "Buen movimiento sin balón.", context: "Bra rörelse utan boll." },
-    { es: "la conducción", sv: "bollföringen", category: "passningar", example: "Buena conducción de balón.", context: "Bra bollföring." },
-    { es: "el contraataque", sv: "kontringen", category: "passningar", example: "¡Contraataque rápido!", context: "Snabb kontring!" },
-    { es: "la transición", sv: "omställningen", category: "passningar", example: "Rápido en la transición.", context: "Snabb i omställningen." },
+// Gap tags mapping to RAP modules
+const GAP_TAGS = [
+    { id: 'Pipeline', label: 'Pipeline', module: 'Pipeline Architecture', color: '#3b82f6', description: 'Stages, konverteringslogik och deal-progression odefinierade eller inkonsekventa.' },
+    { id: 'Foundation', label: 'Foundation', module: 'Commercial Foundation', color: '#10b981', description: 'ICP, kvalificeringskriterier och GTM-principer saknas eller är oklara.' },
+    { id: 'Forecast', label: 'Forecast', module: 'Forecast & KPI Architecture', color: '#f59e0b', description: 'Forecast-metodik opålitlig, laggande eller baserad på subjektiva inputs.' },
+    { id: 'Dependency', label: 'Dependency', module: 'Dependency Removal', color: '#ef4444', description: 'Intäkter beror på en eller två individer snarare än repeterbara system.' },
+    { id: 'Alignment', label: 'Alignment', module: 'Sales-Marketing Alignment', color: '#8b5cf6', description: 'Demand generation och kommersiell exekvering lever i separata verkligheter.' }
+];
 
-    // === FÖRSVAR ===
-    { es: "defender", sv: "försvara", category: "forsvar", example: "¡Defiende!", context: "Försvara!" },
-    { es: "la entrada", sv: "tacklningen", category: "forsvar", example: "Buena entrada.", context: "Bra tackling." },
-    { es: "tacklear", sv: "tackla", category: "forsvar", example: "Tacklea limpio.", context: "Tackla rent." },
-    { es: "despejar", sv: "rensa", category: "forsvar", example: "¡Despeja!", context: "Rensa!" },
-    { es: "cortar", sv: "bryta (passning)", category: "forsvar", example: "Corta el pase.", context: "Bryt passningen." },
-    { es: "interceptar", sv: "snappa upp", category: "forsvar", example: "Intercepta el balón.", context: "Snappa upp bollen." },
-    { es: "presionar", sv: "pressa", category: "forsvar", example: "¡Presiona arriba!", context: "Pressa högt!" },
-    { es: "la presión", sv: "pressen", category: "forsvar", example: "Haz presión al portador.", context: "Pressa bollhållaren." },
-    { es: "replegar", sv: "falla tillbaka", category: "forsvar", example: "¡Repliega!", context: "Fall tillbaka!" },
-    { es: "cubrir", sv: "täcka", category: "forsvar", example: "Cubre al central.", context: "Täck mittbacken." },
-    { es: "la cobertura", sv: "täckningen", category: "forsvar", example: "Dame cobertura.", context: "Ge mig täckning." },
-    { es: "la falta", sv: "frisparken / förseelsen", category: "forsvar", example: "Eso es falta.", context: "Det är frispark." },
-    { es: "la tarjeta amarilla", sv: "gula kortet", category: "forsvar", example: "Le sacaron tarjeta amarilla.", context: "Han fick gult kort." },
-    { es: "la tarjeta roja", sv: "röda kortet", category: "forsvar", example: "Tarjeta roja directa.", context: "Direkt rött kort." },
-    { es: "el fuera de juego", sv: "offside", category: "forsvar", example: "¡Fuera de juego!", context: "Offside!" },
-    { es: "achicar", sv: "göra sig stor (målvakt) / minska ytan", category: "forsvar", example: "El portero achica.", context: "Målvakten gör sig stor." },
-    { es: "cerrar", sv: "stänga (ytan/spelaren)", category: "forsvar", example: "Cierra el espacio.", context: "Stäng ytan." },
-    { es: "la basculación", sv: "sidoförskjutningen", category: "forsvar", example: "Bascular hacia la derecha.", context: "Förskjut mot höger." },
+// Assessment timeline
+const ASSESSMENT_TIMELINE = [
+    { days: '1-2', stage: 'Setup', activity: 'Bekräfta stakeholders, boka intervjuer, dela pre-read.', icon: '&#9881;' },
+    { days: '3-5', stage: 'Intervjuer', activity: 'Genomför alla 4-5 discovery-samtal. Logga syntesnoter efter varje.', icon: '&#9998;' },
+    { days: '6-7', stage: 'Analys', activity: 'Kartlägg gaps, tagga per modul, poängsätt severitet.', icon: '&#9878;' },
+    { days: '8-9', stage: 'Utkast', activity: 'Skriv avsnitt 1-5 i Assessment Report.', icon: '&#9776;' },
+    { days: '10', stage: 'Intern granskning', activity: 'Stresstesta fynd. Kontroll: känns roadmapen strukturellt härledd?', icon: '&#10003;' },
+    { days: '11', stage: 'Kundpresentation', activity: 'Presentera fynd. Framställ engagement som logiskt nästa steg.', icon: '&#9733;' },
+    { days: '12', stage: 'Uppföljning', activity: 'Leverera slutrapport. Bekräfta proposal-tidslinje.', icon: '&#10148;' }
+];
 
-    // === ROP & KOMMANDON ===
-    { es: "¡Línea!", sv: "Håll linjen!", category: "kommandon", example: "¡Línea! ¡No bajes!", context: "Håll linjen! Sjunk inte!" },
-    { es: "¡Arriba!", sv: "Upp! (flytta upp)", category: "kommandon", example: "¡Arriba la línea!", context: "Upp med linjen!" },
-    { es: "¡Atrás!", sv: "Bakåt!", category: "kommandon", example: "¡Vuelve atrás!", context: "Gå tillbaka!" },
-    { es: "¡Fuera!", sv: "Ut (med bollen)!", category: "kommandon", example: "¡Saca fuera!", context: "Slå ut den!" },
-    { es: "¡Mía!", sv: "Min (boll)!", category: "kommandon", example: "¡Es mía!", context: "Den är min!" },
-    { es: "¡Tuya!", sv: "Din (boll)!", category: "kommandon", example: "¡Es tuya!", context: "Den är din!" },
-    { es: "¡Déjala!", sv: "Lämna den!", category: "kommandon", example: "¡Déjala, que viene!", context: "Lämna den, den kommer!" },
-    { es: "¡Solo!", sv: "Ensam! (du är fri)", category: "kommandon", example: "¡Estás solo, tira!", context: "Du är fri, skjut!" },
-    { es: "¡Hombre!", sv: "Man på! (någon kommer)", category: "kommandon", example: "¡Hombre detrás!", context: "Man bakom dig!" },
-    { es: "¡Tiempo!", sv: "Tid/lugn! (ta det lugnt)", category: "kommandon", example: "¡Tiempo, no te apures!", context: "Lugn, stressa inte!" },
-    { es: "¡Gira!", sv: "Vänd!", category: "kommandon", example: "¡Gira que estás solo!", context: "Vänd, du är fri!" },
-    { es: "¡Suelta!", sv: "Släpp den (passa av)!", category: "kommandon", example: "¡Suelta rápido!", context: "Passa av snabbt!" },
-    { es: "¡Aguanta!", sv: "Håll i den!", category: "kommandon", example: "¡Aguanta el balón!", context: "Håll i bollen!" },
-    { es: "¡Al hueco!", sv: "I luckan!", category: "kommandon", example: "¡Corre al hueco!", context: "Spring i luckan!" },
-    { es: "¡Banda!", sv: "Kanten!", category: "kommandon", example: "¡Abre a la banda!", context: "Öppna ut till kanten!" },
-    { es: "¡Cambia!", sv: "Byt sida!", category: "kommandon", example: "¡Cambia de lado!", context: "Byt sida!" },
-    { es: "¡Aprieta!", sv: "Tryck på! / Pressa!", category: "kommandon", example: "¡Aprieta arriba!", context: "Pressa uppe!" },
-    { es: "¡Salimos!", sv: "Vi går ut (pressar upp)!", category: "kommandon", example: "¡Salimos juntos!", context: "Vi går ut tillsammans!" },
-    { es: "¡Al palo corto!", sv: "Nära stolpen!", category: "kommandon", example: "Tira al palo corto.", context: "Skjut i nära." },
-    { es: "¡Al palo largo!", sv: "Bortre stolpen!", category: "kommandon", example: "Centra al palo largo.", context: "Slå in mot bortre stolpen." },
-    { es: "¡Conmigo!", sv: "Med mig! (passa till mig)", category: "kommandon", example: "¡Conmigo, que estoy solo!", context: "Till mig, jag är fri!" },
+// Report sections template
+const REPORT_SECTIONS = [
+    {
+        id: 'S1',
+        title: 'Executive Summary',
+        description: 'Skriv 3-5 meningar max. Beskriv kärnfyndet, den primära strukturella risken och den enskilt viktigaste rekommenderade åtgärden.',
+        fields: [
+            { key: 'coreFinding', label: 'Kärnfynd', placeholder: 'Vad är den fundamentala kommersiella arkitektur-utmaningen?' },
+            { key: 'primaryRisk', label: 'Primär risk', placeholder: 'Vad händer om detta inte adresseras inom 6-12 månader?' },
+            { key: 'primaryRecommendation', label: 'Primär rekommendation', placeholder: 'Vad är den viktigaste strukturella interventionen?' }
+        ]
+    },
+    {
+        id: 'S2',
+        title: 'Assessment Scope',
+        description: 'Dokumentera exakt vad som bedömdes och vad som exkluderades.',
+        fields: [
+            { key: 'companiesAssessed', label: 'Bedömt företag', placeholder: 'Företagsnamn, bransch, headcount, ARR-intervall' },
+            { key: 'stakeholdersInterviewed', label: 'Intervjuade stakeholders', placeholder: 'Roll — Namn — Datum' },
+            { key: 'duration', label: 'Varaktighet', placeholder: 'Totalt antal dagar, intervjuer, timmar' },
+            { key: 'excluded', label: 'Explicit exkluderat', placeholder: 'Vad var utanför scope och varför?' }
+        ]
+    },
+    {
+        id: 'S3',
+        title: 'Current State',
+        description: 'Beskriv vad som faktiskt existerar idag — inte vad företaget tror eller aspirerar till.',
+        fields: [
+            { key: 'revenueModel', label: 'Intäktsmodell', placeholder: 'Hur genererar företaget intäkt? Primär motion?' },
+            { key: 'teamStructure', label: 'Kommersiell teamstruktur', placeholder: 'Vem gör vad? Antal i sälj, marketing, CS?' },
+            { key: 'pipelineProcess', label: 'Pipeline & Process', placeholder: 'Hur spåras affärer? Vilka stages? Kvalificeringsramverk?' },
+            { key: 'forecastPractice', label: 'Forecast-praktik', placeholder: 'Hur görs prognoser? Vilka inputs? Tillförlitlighet?' },
+            { key: 'marketingSalesDynamic', label: 'Marketing-Sales dynamik', placeholder: 'Interaktion? Handoff? Spänningar?' },
+            { key: 'csModel', label: 'Customer Success-modell', placeholder: 'Vad händer post-sale? Retention & expansion?' }
+        ]
+    },
+    {
+        id: 'S4',
+        title: 'Strukturell Gap-analys',
+        description: 'Kärnan i rapporten. Varje gap inkluderar: observation, evidens, gap-tagg, severitet och affärsimplikation.',
+        fields: [],
+        dynamic: true
+    },
+    {
+        id: 'S5',
+        title: 'Prioriterad Roadmap',
+        description: 'Ranka gaps efter severitet och sekvens. Framställ sekvensen som en beroendekedja.',
+        fields: [
+            { key: 'dependencyLogic', label: 'Beroendelogik', placeholder: 'Varför är denna sekvens strukturellt korrekt?' },
+            { key: 'estimatedTimeline', label: 'Uppskattad tidslinje', placeholder: '3 månader / 6 månader / 12+ månader' }
+        ],
+        dynamic: true
+    },
+    {
+        id: 'S6',
+        title: 'Rekommenderat Engagement',
+        description: 'Logisk slutsats av analysen. Ska kännas oundviklig givet identifierade gaps.',
+        fields: [
+            { key: 'recommendedProgramme', label: 'Rekommenderat program', placeholder: 'Revenue Architecture Programme — vilka moduler och varför' },
+            { key: 'engagementFormat', label: 'Engagement-format', placeholder: 'Månadsrådgivning, veckovisa arbetssessioner, kvartalsvis governance' },
+            { key: 'investmentLevel', label: 'Investeringsnivå', placeholder: 'Från 7 950 EUR/månad — specificera tier och motivering' },
+            { key: 'expectedOutcome', label: 'Förväntat resultat', placeholder: 'Strukturell progress om 90 dagar? Om 6 månader?' }
+        ]
+    }
+];
 
-    // === MATCH & RESULTAT ===
-    { es: "el partido", sv: "matchen", category: "match", example: "El partido empieza a las tres.", context: "Matchen börjar klockan tre." },
-    { es: "el primer tiempo", sv: "första halvlek", category: "match", example: "Ganamos el primer tiempo.", context: "Vi vann första halvlek." },
-    { es: "el segundo tiempo", sv: "andra halvlek", category: "match", example: "Marcamos en el segundo tiempo.", context: "Vi gjorde mål i andra halvlek." },
-    { es: "el descanso", sv: "pausen (halvtid)", category: "match", example: "En el descanso, el míster habló.", context: "I pausen pratade tränaren." },
-    { es: "el gol", sv: "målet (poängen)", category: "match", example: "¡Gol!", context: "Mål!" },
-    { es: "el empate", sv: "oavgjort", category: "match", example: "El partido terminó en empate.", context: "Matchen slutade oavgjort." },
-    { es: "ganar", sv: "vinna", category: "match", example: "Vamos a ganar.", context: "Vi ska vinna." },
-    { es: "perder", sv: "förlora", category: "match", example: "No podemos perder.", context: "Vi kan inte förlora." },
-    { es: "empatar", sv: "spela oavgjort", category: "match", example: "Empatamos uno a uno.", context: "Vi spelade 1-1." },
-    { es: "el cambio", sv: "bytet", category: "match", example: "Pide un cambio.", context: "Begär ett byte." },
-    { es: "la prórroga", sv: "förlängningen", category: "match", example: "Se fue a prórroga.", context: "Det gick till förlängning." },
-    { es: "los penaltis", sv: "straffsparksläggning", category: "match", example: "Se decidió en los penaltis.", context: "Det avgjordes på straffar." },
-    { es: "el penalti", sv: "straffen", category: "match", example: "El árbitro pitó penalti.", context: "Domaren dömde straff." },
-    { es: "el saque de banda", sv: "inkastet", category: "match", example: "Saque de banda para nosotros.", context: "Inkast till oss." },
-    { es: "el saque de esquina", sv: "hörnasparken", category: "match", example: "Saque de esquina.", context: "Hörna." },
-    { es: "el tiro libre", sv: "frisparken", category: "match", example: "Tiro libre directo.", context: "Direkt frispark." },
+// Severity levels
+const SEVERITY_LEVELS = [
+    { id: 'high', label: 'Hög', color: '#ef4444', description: 'Blockerar tillväxt' },
+    { id: 'medium', label: 'Medium', color: '#f59e0b', description: 'Skapar friktion' },
+    { id: 'low', label: 'Låg', color: '#6b7280', description: 'Suboptimalt men hanterbart' }
+];
 
-    // === TRÄNING ===
-    { es: "el entrenamiento", sv: "träningen", category: "traning", example: "El entrenamiento es a las seis.", context: "Träningen är klockan sex." },
-    { es: "el calentamiento", sv: "uppvärmningen", category: "traning", example: "Empezad con el calentamiento.", context: "Börja med uppvärmningen." },
-    { es: "calentar", sv: "värma upp", category: "traning", example: "Vamos a calentar.", context: "Vi ska värma upp." },
-    { es: "estirar", sv: "stretcha", category: "traning", example: "Estira bien los músculos.", context: "Stretcha musklerna ordentligt." },
-    { es: "el rondo", sv: "rondon (burken)", category: "traning", example: "Hacemos un rondo.", context: "Vi kör en rondo." },
-    { es: "el ejercicio", sv: "övningen", category: "traning", example: "El siguiente ejercicio es de pase.", context: "Nästa övning är passningsövning." },
-    { es: "el partidillo", sv: "övningsmatchen (liten match)", category: "traning", example: "Acabamos con un partidillo.", context: "Vi avslutar med en liten match." },
-    { es: "la posesión", sv: "bollinnehav", category: "traning", example: "Ejercicio de posesión.", context: "Bollinnehavsövning." },
-    { es: "la circulación", sv: "bollcirkulation", category: "traning", example: "Buena circulación de balón.", context: "Bra bollcirkulation." },
-    { es: "el toque", sv: "touchen", category: "traning", example: "A dos toques.", context: "Två toucher." },
-    { es: "la intensidad", sv: "intensiteten", category: "traning", example: "¡Más intensidad!", context: "Mer intensitet!" },
-    { es: "el ritmo", sv: "tempot", category: "traning", example: "Sube el ritmo.", context: "Höj tempot." },
-    { es: "la recuperación", sv: "återhämtningen", category: "traning", example: "Hoy es día de recuperación.", context: "Idag är det återhämtningsdag." },
-
-    // === KROPP & SKADOR ===
-    { es: "la pierna", sv: "benet", category: "kropp", example: "Me duele la pierna.", context: "Jag har ont i benet." },
-    { es: "el pie", sv: "foten", category: "kropp", example: "Con el pie derecho.", context: "Med höger fot." },
-    { es: "la rodilla", sv: "knäet", category: "kropp", example: "Me duele la rodilla.", context: "Jag har ont i knäet." },
-    { es: "el tobillo", sv: "ankeln / vristen", category: "kropp", example: "Me torcí el tobillo.", context: "Jag vrickade vristen." },
-    { es: "el muslo", sv: "låret", category: "kropp", example: "Tengo una contractura en el muslo.", context: "Jag har en sträckning i låret." },
-    { es: "la cabeza", sv: "huvudet", category: "kropp", example: "Remata de cabeza.", context: "Avsluta med huvudet." },
-    { es: "el hombro", sv: "axeln", category: "kropp", example: "Me duele el hombro.", context: "Jag har ont i axeln." },
-    { es: "la espalda", sv: "ryggen", category: "kropp", example: "Me duele la espalda.", context: "Jag har ont i ryggen." },
-    { es: "el calambre", sv: "krampen", category: "kropp", example: "Tengo un calambre.", context: "Jag har kramp." },
-    { es: "la lesión", sv: "skadan", category: "kropp", example: "Es una lesión leve.", context: "Det är en lätt skada." },
-    { es: "lesionarse", sv: "skada sig", category: "kropp", example: "Se lesionó en el partido.", context: "Han skadade sig i matchen." },
-    { es: "el empeine", sv: "vristen (ovansidan av foten)", category: "kropp", example: "Golpea con el empeine.", context: "Träffa med vristen." },
-    { es: "el interior", sv: "insidan (av foten)", category: "kropp", example: "Pasa con el interior.", context: "Passa med insidan." },
-    { es: "el exterior", sv: "utsidan (av foten)", category: "kropp", example: "Un pase con el exterior.", context: "En passning med utsidan." },
-
-    // === VANLIGA FRASER ===
-    { es: "¡Vamos!", sv: "Kom igen!", category: "fraser", example: "¡Vamos equipo!", context: "Kom igen lag!" },
-    { es: "¡Bien jugado!", sv: "Bra spelat!", category: "fraser", example: "¡Muy bien jugado!", context: "Mycket bra spelat!" },
-    { es: "¡Buena!", sv: "Bra! (snyggt!)", category: "fraser", example: "¡Buena jugada!", context: "Snyggt spelat!" },
-    { es: "¡Así se juega!", sv: "Så spelar man!", category: "fraser", example: "¡Así se juega, tío!", context: "Så spelar man, grabben!" },
-    { es: "¡Eso es!", sv: "Det är det! (precis så!)", category: "fraser", example: "¡Eso es, sigue así!", context: "Precis så, fortsätt!" },
-    { es: "¡No pasa nada!", sv: "Det gör inget!", category: "fraser", example: "¡No pasa nada, sigue!", context: "Det gör inget, fortsätt!" },
-    { es: "¡A por ellos!", sv: "Ta dom! / Kör på!", category: "fraser", example: "¡Venga, a por ellos!", context: "Kom igen, ta dom!" },
-    { es: "¡Dale!", sv: "Kör! / Gör det!", category: "fraser", example: "¡Dale fuerte!", context: "Skjut hårt!" },
-    { es: "Estoy abierto.", sv: "Jag är fri/öppen.", category: "fraser", example: "¡Estoy abierto, pásala!", context: "Jag är fri, passa!" },
-    { es: "La tengo.", sv: "Jag har den.", category: "fraser", example: "La tengo, tranquilo.", context: "Jag har den, lugn." },
-    { es: "¡Tranquilo!", sv: "Lugn! (ta det lugnt)", category: "fraser", example: "Tranquilo, hay tiempo.", context: "Lugn, det finns tid." },
-    { es: "¡Échala!", sv: "Slå den (iväg)!", category: "fraser", example: "¡Échala larga!", context: "Slå den långt!" },
-    { es: "¡Juega!", sv: "Spela! (passa vidare)", category: "fraser", example: "¡Juega rápido!", context: "Spela snabbt!" },
-    { es: "¡Sube!", sv: "Gå upp!", category: "fraser", example: "¡Sube la banda!", context: "Gå upp på kanten!" },
-    { es: "¡Baja!", sv: "Sjunk! / Gå ner!", category: "fraser", example: "¡Baja a defender!", context: "Sjunk och försvara!" },
-    { es: "¡Cierra!", sv: "Stäng!", category: "fraser", example: "¡Cierra el espacio!", context: "Stäng ytan!" },
-    { es: "Buen partido.", sv: "Bra match.", category: "fraser", example: "Ha sido un buen partido.", context: "Det var en bra match." },
-    { es: "Hay que mejorar.", sv: "Vi måste bli bättre.", category: "fraser", example: "Hay que mejorar en defensa.", context: "Vi måste bli bättre i försvaret." },
-    { es: "¡Muévete!", sv: "Rör dig!", category: "fraser", example: "¡Muévete sin balón!", context: "Rör dig utan boll!" },
-    { es: "¡Al primer toque!", sv: "Direkt! (ett touch)", category: "fraser", example: "¡Juega al primer toque!", context: "Spela direkt!" },
+// Call structure template
+const CALL_STRUCTURE = [
+    { phase: 'Öppning', duration: '5 min', description: 'Framställ syftet. Bekräfta konfidentialitet. Förtydliga att detta är diagnostiskt, inte utvärderande.' },
+    { phase: 'Kontext', duration: '10 min', description: 'Fråga om deras roll, erfarenhet, största nuvarande utmaning. Låt dem definiera sin värld först.' },
+    { phase: 'Strukturerade frågor', duration: '30 min', description: 'Arbeta igenom frågeuppsättningen för deras roll. Följ diagnostiska signaler. Sond vid vaghet.' },
+    { phase: 'Syntes + Avslut', duration: '15 min', description: 'Reflektera tillbaka. Fråga: "Finns det något viktigt du förväntade dig att jag skulle fråga som jag inte frågade?" Avsluta med nästa steg.' }
 ];
