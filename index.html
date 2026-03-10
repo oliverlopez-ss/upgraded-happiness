@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutbolLingo - Lär dig fotbollsspanska</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Start Screen -->
+        <div id="start-screen" class="screen active">
+            <div class="logo">
+                <span class="logo-icon">&#9917;</span>
+                <h1>FutbolLingo</h1>
+                <p class="tagline">Lär dig spanska på fotbollsplanen</p>
+            </div>
+            <div class="category-grid">
+                <button class="category-btn" data-category="all">
+                    <span class="cat-icon">&#127942;</span>
+                    <span>Alla ord</span>
+                    <span class="cat-count" id="count-all"></span>
+                </button>
+                <button class="category-btn" data-category="utrustning">
+                    <span class="cat-icon">&#129694;</span>
+                    <span>Utrustning</span>
+                    <span class="cat-count" id="count-utrustning"></span>
+                </button>
+                <button class="category-btn" data-category="plan">
+                    <span class="cat-icon">&#127967;</span>
+                    <span>Planen</span>
+                    <span class="cat-count" id="count-plan"></span>
+                </button>
+                <button class="category-btn" data-category="positioner">
+                    <span class="cat-icon">&#129485;</span>
+                    <span>Positioner</span>
+                    <span class="cat-count" id="count-positioner"></span>
+                </button>
+                <button class="category-btn" data-category="aktioner">
+                    <span class="cat-icon">&#9889;</span>
+                    <span>Aktioner</span>
+                    <span class="cat-count" id="count-aktioner"></span>
+                </button>
+                <button class="category-btn" data-category="passningar">
+                    <span class="cat-icon">&#128588;</span>
+                    <span>Passningar & löpningar</span>
+                    <span class="cat-count" id="count-passningar"></span>
+                </button>
+                <button class="category-btn" data-category="forsvar">
+                    <span class="cat-icon">&#128737;</span>
+                    <span>Försvar</span>
+                    <span class="cat-count" id="count-forsvar"></span>
+                </button>
+                <button class="category-btn" data-category="kommandon">
+                    <span class="cat-icon">&#128227;</span>
+                    <span>Rop & kommandon</span>
+                    <span class="cat-count" id="count-kommandon"></span>
+                </button>
+                <button class="category-btn" data-category="match">
+                    <span class="cat-icon">&#128200;</span>
+                    <span>Match & resultat</span>
+                    <span class="cat-count" id="count-match"></span>
+                </button>
+                <button class="category-btn" data-category="traning">
+                    <span class="cat-icon">&#127947;</span>
+                    <span>Träning</span>
+                    <span class="cat-count" id="count-traning"></span>
+                </button>
+                <button class="category-btn" data-category="kropp">
+                    <span class="cat-icon">&#129470;</span>
+                    <span>Kropp & skador</span>
+                    <span class="cat-count" id="count-kropp"></span>
+                </button>
+                <button class="category-btn" data-category="fraser">
+                    <span class="cat-icon">&#128172;</span>
+                    <span>Vanliga fraser</span>
+                    <span class="cat-count" id="count-fraser"></span>
+                </button>
+            </div>
+            <div class="mode-select">
+                <h3>Välj övningstyp</h3>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="flashcard">&#128196; Flashcards</button>
+                    <button class="mode-btn" data-mode="quiz">&#127919; Quiz</button>
+                    <button class="mode-btn" data-mode="write">&#9997; Skriv</button>
+                    <button class="mode-btn" data-mode="listen">&#128266; Lyssna</button>
+                </div>
+            </div>
+            <button id="start-btn" class="primary-btn">Börja träna!</button>
+            <div class="stats-bar">
+                <div class="stat"><span id="stat-streak">0</span> Streak</div>
+                <div class="stat"><span id="stat-mastered">0</span> Klara</div>
+                <div class="stat"><span id="stat-total">0</span> Totalt</div>
+            </div>
+        </div>
+
+        <!-- Flashcard Screen -->
+        <div id="flashcard-screen" class="screen">
+            <div class="top-bar">
+                <button id="back-btn" class="icon-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                    <span id="progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display">&#128293; <span id="current-streak">0</span></div>
+            </div>
+            <div id="flashcard" class="flashcard" tabindex="0">
+                <div class="flashcard-inner">
+                    <div class="flashcard-front">
+                        <div class="card-category" id="card-category"></div>
+                        <div class="card-word" id="card-front-word"></div>
+                        <div class="card-hint" id="card-hint">Tryck för att vända</div>
+                    </div>
+                    <div class="flashcard-back">
+                        <div class="card-word" id="card-back-word"></div>
+                        <div class="card-example" id="card-example"></div>
+                        <div class="card-context" id="card-context"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="action-btn wrong" id="btn-wrong">&#10060; Kan inte</button>
+                <button class="action-btn ok" id="btn-ok">&#128528; Nästan</button>
+                <button class="action-btn correct" id="btn-correct">&#9989; Kan!</button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="screen">
+            <div class="top-bar">
+                <button class="icon-btn quiz-back-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="quiz-progress-fill" class="progress-fill"></div></div>
+                    <span id="quiz-progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display">&#128293; <span id="quiz-streak">0</span></div>
+            </div>
+            <div class="quiz-container">
+                <div class="quiz-question" id="quiz-question"></div>
+                <div class="quiz-prompt" id="quiz-prompt"></div>
+                <div class="quiz-options" id="quiz-options"></div>
+                <div class="quiz-feedback" id="quiz-feedback"></div>
+                <button class="primary-btn quiz-next-btn" id="quiz-next" style="display:none">Nästa &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Write Screen -->
+        <div id="write-screen" class="screen">
+            <div class="top-bar">
+                <button class="icon-btn write-back-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="write-progress-fill" class="progress-fill"></div></div>
+                    <span id="write-progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display">&#128293; <span id="write-streak">0</span></div>
+            </div>
+            <div class="write-container">
+                <div class="write-direction" id="write-direction"></div>
+                <div class="write-word" id="write-word"></div>
+                <input type="text" id="write-input" class="write-input" placeholder="Skriv svaret här..." autocomplete="off" autocapitalize="none">
+                <button class="primary-btn" id="write-check">Kontrollera</button>
+                <div class="write-feedback" id="write-feedback"></div>
+                <button class="primary-btn write-next-btn" id="write-next" style="display:none">Nästa &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Listen Screen -->
+        <div id="listen-screen" class="screen">
+            <div class="top-bar">
+                <button class="icon-btn listen-back-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="listen-progress-fill" class="progress-fill"></div></div>
+                    <span id="listen-progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display">&#128293; <span id="listen-streak">0</span></div>
+            </div>
+            <div class="listen-container">
+                <div class="listen-instruction">Lyssna och skriv vad du hör</div>
+                <button class="listen-play-btn" id="listen-play">&#128266; Spela upp</button>
+                <button class="listen-play-btn slow" id="listen-slow">&#128034; Långsamt</button>
+                <input type="text" id="listen-input" class="write-input" placeholder="Skriv vad du hör..." autocomplete="off" autocapitalize="none">
+                <button class="primary-btn" id="listen-check">Kontrollera</button>
+                <div class="write-feedback" id="listen-feedback"></div>
+                <button class="primary-btn listen-next-btn" id="listen-next" style="display:none">Nästa &#8594;</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="results-container">
+                <h2>&#127881; Bra jobbat!</h2>
+                <div class="results-stats">
+                    <div class="result-stat">
+                        <span class="result-number" id="result-correct">0</span>
+                        <span class="result-label">Rätt</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-number" id="result-wrong">0</span>
+                        <span class="result-label">Att öva</span>
+                    </div>
+                    <div class="result-stat">
+                        <span class="result-number" id="result-streak">0</span>
+                        <span class="result-label">Bästa streak</span>
+                    </div>
+                </div>
+                <div class="results-words" id="results-words"></div>
+                <button class="primary-btn" id="results-restart">Träna igen</button>
+                <button class="secondary-btn" id="results-home">Tillbaka</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
