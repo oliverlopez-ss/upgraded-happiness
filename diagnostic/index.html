@@ -240,7 +240,10 @@
                             <h2>Assessment-rapport</h2>
                             <p class="view-sub">Revenue Architecture Assessment Report</p>
                         </div>
-                        <button class="btn-primary" onclick="exportReport()">Exportera</button>
+                        <div style="display:flex;gap:0.5rem;">
+                            <button class="btn-ghost" onclick="rerunDiagnostics()" title="Kör om diagnostikmotorn och uppdatera auto-genererat innehåll">Kör om diagnostik</button>
+                            <button class="btn-primary" onclick="exportReport()">Exportera</button>
+                        </div>
                     </div>
                     <div id="report-content" class="report-content"></div>
                 </div>
