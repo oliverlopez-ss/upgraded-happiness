@@ -23,8 +23,14 @@
     }
     .header-brand { font-size: 11px; color: #2A9D8F; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
     .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-    .header-right { display: flex; align-items: center; gap: 16px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
     .header-time { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .data-source-badge {
+      font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .data-source-badge.live { background: rgba(42,157,143,0.2); color: #2A9D8F; border: 1px solid rgba(42,157,143,0.4); }
+    .data-source-badge.fallback { background: rgba(233,196,106,0.2); color: #E9C46A; border: 1px solid rgba(233,196,106,0.4); }
     .btn-refresh {
       background: #2A9D8F; color: #fff; border: none; border-radius: 6px;
       padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -32,6 +38,12 @@
     }
     .btn-refresh:hover { background: #238b7f; }
     .btn-refresh:disabled { background: rgba(42,157,143,0.3); cursor: not-allowed; }
+    .btn-settings {
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: 6px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    }
+    .btn-settings:hover { background: rgba(255,255,255,0.15); }
     .content { padding: 24px 32px; max-width: 1200px; }
     .section-label {
       font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase;
@@ -40,7 +52,7 @@
     .stats { display: flex; gap: 12px; flex-wrap: wrap; }
     .stat-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 160;
+      border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 160px;
     }
     .stat-card .label {
       font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase;
@@ -131,8 +143,24 @@
       <div class="header-title">Financial War Room</div>
     </div>
     <div class="header-right">
+      <span id="dataSourceBadge" class="data-source-badge fallback">Demo-data</span>
       <span class="header-time" id="lastUpdated"></span>
+      <button class="btn-settings" onclick="toggleSettings()">&#9881; Token</button>
       <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">&#10227; Uppdatera</button>
+    </div>
+  </div>
+
+  <div id="settingsPanel" style="display:none;background:#1C3F5E;border-bottom:1px solid rgba(255,255,255,0.1);padding:14px 32px;">
+    <div style="max-width:1200px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:rgba(255,255,255,0.6);white-space:nowrap">HubSpot Private App Token:</span>
+      <input id="hubspotTokenInput" type="password" placeholder="pat-na1-xxxxxxxx-..." autocomplete="off"
+        style="flex:1;min-width:260px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;
+               color:#fff;padding:7px 12px;font-size:13px;font-family:monospace;outline:none" />
+      <button onclick="saveToken()" style="background:#2A9D8F;color:#fff;border:none;border-radius:6px;
+        padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">Spara &amp; hämta</button>
+      <button onclick="clearToken()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);
+        border:none;border-radius:6px;padding:8px 12px;font-size:13px;cursor:pointer">Rensa</button>
+      <span style="font-size:11px;color:rgba(255,255,255,0.3)">Sparas lokalt i webbläsaren, aldrig i koden.</span>
     </div>
   </div>
 
@@ -144,7 +172,7 @@
 
     <div class="pipeline-header">
       <div>
-        <div class="section-label" style="margin-bottom:4px">Pipeline</div>
+        <div class="section-label" style="margin-bottom:4px">Pipeline (HubSpot)</div>
         <div class="pipeline-info" id="pipelineSummary"></div>
       </div>
       <div class="sort-buttons">
@@ -170,7 +198,7 @@
   </div>
 
   <script>
-    // ── Financial data ──
+    // ── Financial data (uppdatera manuellt) ──
     var cash = -298000;
     var fixedBurn = 82198;
     var variableBurn = 168333;
@@ -178,19 +206,21 @@
     var secureRevenue90 = (15000 + 47500) * 3;
     var runway = Math.abs(cash) / totalBurn;
 
-    // ── Demo pipeline deals ──
-    var deals = [
-      { name: "Acme Corp – Sales Transformation", amount: 850000, probability: 0.6, closedate: "2026-04-15", weighted: 510000 },
-      { name: "Nordic Retail – Revenue Architecture", amount: 620000, probability: 0.75, closedate: "2026-03-28", weighted: 465000 },
-      { name: "TechForward AB – Go-to-Market", amount: 480000, probability: 0.5, closedate: "2026-05-10", weighted: 240000 },
-      { name: "eFuel Scandinavia – Retainer Extension", amount: 570000, probability: 0.9, closedate: "2026-03-20", weighted: 513000 },
-      { name: "GreenEnergy Nordic – Pipeline Review", amount: 320000, probability: 0.35, closedate: "2026-06-01", weighted: 112000 },
-      { name: "Logistics Pro – Sales Enablement", amount: 410000, probability: 0.45, closedate: "2026-04-30", weighted: 184500 },
-      { name: "Medtech Solutions – CRO Advisory", amount: 290000, probability: 0.8, closedate: "2026-03-25", weighted: 232000 },
-      { name: "DataDriven AB – Commercial Due Diligence", amount: 750000, probability: 0.3, closedate: "2026-05-20", weighted: 225000 }
+    // ── Demo pipeline (visas om HubSpot ej är kopplat) ──
+    var DEMO_DEALS = [
+      { name: "Acme Corp – Sales Transformation", amount: 850000, probability: 0.6, closedate: "2026-04-15" },
+      { name: "Nordic Retail – Revenue Architecture", amount: 620000, probability: 0.75, closedate: "2026-03-28" },
+      { name: "TechForward AB – Go-to-Market", amount: 480000, probability: 0.5, closedate: "2026-05-10" },
+      { name: "eFuel Scandinavia – Retainer Extension", amount: 570000, probability: 0.9, closedate: "2026-03-20" },
+      { name: "GreenEnergy Nordic – Pipeline Review", amount: 320000, probability: 0.35, closedate: "2026-06-01" },
+      { name: "Logistics Pro – Sales Enablement", amount: 410000, probability: 0.45, closedate: "2026-04-30" },
+      { name: "Medtech Solutions – CRO Advisory", amount: 290000, probability: 0.8, closedate: "2026-03-25" },
+      { name: "DataDriven AB – Commercial Due Diligence", amount: 750000, probability: 0.3, closedate: "2026-05-20" }
     ];
 
+    var deals = DEMO_DEALS.slice();
     var currentSort = "weighted";
+    var isLiveData = false;
 
     // ── Helpers ──
     function fmt(n) {
@@ -207,6 +237,54 @@
       var pct = Math.round((prob || 0) * 100);
       var cls = pct >= 70 ? "prob-high" : pct >= 40 ? "prob-mid" : "prob-low";
       return '<span class="prob-badge ' + cls + '">' + pct + '%</span>';
+    }
+
+    // ── Token ──
+    function toggleSettings() {
+      var panel = document.getElementById("settingsPanel");
+      var visible = panel.style.display !== "none";
+      panel.style.display = visible ? "none" : "block";
+      if (!visible) {
+        document.getElementById("hubspotTokenInput").value = localStorage.getItem("hs_token") || "";
+      }
+    }
+
+    function saveToken() {
+      var token = document.getElementById("hubspotTokenInput").value.trim();
+      if (token) {
+        localStorage.setItem("hs_token", token);
+        document.getElementById("settingsPanel").style.display = "none";
+        refreshData();
+      }
+    }
+
+    function clearToken() {
+      localStorage.removeItem("hs_token");
+      document.getElementById("hubspotTokenInput").value = "";
+    }
+
+    // ── HubSpot API ──
+    async function fetchHubSpotDeals(token) {
+      var url = "https://api.hubapi.com/crm/v3/objects/deals" +
+        "?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,hs_is_closed";
+      var resp = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
+      if (!resp.ok) throw new Error("HubSpot svarade " + resp.status + " – kontrollera token.");
+      var json = await resp.json();
+      var result = [];
+      (json.results || []).forEach(function(d) {
+        var p = d.properties || {};
+        if (p.hs_is_closed === "true") return;
+        var amount = parseFloat(p.amount) || 0;
+        var prob = parseFloat(p.hs_deal_stage_probability) || 0;
+        if (amount === 0) return;
+        result.push({
+          name: p.dealname || "Namnlös affär",
+          amount: amount,
+          probability: prob,
+          closedate: (p.closedate || "").substring(0, 10)
+        });
+      });
+      return result;
     }
 
     // ── Render stats ──
@@ -231,22 +309,24 @@
 
     // ── Render deals ──
     function renderDeals() {
-      var sorted = deals.slice().sort(function(a, b) {
+      var enriched = deals.map(function(d) {
+        return Object.assign({}, d, { weighted: d.amount * d.probability });
+      });
+      var sorted = enriched.slice().sort(function(a, b) {
         if (currentSort === "weighted") return (b.weighted || 0) - (a.weighted || 0);
         if (currentSort === "amount") return (b.amount || 0) - (a.amount || 0);
         if (currentSort === "prob") return (b.probability || 0) - (a.probability || 0);
         return 0;
       });
 
-      var totalWeighted = deals.reduce(function(s, d) { return s + (d.weighted || 0); }, 0);
-      var totalPipeline = deals.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+      var totalWeighted = enriched.reduce(function(s, d) { return s + (d.weighted || 0); }, 0);
+      var totalPipeline = enriched.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
 
       document.getElementById("pipelineSummary").innerHTML =
         deals.length + ' aktiva affärer · Viktat värde: <span class="hl">' + fmt(totalWeighted) +
         '</span> · Pipeline totalt: ' + fmt(totalPipeline);
 
-      var body = document.getElementById("dealsBody");
-      body.innerHTML = sorted.map(function(deal) {
+      document.getElementById("dealsBody").innerHTML = sorted.map(function(deal) {
         return '<div class="table-row">' +
           '<span class="deal-name">' + deal.name + '</span>' +
           '<span class="deal-amount">' + fmt(deal.amount) + '</span>' +
@@ -264,7 +344,6 @@
         '<span></span>';
     }
 
-    // ── Sort ──
     function sortDeals(key, el) {
       currentSort = key;
       document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -272,24 +351,68 @@
       renderDeals();
     }
 
-    // ── Refresh (simulated) ──
-    function refreshData() {
+    function updateBadge() {
+      var badge = document.getElementById("dataSourceBadge");
+      if (isLiveData) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live HubSpot";
+      } else {
+        badge.className = "data-source-badge fallback";
+        badge.textContent = "Demo-data";
+      }
+    }
+
+    // ── Refresh ──
+    async function refreshData() {
       var btn = document.getElementById("btnRefresh");
       btn.disabled = true;
       btn.innerHTML = "&#10227; Hämtar...";
-      setTimeout(function() {
-        btn.disabled = false;
-        btn.innerHTML = "&#10227; Uppdatera";
-        document.getElementById("lastUpdated").textContent =
-          "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
-      }, 1200);
+      document.getElementById("errorBox").style.display = "none";
+
+      var token = localStorage.getItem("hs_token");
+      if (token) {
+        try {
+          var hsDeals = await fetchHubSpotDeals(token);
+          if (hsDeals.length > 0) {
+            deals = hsDeals;
+            isLiveData = true;
+          } else {
+            deals = DEMO_DEALS.slice();
+            isLiveData = false;
+          }
+        } catch(e) {
+          var box = document.getElementById("errorBox");
+          box.textContent = e.message;
+          box.style.display = "block";
+          deals = DEMO_DEALS.slice();
+          isLiveData = false;
+        }
+      } else {
+        deals = DEMO_DEALS.slice();
+        isLiveData = false;
+      }
+
+      updateBadge();
+      renderStats();
+      renderDeals();
+
+      btn.disabled = false;
+      btn.innerHTML = "&#10227; Uppdatera";
+      document.getElementById("lastUpdated").textContent =
+        "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
     }
 
     // ── Init ──
     renderStats();
     renderDeals();
+    updateBadge();
     document.getElementById("lastUpdated").textContent =
       "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+
+    // Auto-fetch om token finns
+    if (localStorage.getItem("hs_token")) {
+      refreshData();
+    }
   </script>
 </body>
 </html>
