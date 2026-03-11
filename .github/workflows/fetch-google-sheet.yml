@@ -14,56 +14,58 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch sheet as CSV via Google Sheets API
+      - name: Install Google auth library
+        run: pip install google-auth
+
+      - name: Fetch sheet as CSV via Google Sheets API (Service Account)
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
           SHEET_ID: "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc"
         run: |
-          if [ -z "$GOOGLE_API_KEY" ]; then
-            echo "::error::GOOGLE_API_KEY secret is not set!"
+          if [ -z "$GOOGLE_SA_KEY" ]; then
+            echo "::error::GOOGLE_SA_KEY secret is not set!"
             exit 1
           fi
           mkdir -p warroom/data
 
-          # Fetch all values as CSV via Sheets API v4
-          HTTP_CODE=$(curl -s -w "%{http_code}" \
-            "https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A:Z?key=${GOOGLE_API_KEY}" \
-            -o warroom/data/sheet-raw.json)
+          python3 << 'PYEOF'
+          import json, csv, os, sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          import urllib.request
 
-          echo "HTTP status: $HTTP_CODE"
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Google Sheets API returned HTTP $HTTP_CODE"
-            cat warroom/data/sheet-raw.json
-            exit 1
-          fi
+          # Auth via service account
+          sa_info = json.loads(os.environ["GOOGLE_SA_KEY"])
+          creds = service_account.Credentials.from_service_account_info(
+              sa_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+          )
+          creds.refresh(Request())
 
-          # Convert JSON response to CSV
-          python3 -c "
-          import json, csv, sys
+          sheet_id = os.environ["SHEET_ID"]
+          url = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/A:Z"
 
-          with open('warroom/data/sheet-raw.json') as f:
-              data = json.load(f)
+          req = urllib.request.Request(url)
+          req.add_header("Authorization", f"Bearer {creds.token}")
+          resp = urllib.request.urlopen(req)
+          data = json.loads(resp.read())
 
-          rows = data.get('values', [])
+          rows = data.get("values", [])
           if not rows:
-              print('::error::Sheet returned no data')
+              print("::error::Sheet returned no data")
               sys.exit(1)
 
-          # Pad all rows to same length
+          # Pad all rows to same length and write CSV
           max_cols = max(len(r) for r in rows)
-          with open('warroom/data/finanser.csv', 'w', newline='') as f:
+          with open("warroom/data/finanser.csv", "w", newline="") as f:
               writer = csv.writer(f)
               for row in rows:
-                  padded = row + [''] * (max_cols - len(row))
+                  padded = row + [""] * (max_cols - len(row))
                   writer.writerow(padded)
 
-          print(f'Wrote {len(rows)} rows to finanser.csv')
+          print(f"Wrote {len(rows)} rows to finanser.csv")
           for i, row in enumerate(rows[:5]):
-              print(f'  Row {i}: {row[:4]}...')
-          "
-
-          # Clean up temp file
-          rm -f warroom/data/sheet-raw.json
+              print(f"  Row {i}: {row[:4]}...")
+          PYEOF
 
       - name: Commit and push
         run: |
