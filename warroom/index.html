@@ -178,13 +178,102 @@
   </div>
 
   <script>
-    // ── Financial data (uppdatera manuellt) ──
-    var cash = -298000;
-    var fixedBurn = 82198;
-    var variableBurn = 168333;
-    var totalBurn = fixedBurn + variableBurn;
-    var secureRevenue90 = (15000 + 47500) * 3;
-    var runway = Math.abs(cash) / totalBurn;
+    // ── Google Sheet config ──
+    var SHEET_ID = "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc";
+    var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/pub?output=csv";
+
+    // ── Financial data (fylls från Google Sheet) ──
+    var cash = 0;
+    var totalBurn = 0;
+    var currentRevenue = 0;
+    var runway = 0;
+    var sheetMonth = "";
+    var sheetDataLoaded = false;
+
+    // ── CSV-parser ──
+    function parseCSV(text) {
+      var lines = text.trim().split("\n");
+      return lines.map(function(line) {
+        var cells = [];
+        var current = "";
+        var inQuotes = false;
+        for (var i = 0; i < line.length; i++) {
+          var ch = line[i];
+          if (ch === '"') {
+            inQuotes = !inQuotes;
+          } else if (ch === ',' && !inQuotes) {
+            cells.push(current.trim());
+            current = "";
+          } else {
+            current += ch;
+          }
+        }
+        cells.push(current.trim());
+        return cells;
+      });
+    }
+
+    // ── Hämta finansdata från Google Sheet ──
+    async function fetchSheetData() {
+      var resp = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
+      if (!resp.ok) throw new Error("Kunde inte hämta Google Sheet (HTTP " + resp.status + ")");
+      var text = await resp.text();
+      var rows = parseCSV(text);
+
+      // Rad 0 = headers: [Jan/label, Feb, Mar, Apr, Maj, Jun, ...]
+      var headers = rows[0];
+
+      // Hitta kolumn för aktuell månad
+      var monthNames = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+      var now = new Date();
+      var targetMonth = monthNames[now.getMonth()];
+
+      var colIdx = -1;
+      for (var i = 0; i < headers.length; i++) {
+        if (headers[i].toLowerCase().indexOf(targetMonth.toLowerCase()) === 0) {
+          colIdx = i;
+          break;
+        }
+      }
+      // Fallback: senaste kolumnen med data
+      if (colIdx < 0) colIdx = headers.length - 1;
+
+      sheetMonth = targetMonth;
+
+      // Rad 1 = Startbalans (värdet finns i kolumn B = index 1)
+      var startbalans = parseFloat((rows[1][1] || "").replace(/\s/g, "")) || 0;
+
+      // Rad 2 = INTÄKTER
+      // Rad 3 = UTGIFTER header (tom)
+      // Rad 4+ = utgiftsposter
+
+      // Beräkna kassa: startbalans + kumulativa (intäkter - utgifter) per månad
+      // Kolumn A (index 0) är etiketter, data börjar vid index 1 (Feb)
+      var dataStartCol = 1; // Feb
+      var cashPosition = startbalans;
+
+      for (var m = dataStartCol; m <= colIdx; m++) {
+        var monthRevenue = parseFloat((rows[2][m] || "").replace(/\s/g, "")) || 0;
+        var monthExpenses = 0;
+        for (var r = 4; r < rows.length; r++) {
+          monthExpenses += parseFloat((rows[r][m] || "").replace(/\s/g, "")) || 0;
+        }
+        cashPosition += monthRevenue - monthExpenses;
+      }
+
+      // Aktuell månads burn och intäkter
+      var burn = 0;
+      for (var r = 4; r < rows.length; r++) {
+        burn += parseFloat((rows[r][colIdx] || "").replace(/\s/g, "")) || 0;
+      }
+      var revenue = parseFloat((rows[2][colIdx] || "").replace(/\s/g, "")) || 0;
+
+      cash = cashPosition;
+      totalBurn = burn;
+      currentRevenue = revenue;
+      runway = totalBurn > 0 ? Math.abs(cash) / totalBurn : 0;
+      sheetDataLoaded = true;
+    }
 
     // ── Demo pipeline (visas om HubSpot ej är kopplat) ──
     var DEMO_DEALS = [
@@ -246,14 +335,15 @@
 
     // ── Render stats ──
     function renderStats() {
-      var netto90 = cash + secureRevenue90 - (totalBurn * 3);
+      var netto90 = cash + currentRevenue * 3 - (totalBurn * 3);
       var grid = document.getElementById("statsGrid");
+      var src = sheetDataLoaded ? "Google Sheet (" + sheetMonth + ")" : "Ej kopplad";
       var cards = [
-        { label: "1. Cash idag", value: fmt(cash), sub: "Uppdatera manuellt", warn: cash < 0 },
-        { label: "2. Total burn / mån", value: fmt(totalBurn), sub: "Fast: " + fmt(fixedBurn) + " · Rörlig: " + fmt(variableBurn), warn: true },
+        { label: "1. Cash idag", value: fmt(cash), sub: src, warn: cash < 0 },
+        { label: "2. Total burn / mån", value: fmt(totalBurn), sub: "Alla utgifter " + sheetMonth, warn: true },
         { label: "Runway", value: runway.toFixed(1) + " mån", sub: "vid nuvarande burn", warn: runway < 2 },
-        { label: "3. Säkra int. 90 dagar", value: fmt(secureRevenue90), sub: "Manpower + Efuel retainer", warn: false },
-        { label: "Netto position 90 dagar", value: fmt(netto90), sub: "Cash + säkra – 3×burn", warn: netto90 < 0 }
+        { label: "3. Intäkter " + (sheetMonth || "mån"), value: fmt(currentRevenue), sub: "Från Google Sheet", warn: false },
+        { label: "Netto position 90 dagar", value: fmt(netto90), sub: "Cash + 3×intäkter – 3×burn", warn: netto90 < 0 }
       ];
       grid.innerHTML = cards.map(function(c) {
         return '<div class="stat-card ' + (c.warn ? 'warn-top' : 'accent-top') + '">' +
@@ -310,9 +400,15 @@
 
     function updateBadge() {
       var badge = document.getElementById("dataSourceBadge");
-      if (isLiveData) {
+      if (sheetDataLoaded && isLiveData) {
         badge.className = "data-source-badge live";
-        badge.textContent = "Live HubSpot";
+        badge.textContent = "Live · Sheet + HubSpot";
+      } else if (sheetDataLoaded) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live · Google Sheet";
+      } else if (isLiveData) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live · HubSpot";
       } else {
         badge.className = "data-source-badge fallback";
         badge.textContent = "Demo-data";
@@ -326,6 +422,15 @@
       btn.innerHTML = "&#10227; Hämtar...";
       document.getElementById("errorBox").style.display = "none";
 
+      // Hämta Google Sheet (finansdata)
+      try {
+        await fetchSheetData();
+      } catch(e) {
+        console.warn("Google Sheet-fel:", e.message);
+        sheetDataLoaded = false;
+      }
+
+      // Hämta HubSpot (pipeline)
       try {
         var hsDeals = await fetchHubSpotDeals();
         if (hsDeals.length > 0) {
@@ -336,9 +441,11 @@
           isLiveData = false;
         }
       } catch(e) {
-        var box = document.getElementById("errorBox");
-        box.textContent = e.message;
-        box.style.display = "block";
+        if (!sheetDataLoaded) {
+          var box = document.getElementById("errorBox");
+          box.textContent = e.message;
+          box.style.display = "block";
+        }
         deals = DEMO_DEALS.slice();
         isLiveData = false;
       }
