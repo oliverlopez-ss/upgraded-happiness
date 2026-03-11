@@ -17,10 +17,24 @@ jobs:
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
         run: |
-          curl -s -f \
+          mkdir -p warroom/data
+          if [ -z "$HUBSPOT_TOKEN" ]; then
+            echo "::error::HUBSPOT_TOKEN secret is not set! Go to Settings → Secrets → Actions and add it."
+            exit 1
+          fi
+          echo "Token starts with: ${HUBSPOT_TOKEN:0:8}..."
+          HTTP_CODE=$(curl -s -w "%{http_code}" \
             -H "Authorization: Bearer $HUBSPOT_TOKEN" \
             "https://api.hubapi.com/crm/v3/objects/deals?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,hs_is_closed" \
-            -o warroom/data/deals.json
+            -o warroom/data/deals.json)
+          echo "HTTP status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::HubSpot API returned HTTP $HTTP_CODE"
+            cat warroom/data/deals.json
+            exit 1
+          fi
+          echo "Success! Deals fetched."
+          cat warroom/data/deals.json | head -c 500
 
       - name: Commit and push
         run: |
