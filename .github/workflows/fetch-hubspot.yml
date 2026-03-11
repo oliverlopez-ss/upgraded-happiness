@@ -94,9 +94,12 @@ jobs:
             stage = (p.get('dealstage') or '').lower()
             if any(kw in stage for kw in ['closedwon', 'closedlost', 'closed', 'won', 'lost']):
               return False
-            prob = p.get('hs_deal_stage_probability')
-            if prob in ('1.0', '0.0'):
-              return False
+            try:
+              prob = float(p.get('hs_deal_stage_probability', 0.5))
+              if prob >= 1.0 or prob <= 0.0:
+                return False
+            except (ValueError, TypeError):
+              pass
             return True
           filtered = [d for d in all_deals if is_open(d)]
           data['results'] = filtered
