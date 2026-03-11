@@ -25,6 +25,12 @@
     .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
     .header-right { display: flex; align-items: center; gap: 16px; }
     .header-time { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .data-source-badge {
+      font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .data-source-badge.live { background: rgba(42,157,143,0.2); color: #2A9D8F; border: 1px solid rgba(42,157,143,0.4); }
+    .data-source-badge.fallback { background: rgba(233,196,106,0.2); color: #E9C46A; border: 1px solid rgba(233,196,106,0.4); }
     .btn-refresh {
       background: #2A9D8F; color: #fff; border: none; border-radius: 6px;
       padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -40,7 +46,7 @@
     .stats { display: flex; gap: 12px; flex-wrap: wrap; }
     .stat-card {
       background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 160;
+      border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 160px;
     }
     .stat-card .label {
       font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase;
@@ -54,6 +60,51 @@
     .accent-top { border-top: 3px solid #2A9D8F; }
     .warn-top { border-top: 3px solid #E76F51; }
     .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 24px 0; }
+
+    /* Monthly breakdown table */
+    .month-table-wrap {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; overflow: hidden;
+    }
+    .month-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+    .month-table th {
+      padding: 10px 16px; text-align: right; font-size: 10px;
+      color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px;
+      background: rgba(255,255,255,0.04); border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .month-table th:first-child { text-align: left; }
+    .month-table td {
+      padding: 8px 16px; text-align: right; font-family: 'DM Mono', monospace;
+      font-size: 12px; color: rgba(255,255,255,0.6);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .month-table td:first-child {
+      text-align: left; font-family: 'IBM Plex Sans', sans-serif;
+      color: rgba(255,255,255,0.85); font-weight: 500;
+    }
+    .month-table tr:nth-child(odd) td { background: rgba(255,255,255,0.015); }
+    .month-table tr:hover td { background: rgba(42,157,143,0.08); }
+    .month-table tr.row-total td {
+      font-weight: 700; color: rgba(255,255,255,0.85);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+    }
+    .month-table tr.row-sum td {
+      font-weight: 700; font-size: 13px;
+      border-top: 2px solid rgba(42,157,143,0.3);
+    }
+    .month-table tr.row-balance td {
+      font-weight: 700; font-size: 13px;
+    }
+    .month-table tr.row-income td {
+      color: #2A9D8F; font-weight: 600;
+    }
+    .val-negative { color: #E76F51 !important; }
+    .val-positive { color: #2A9D8F !important; }
+
+    /* Pipeline */
     .pipeline-header {
       display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 16px;
@@ -108,6 +159,16 @@
       border-radius: 8px; padding: 12px 16px; color: #E76F51; font-size: 13px;
       margin-bottom: 16px; display: none;
     }
+    .setup-box {
+      background: rgba(233,196,106,0.1); border: 1px solid rgba(233,196,106,0.25);
+      border-radius: 8px; padding: 16px 20px; color: #E9C46A; font-size: 13px;
+      margin-bottom: 16px; line-height: 1.6;
+    }
+    .setup-box code {
+      background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 3px;
+      font-family: 'DM Mono', monospace; font-size: 12px;
+    }
+    .setup-box a { color: #2A9D8F; }
     .back-link {
       color: rgba(255,255,255,0.4); text-decoration: none; font-size: 12px;
       display: inline-flex; align-items: center; gap: 4px;
@@ -118,6 +179,7 @@
       .content { padding: 16px; }
       .stats { flex-direction: column; }
       .stat-card { min-width: auto; }
+      .month-table-wrap { overflow-x: auto; }
       .table-head, .table-row, .table-footer { grid-template-columns: 1fr 100px 60px 100px; }
       .table-head span:last-child, .table-row span:last-child, .table-footer span:last-child { display: none; }
     }
@@ -131,20 +193,31 @@
       <div class="header-title">Financial War Room</div>
     </div>
     <div class="header-right">
+      <span id="dataSourceBadge" class="data-source-badge fallback">Fallback-data</span>
       <span class="header-time" id="lastUpdated"></span>
       <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">&#10227; Uppdatera</button>
     </div>
   </div>
 
   <div class="content">
-    <div class="section-label">Snapshot</div>
+    <div id="setupBox"></div>
+    <div id="errorBox" class="error-box"></div>
+
+    <div class="section-label">Snapshot – nuvarande månad</div>
     <div class="stats" id="statsGrid"></div>
+
+    <div class="divider"></div>
+
+    <div class="section-label">Månadsöversikt</div>
+    <div class="month-table-wrap">
+      <table class="month-table" id="monthTable"></table>
+    </div>
 
     <div class="divider"></div>
 
     <div class="pipeline-header">
       <div>
-        <div class="section-label" style="margin-bottom:4px">Pipeline</div>
+        <div class="section-label" style="margin-bottom:4px">Pipeline (HubSpot)</div>
         <div class="pipeline-info" id="pipelineSummary"></div>
       </div>
       <div class="sort-buttons">
@@ -153,8 +226,6 @@
         <button class="sort-btn" data-sort="prob" onclick="sortDeals('prob',this)">Sannolikhet</button>
       </div>
     </div>
-
-    <div id="errorBox" class="error-box"></div>
 
     <div class="table-wrap">
       <div class="table-head">
@@ -170,29 +241,65 @@
   </div>
 
   <script>
-    // ── Financial data ──
-    var cash = -298000;
-    var fixedBurn = 82198;
-    var variableBurn = 168333;
-    var totalBurn = fixedBurn + variableBurn;
-    var secureRevenue90 = (15000 + 47500) * 3;
-    var runway = Math.abs(cash) / totalBurn;
+    // ══════════════════════════════════════════════════
+    // CONFIGURATION – Set your Google Sheet ID here
+    // ══════════════════════════════════════════════════
+    var GOOGLE_SHEET_ID = ""; // <-- Paste your Google Sheet ID here
+    var SHEET_TAB_FINANCE = "Finanser";  // Tab name for financial data
+    var SHEET_TAB_PIPELINE = "Pipeline"; // Tab name for pipeline deals
 
-    // ── Demo pipeline deals ──
-    var deals = [
-      { name: "Acme Corp – Sales Transformation", amount: 850000, probability: 0.6, closedate: "2026-04-15", weighted: 510000 },
-      { name: "Nordic Retail – Revenue Architecture", amount: 620000, probability: 0.75, closedate: "2026-03-28", weighted: 465000 },
-      { name: "TechForward AB – Go-to-Market", amount: 480000, probability: 0.5, closedate: "2026-05-10", weighted: 240000 },
-      { name: "eFuel Scandinavia – Retainer Extension", amount: 570000, probability: 0.9, closedate: "2026-03-20", weighted: 513000 },
-      { name: "GreenEnergy Nordic – Pipeline Review", amount: 320000, probability: 0.35, closedate: "2026-06-01", weighted: 112000 },
-      { name: "Logistics Pro – Sales Enablement", amount: 410000, probability: 0.45, closedate: "2026-04-30", weighted: 184500 },
-      { name: "Medtech Solutions – CRO Advisory", amount: 290000, probability: 0.8, closedate: "2026-03-25", weighted: 232000 },
-      { name: "DataDriven AB – Commercial Due Diligence", amount: 750000, probability: 0.3, closedate: "2026-05-20", weighted: 225000 }
+    // ══════════════════════════════════════════════════
+    // FALLBACK DATA (from your Excel, March 2026)
+    // ══════════════════════════════════════════════════
+    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun"];
+    var STARTING_BALANCE = 136000; // 29 januari
+
+    var FALLBACK_FINANCE = {
+      months: MONTHS,
+      startingBalance: STARTING_BALANCE,
+      income: [62500, 162500, 127000, 343500, 362500, 62500],
+      expenses: [
+        { name: "Aros Kapital",                   values: [16205, 13700, 0, 0, 0, 0] },
+        { name: "Delage Landen Finans (datorer)",  values: [4300, 4300, 4300, 4300, 4300, 4300] },
+        { name: "WINT",                           values: [3750, 3750, 3750, 3750, 3750, 3750] },
+        { name: "Licens HubSpot",                 values: [11000, 11000, 11000, 11000, 11000, 11000] },
+        { name: "Löner (Birna)",                  values: [16300, 16300, 16300, 0, 0, 0] },
+        { name: "Sociala + skatt (Birna)",        values: [9200, 9200, 9200, 9200, 0, 0] },
+        { name: "Moms",                           values: [0, 100000, 0, 0, 0, 50000] },
+        { name: "Leadlabs",                       values: [100000, 100000, 100000, 100000, 100000, 100000] },
+        { name: "Oliver Lopez (lön)",             values: [62500, 50000, 35000, 35000, 35000, 35000] },
+        { name: "Oliver Lopez (skatt+sociala)",   values: [0, 0, 26000, 26000, 26000, 26000] },
+        { name: "Söder Content",                  values: [30000, 52000, 40000, 40000, 40000, 40000] },
+        { name: "HubXperts",                      values: [0, 0, 20000, 20000, 20000, 20000] },
+        { name: "Simplex Consulting",             values: [20000, 33000, 0, 0, 0, 0] },
+        { name: "IKANO (Leasing)",                values: [1298, 1298, 1298, 1298, 1298, 1298] },
+        { name: "Office 365",                     values: [900, 900, 900, 900, 900, 900] },
+        { name: "Licens Load",                    values: [47000, 0, 0, 0, 0, 0] }
+      ]
+    };
+
+    var FALLBACK_DEALS = [
+      { name: "Acme Corp – Sales Transformation", amount: 850000, probability: 0.6, closedate: "2026-04-15" },
+      { name: "Nordic Retail – Revenue Architecture", amount: 620000, probability: 0.75, closedate: "2026-03-28" },
+      { name: "TechForward AB – Go-to-Market", amount: 480000, probability: 0.5, closedate: "2026-05-10" },
+      { name: "eFuel Scandinavia – Retainer Extension", amount: 570000, probability: 0.9, closedate: "2026-03-20" },
+      { name: "GreenEnergy Nordic – Pipeline Review", amount: 320000, probability: 0.35, closedate: "2026-06-01" },
+      { name: "Logistics Pro – Sales Enablement", amount: 410000, probability: 0.45, closedate: "2026-04-30" },
+      { name: "Medtech Solutions – CRO Advisory", amount: 290000, probability: 0.8, closedate: "2026-03-25" },
+      { name: "DataDriven AB – Commercial Due Diligence", amount: 750000, probability: 0.3, closedate: "2026-05-20" }
     ];
 
+    // ══════════════════════════════════════════════════
+    // STATE
+    // ══════════════════════════════════════════════════
+    var financeData = null;
+    var deals = [];
     var currentSort = "weighted";
+    var isLiveData = false;
 
-    // ── Helpers ──
+    // ══════════════════════════════════════════════════
+    // HELPERS
+    // ══════════════════════════════════════════════════
     function fmt(n) {
       if (n == null || n === "") return "\u2013";
       return new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(n);
@@ -209,16 +316,234 @@
       return '<span class="prob-badge ' + cls + '">' + pct + '%</span>';
     }
 
-    // ── Render stats ──
+    function valClass(n) {
+      return n < 0 ? "val-negative" : n > 0 ? "val-positive" : "";
+    }
+
+    // Get current month index (0-based, matching MONTHS array)
+    function getCurrentMonthIndex() {
+      var now = new Date();
+      return now.getMonth(); // 0=Jan, 1=Feb, etc.
+    }
+
+    // ══════════════════════════════════════════════════
+    // GOOGLE SHEETS FETCH
+    // ══════════════════════════════════════════════════
+    function sheetUrl(tab) {
+      return "https://docs.google.com/spreadsheets/d/" + GOOGLE_SHEET_ID +
+        "/gviz/tq?tqx=out:csv&sheet=" + encodeURIComponent(tab);
+    }
+
+    function parseCSV(text) {
+      var rows = [];
+      var current = "";
+      var inQuotes = false;
+      var row = [];
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (inQuotes) {
+          if (ch === '"' && text[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else if (ch === '"') {
+            inQuotes = false;
+          } else {
+            current += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === ',') {
+            row.push(current.trim());
+            current = "";
+          } else if (ch === '\n' || ch === '\r') {
+            if (ch === '\r' && text[i + 1] === '\n') i++;
+            row.push(current.trim());
+            if (row.length > 0) rows.push(row);
+            row = [];
+            current = "";
+          } else {
+            current += ch;
+          }
+        }
+      }
+      row.push(current.trim());
+      if (row.some(function(c) { return c !== ""; })) rows.push(row);
+      return rows;
+    }
+
+    function parseNumber(str) {
+      if (!str) return 0;
+      // Remove "kr", spaces, and handle Swedish number format
+      var cleaned = str.replace(/kr/gi, "").replace(/\s/g, "").replace(/,/g, ".");
+      var n = parseFloat(cleaned);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function parseFinanceSheet(rows) {
+      // Expected format:
+      // Row 0: Header row - "", "Jan", "Feb", "Mar", ...
+      // Row 1: "Startbalans", 136000
+      // Row 2: "INTÄKTER", val1, val2, ...
+      // Row 3+: expense name, val1, val2, ...
+      // Last rows: "UTGIFTER", totals  |  "SUMMA", totals  |  "På kontot", totals
+      var result = { months: [], startingBalance: 0, income: [], expenses: [] };
+      if (rows.length < 3) return null;
+
+      // Header row - month names
+      var header = rows[0];
+      for (var i = 1; i < header.length; i++) {
+        if (header[i]) result.months.push(header[i]);
+      }
+      var numMonths = result.months.length;
+
+      var inExpenses = false;
+      for (var r = 1; r < rows.length; r++) {
+        var row = rows[r];
+        var label = (row[0] || "").trim();
+        var upperLabel = label.toUpperCase();
+
+        if (upperLabel === "STARTBALANS" || upperLabel === "PÅ KONTOT START") {
+          result.startingBalance = parseNumber(row[1]);
+          continue;
+        }
+        if (upperLabel === "INTÄKTER") {
+          for (var j = 0; j < numMonths; j++) {
+            result.income.push(parseNumber(row[j + 1]));
+          }
+          continue;
+        }
+        if (upperLabel.indexOf("UTGIFTER") === 0 && upperLabel.indexOf("UTGIFTER ") !== 0) {
+          if (inExpenses) break; // We hit the totals row
+          inExpenses = true;
+          continue;
+        }
+        if (upperLabel === "SUMMA" || upperLabel === "PÅ KONTOT" || upperLabel === "") {
+          continue;
+        }
+        if (inExpenses && label) {
+          var vals = [];
+          for (var k = 0; k < numMonths; k++) {
+            vals.push(parseNumber(row[k + 1]));
+          }
+          result.expenses.push({ name: label, values: vals });
+        }
+      }
+      return result.income.length > 0 ? result : null;
+    }
+
+    function parsePipelineSheet(rows) {
+      // Expected format:
+      // Row 0: "Affär", "Värde", "Sannolikhet", "Close date"
+      // Row 1+: deal data
+      if (rows.length < 2) return null;
+      var result = [];
+      for (var r = 1; r < rows.length; r++) {
+        var row = rows[r];
+        if (!row[0] || !row[0].trim()) continue;
+        var prob = parseNumber(row[2]);
+        if (prob > 1) prob = prob / 100; // Handle percentage format
+        result.push({
+          name: row[0].trim(),
+          amount: parseNumber(row[1]),
+          probability: prob,
+          closedate: (row[3] || "").trim()
+        });
+      }
+      return result.length > 0 ? result : null;
+    }
+
+    async function fetchFromGoogleSheets() {
+      if (!GOOGLE_SHEET_ID) return false;
+
+      try {
+        var financeResp = await fetch(sheetUrl(SHEET_TAB_FINANCE));
+        if (!financeResp.ok) throw new Error("Kunde inte hämta fliken '" + SHEET_TAB_FINANCE + "'");
+        var financeCSV = await financeResp.text();
+        var financeRows = parseCSV(financeCSV);
+        var parsed = parseFinanceSheet(financeRows);
+        if (parsed) {
+          financeData = parsed;
+        }
+
+        try {
+          var pipelineResp = await fetch(sheetUrl(SHEET_TAB_PIPELINE));
+          if (pipelineResp.ok) {
+            var pipelineCSV = await pipelineResp.text();
+            var pipelineRows = parseCSV(pipelineCSV);
+            var parsedDeals = parsePipelineSheet(pipelineRows);
+            if (parsedDeals) deals = parsedDeals;
+          }
+        } catch (e) {
+          // Pipeline tab is optional – keep fallback deals
+        }
+
+        return true;
+      } catch (err) {
+        showError("Google Sheets-fel: " + err.message);
+        return false;
+      }
+    }
+
+    // ══════════════════════════════════════════════════
+    // COMPUTE
+    // ══════════════════════════════════════════════════
+    function computeMonthlyTotals(data) {
+      var numMonths = data.income.length;
+      var expenseTotals = [];
+      for (var m = 0; m < numMonths; m++) {
+        var total = 0;
+        for (var e = 0; e < data.expenses.length; e++) {
+          total += data.expenses[e].values[m] || 0;
+        }
+        expenseTotals.push(total);
+      }
+
+      var netPerMonth = [];
+      for (var n = 0; n < numMonths; n++) {
+        netPerMonth.push(data.income[n] - expenseTotals[n]);
+      }
+
+      var balances = [];
+      var bal = data.startingBalance;
+      for (var b = 0; b < numMonths; b++) {
+        bal += netPerMonth[b];
+        balances.push(bal);
+      }
+
+      return { expenseTotals: expenseTotals, netPerMonth: netPerMonth, balances: balances };
+    }
+
+    // ══════════════════════════════════════════════════
+    // RENDER
+    // ══════════════════════════════════════════════════
     function renderStats() {
-      var netto90 = cash + secureRevenue90 - (totalBurn * 3);
+      var data = financeData;
+      var computed = computeMonthlyTotals(data);
+      var mi = Math.min(getCurrentMonthIndex(), data.income.length - 1);
+
+      var cashNow = computed.balances[mi];
+      var burnThisMonth = computed.expenseTotals[mi];
+      var incomeThisMonth = data.income[mi];
+      var netThisMonth = computed.netPerMonth[mi];
+
+      // Average burn for runway calc
+      var avgBurn = 0;
+      var burnCount = 0;
+      for (var i = mi; i < computed.expenseTotals.length; i++) {
+        avgBurn += computed.expenseTotals[i];
+        burnCount++;
+      }
+      avgBurn = burnCount > 0 ? avgBurn / burnCount : burnThisMonth;
+      var runway = cashNow > 0 ? "N/A" : (Math.abs(cashNow) / avgBurn).toFixed(1) + " mån";
+
       var grid = document.getElementById("statsGrid");
       var cards = [
-        { label: "1. Cash idag", value: fmt(cash), sub: "Uppdatera manuellt", warn: cash < 0 },
-        { label: "2. Total burn / mån", value: fmt(totalBurn), sub: "Fast: " + fmt(fixedBurn) + " · Rörlig: " + fmt(variableBurn), warn: true },
-        { label: "Runway", value: runway.toFixed(1) + " mån", sub: "vid nuvarande burn", warn: runway < 2 },
-        { label: "3. Säkra int. 90 dagar", value: fmt(secureRevenue90), sub: "Manpower + Efuel retainer", warn: false },
-        { label: "Netto position 90 dagar", value: fmt(netto90), sub: "Cash + säkra – 3×burn", warn: netto90 < 0 }
+        { label: "På kontot", value: fmt(cashNow), sub: data.months[mi] + " 2026", warn: cashNow < 0 },
+        { label: "Intäkter", value: fmt(incomeThisMonth), sub: data.months[mi], warn: false },
+        { label: "Utgifter", value: fmt(burnThisMonth), sub: data.months[mi], warn: true },
+        { label: "Netto", value: fmt(netThisMonth), sub: data.months[mi], warn: netThisMonth < 0 },
+        { label: "Runway", value: cashNow < 0 ? runway : "\u221e", sub: cashNow < 0 ? "vid snittburn" : "Positivt saldo", warn: cashNow < 0 }
       ];
       grid.innerHTML = cards.map(function(c) {
         return '<div class="stat-card ' + (c.warn ? 'warn-top' : 'accent-top') + '">' +
@@ -229,17 +554,74 @@
       }).join('');
     }
 
-    // ── Render deals ──
+    function renderMonthTable() {
+      var data = financeData;
+      var computed = computeMonthlyTotals(data);
+      var numMonths = data.months.length;
+
+      var html = '<thead><tr><th></th>';
+      for (var h = 0; h < numMonths; h++) {
+        html += '<th>' + data.months[h] + '</th>';
+      }
+      html += '</tr></thead><tbody>';
+
+      // Income row
+      html += '<tr class="row-income"><td>Intäkter</td>';
+      for (var i = 0; i < numMonths; i++) {
+        html += '<td class="val-positive">' + fmt(data.income[i]) + '</td>';
+      }
+      html += '</tr>';
+
+      // Expense rows
+      for (var e = 0; e < data.expenses.length; e++) {
+        var exp = data.expenses[e];
+        html += '<tr><td>' + exp.name + '</td>';
+        for (var m = 0; m < numMonths; m++) {
+          var v = exp.values[m];
+          html += '<td>' + (v > 0 ? fmt(v) : '\u2013') + '</td>';
+        }
+        html += '</tr>';
+      }
+
+      // Total expenses
+      html += '<tr class="row-total"><td>Utgifter totalt</td>';
+      for (var t = 0; t < numMonths; t++) {
+        html += '<td class="val-negative">' + fmt(computed.expenseTotals[t]) + '</td>';
+      }
+      html += '</tr>';
+
+      // Net per month
+      html += '<tr class="row-sum"><td>Netto / månad</td>';
+      for (var s = 0; s < numMonths; s++) {
+        html += '<td class="' + valClass(computed.netPerMonth[s]) + '">' + fmt(computed.netPerMonth[s]) + '</td>';
+      }
+      html += '</tr>';
+
+      // Running balance
+      html += '<tr class="row-balance"><td>På kontot</td>';
+      for (var b = 0; b < numMonths; b++) {
+        html += '<td class="' + valClass(computed.balances[b]) + '">' + fmt(computed.balances[b]) + '</td>';
+      }
+      html += '</tr>';
+
+      html += '</tbody>';
+      document.getElementById("monthTable").innerHTML = html;
+    }
+
     function renderDeals() {
-      var sorted = deals.slice().sort(function(a, b) {
+      var enriched = deals.map(function(d) {
+        return { name: d.name, amount: d.amount, probability: d.probability, closedate: d.closedate, weighted: d.amount * d.probability };
+      });
+
+      var sorted = enriched.slice().sort(function(a, b) {
         if (currentSort === "weighted") return (b.weighted || 0) - (a.weighted || 0);
         if (currentSort === "amount") return (b.amount || 0) - (a.amount || 0);
         if (currentSort === "prob") return (b.probability || 0) - (a.probability || 0);
         return 0;
       });
 
-      var totalWeighted = deals.reduce(function(s, d) { return s + (d.weighted || 0); }, 0);
-      var totalPipeline = deals.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+      var totalWeighted = enriched.reduce(function(s, d) { return s + (d.weighted || 0); }, 0);
+      var totalPipeline = enriched.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
 
       document.getElementById("pipelineSummary").innerHTML =
         deals.length + ' aktiva affärer · Viktat värde: <span class="hl">' + fmt(totalWeighted) +
@@ -264,7 +646,6 @@
         '<span></span>';
     }
 
-    // ── Sort ──
     function sortDeals(key, el) {
       currentSort = key;
       document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -272,24 +653,93 @@
       renderDeals();
     }
 
-    // ── Refresh (simulated) ──
-    function refreshData() {
+    function updateBadge() {
+      var badge = document.getElementById("dataSourceBadge");
+      if (isLiveData) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live Google Sheets";
+      } else {
+        badge.className = "data-source-badge fallback";
+        badge.textContent = "Fallback-data";
+      }
+    }
+
+    function showError(msg) {
+      var box = document.getElementById("errorBox");
+      box.textContent = msg;
+      box.style.display = "block";
+    }
+
+    function showSetupGuide() {
+      if (GOOGLE_SHEET_ID) return;
+      document.getElementById("setupBox").innerHTML =
+        '<div class="setup-box">' +
+        '<strong>Google Sheets inte konfigurerad</strong><br>' +
+        'Appen visar fallback-data från ditt Excel. För live-data:<br>' +
+        '1. Skapa ett Google Sheet med flikarna <code>Finanser</code> och <code>Pipeline</code><br>' +
+        '2. Publicera sheetet: Arkiv → Dela → Publicera på webben → CSV<br>' +
+        '3. Kopiera Sheet-ID:t från URL:en (lång sträng mellan <code>/d/</code> och <code>/edit</code>)<br>' +
+        '4. Klistra in det i <code>GOOGLE_SHEET_ID</code> i koden<br>' +
+        '<br><strong>Format för fliken Finanser:</strong><br>' +
+        'Rad 1: <code>| | Jan | Feb | Mar | ... |</code><br>' +
+        'Rad 2: <code>| Startbalans | 136000 | | | |</code><br>' +
+        'Rad 3: <code>| INTÄKTER | 62500 | 162500 | ... |</code><br>' +
+        'Rad 4: <code>| UTGIFTER STRUCTSALES AB | | | |</code><br>' +
+        'Rad 5+: <code>| Kostnad | belopp | belopp | ... |</code><br>' +
+        '<br><strong>Format för fliken Pipeline:</strong><br>' +
+        '<code>| Affär | Värde | Sannolikhet | Close date |</code>' +
+        '</div>';
+    }
+
+    // ══════════════════════════════════════════════════
+    // REFRESH
+    // ══════════════════════════════════════════════════
+    async function refreshData() {
       var btn = document.getElementById("btnRefresh");
       btn.disabled = true;
       btn.innerHTML = "&#10227; Hämtar...";
-      setTimeout(function() {
-        btn.disabled = false;
-        btn.innerHTML = "&#10227; Uppdatera";
-        document.getElementById("lastUpdated").textContent =
-          "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
-      }, 1200);
+      document.getElementById("errorBox").style.display = "none";
+
+      // Try Google Sheets first
+      var success = await fetchFromGoogleSheets();
+
+      if (success && GOOGLE_SHEET_ID) {
+        isLiveData = true;
+      } else {
+        // Use fallback data
+        financeData = FALLBACK_FINANCE;
+        deals = FALLBACK_DEALS.slice();
+        isLiveData = false;
+      }
+
+      updateBadge();
+      renderStats();
+      renderMonthTable();
+      renderDeals();
+
+      btn.disabled = false;
+      btn.innerHTML = "&#10227; Uppdatera";
+      document.getElementById("lastUpdated").textContent =
+        "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
     }
 
-    // ── Init ──
+    // ══════════════════════════════════════════════════
+    // INIT
+    // ══════════════════════════════════════════════════
+    financeData = FALLBACK_FINANCE;
+    deals = FALLBACK_DEALS.slice();
     renderStats();
+    renderMonthTable();
     renderDeals();
+    updateBadge();
+    showSetupGuide();
     document.getElementById("lastUpdated").textContent =
       "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+
+    // Auto-fetch from Google Sheets if configured
+    if (GOOGLE_SHEET_ID) {
+      refreshData();
+    }
   </script>
 </body>
 </html>
