@@ -48,6 +48,7 @@ jobs:
           PIPELINE_ID: ${{ steps.pipeline.outputs.pipeline_id }}
         run: |
           mkdir -p warroom/data
+          # Fetch all deals in pipeline, then filter out won/lost client-side
           HTTP_CODE=$(curl -s -w "%{http_code}" \
             -X POST \
             -H "Authorization: Bearer $HUBSPOT_TOKEN" \
@@ -55,24 +56,38 @@ jobs:
             -d "{
               \"filterGroups\": [{
                 \"filters\": [
-                  {\"propertyName\": \"pipeline\", \"operator\": \"EQ\", \"value\": \"$PIPELINE_ID\"},
-                  {\"propertyName\": \"hs_is_closed\", \"operator\": \"EQ\", \"value\": \"false\"}
+                  {\"propertyName\": \"pipeline\", \"operator\": \"EQ\", \"value\": \"$PIPELINE_ID\"}
                 ]
               }],
-              \"properties\": [\"dealname\", \"amount\", \"closedate\", \"hs_deal_stage_probability\", \"hs_is_closed\", \"pipeline\"],
+              \"properties\": [\"dealname\", \"amount\", \"closedate\", \"dealstage\", \"hs_deal_stage_probability\", \"hs_is_closed\", \"pipeline\"],
               \"limit\": 100
             }" \
             "https://api.hubapi.com/crm/v3/objects/deals/search" \
-            -o warroom/data/deals.json)
+            -o warroom/data/raw.json)
           echo "HTTP status: $HTTP_CODE"
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::HubSpot Search API returned HTTP $HTTP_CODE"
-            cat warroom/data/deals.json
+            cat warroom/data/raw.json
             exit 1
           fi
-          COUNT=$(python3 -c "import json; print(json.load(open('warroom/data/deals.json')).get('total',0))")
-          echo "Success! Found $COUNT open deals in New Sales pipeline."
-          cat warroom/data/deals.json | head -c 500
+          # Filter out closedwon and closedlost stages
+          python3 -c "
+          import json
+          with open('warroom/data/raw.json') as f:
+            data = json.load(f)
+          excluded = {'closedwon', 'closedlost'}
+          filtered = [d for d in data.get('results', [])
+                      if d.get('properties', {}).get('dealstage', '') not in excluded]
+          data['results'] = filtered
+          data['total'] = len(filtered)
+          with open('warroom/data/deals.json', 'w') as f:
+            json.dump(data, f)
+          print(f'Filtered: {len(filtered)} open deals (excluded won/lost)')
+          for d in filtered:
+            p = d['properties']
+            print(f'  {p.get(\"dealname\")}: stage={p.get(\"dealstage\")}, amount={p.get(\"amount\")}')
+          "
+          rm -f warroom/data/raw.json
 
       - name: Commit and push
         run: |
