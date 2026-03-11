@@ -38,12 +38,6 @@
     }
     .btn-refresh:hover { background: #238b7f; }
     .btn-refresh:disabled { background: rgba(42,157,143,0.3); cursor: not-allowed; }
-    .btn-settings {
-      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); border: none; border-radius: 6px;
-      padding: 8px 14px; font-size: 13px; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; gap: 6px; transition: all 0.2s;
-    }
-    .btn-settings:hover { background: rgba(255,255,255,0.15); }
     .content { padding: 24px 32px; max-width: 1200px; }
     .section-label {
       font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase;
@@ -145,24 +139,10 @@
     <div class="header-right">
       <span id="dataSourceBadge" class="data-source-badge fallback">Demo-data</span>
       <span class="header-time" id="lastUpdated"></span>
-      <button class="btn-settings" onclick="toggleSettings()">&#9881; Token</button>
       <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">&#10227; Uppdatera</button>
     </div>
   </div>
 
-  <div id="settingsPanel" style="display:none;background:#1C3F5E;border-bottom:1px solid rgba(255,255,255,0.1);padding:14px 32px;">
-    <div style="max-width:1200px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-      <span style="font-size:12px;color:rgba(255,255,255,0.6);white-space:nowrap">HubSpot Private App Token:</span>
-      <input id="hubspotTokenInput" type="password" placeholder="pat-na1-xxxxxxxx-..." autocomplete="off"
-        style="flex:1;min-width:260px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;
-               color:#fff;padding:7px 12px;font-size:13px;font-family:monospace;outline:none" />
-      <button onclick="saveToken()" style="background:#2A9D8F;color:#fff;border:none;border-radius:6px;
-        padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">Spara &amp; hämta</button>
-      <button onclick="clearToken()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);
-        border:none;border-radius:6px;padding:8px 12px;font-size:13px;cursor:pointer">Rensa</button>
-      <span style="font-size:11px;color:rgba(255,255,255,0.3)">Sparas lokalt i webbläsaren, aldrig i koden.</span>
-    </div>
-  </div>
 
   <div class="content">
     <div class="section-label">Snapshot</div>
@@ -239,82 +219,31 @@
       return '<span class="prob-badge ' + cls + '">' + pct + '%</span>';
     }
 
-    // ── Token ──
-    function toggleSettings() {
-      var panel = document.getElementById("settingsPanel");
-      var visible = panel.style.display !== "none";
-      panel.style.display = visible ? "none" : "block";
-      if (!visible) {
-        document.getElementById("hubspotTokenInput").value = localStorage.getItem("hs_token") || "";
-      }
+    // ── HubSpot data (hämtas via GitHub Action → deals.json) ──
+    function parseHubSpotDeals(json) {
+      var result = [];
+      (json.results || []).forEach(function(d) {
+        var p = d.properties || {};
+        if (p.hs_is_closed === "true") return;
+        var amount = parseFloat(p.amount) || 0;
+        var prob = parseFloat(p.hs_deal_stage_probability) || 0;
+        if (prob > 1) prob = prob / 100;
+        if (amount === 0) return;
+        result.push({
+          name: p.dealname || "Namnlös affär",
+          amount: amount,
+          probability: prob,
+          closedate: (p.closedate || "").substring(0, 10)
+        });
+      });
+      return result;
     }
 
-    function saveToken() {
-      var token = document.getElementById("hubspotTokenInput").value.trim();
-      if (token) {
-        localStorage.setItem("hs_token", token);
-        document.getElementById("settingsPanel").style.display = "none";
-        refreshData();
-      }
-    }
-
-    function clearToken() {
-      localStorage.removeItem("hs_token");
-      document.getElementById("hubspotTokenInput").value = "";
-    }
-
-    // ── HubSpot API (via CORS proxy for GitHub Pages) ──
-    var CORS_PROXIES = [
-      function(u) { return "https://corsproxy.io/?" + encodeURIComponent(u); },
-      function(u) { return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); }
-    ];
-
-    async function fetchHubSpotDeals(token) {
-      var hubspotUrl = "https://api.hubapi.com/crm/v3/objects/deals" +
-        "?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,hs_is_closed";
-
-      var lastError = null;
-
-      // Try direct first (works if HubSpot allows CORS for this origin)
-      var attempts = [hubspotUrl].concat(CORS_PROXIES.map(function(p) { return p(hubspotUrl); }));
-
-      for (var i = 0; i < attempts.length; i++) {
-        try {
-          console.log("[War Room] Försöker: " + attempts[i].substring(0, 80) + "...");
-          var resp = await fetch(attempts[i], {
-            headers: { "Authorization": "Bearer " + token }
-          });
-          if (!resp.ok) {
-            var errText = "";
-            try { errText = await resp.text(); } catch(e2) {}
-            throw new Error("HTTP " + resp.status + (errText ? ": " + errText.substring(0, 200) : ""));
-          }
-          var json = await resp.json();
-          console.log("[War Room] Svar OK, antal results:", (json.results || []).length);
-          var result = [];
-          (json.results || []).forEach(function(d) {
-            var p = d.properties || {};
-            if (p.hs_is_closed === "true") return;
-            var amount = parseFloat(p.amount) || 0;
-            var prob = parseFloat(p.hs_deal_stage_probability) || 0;
-            // HubSpot returns probability as 0-1 or 0-100, normalize to 0-1
-            if (prob > 1) prob = prob / 100;
-            if (amount === 0) return;
-            result.push({
-              name: p.dealname || "Namnlös affär",
-              amount: amount,
-              probability: prob,
-              closedate: (p.closedate || "").substring(0, 10)
-            });
-          });
-          return result;
-        } catch(e) {
-          console.warn("[War Room] Misslyckades (" + (i === 0 ? "direkt" : "proxy " + i) + "):", e.message);
-          lastError = e;
-        }
-      }
-      throw new Error("Kunde inte nå HubSpot API. " + (lastError ? lastError.message : "") +
-        " – Kontrollera att din token är korrekt (börjar med pat-na1-...)");
+    async function fetchHubSpotDeals() {
+      var resp = await fetch("data/deals.json?" + Date.now());
+      if (!resp.ok) throw new Error("Ingen deals.json hittad. Kör GitHub Action 'Fetch HubSpot Deals' först.");
+      var json = await resp.json();
+      return parseHubSpotDeals(json);
     }
 
     // ── Render stats ──
@@ -399,25 +328,19 @@
       btn.innerHTML = "&#10227; Hämtar...";
       document.getElementById("errorBox").style.display = "none";
 
-      var token = localStorage.getItem("hs_token");
-      if (token) {
-        try {
-          var hsDeals = await fetchHubSpotDeals(token);
-          if (hsDeals.length > 0) {
-            deals = hsDeals;
-            isLiveData = true;
-          } else {
-            deals = DEMO_DEALS.slice();
-            isLiveData = false;
-          }
-        } catch(e) {
-          var box = document.getElementById("errorBox");
-          box.textContent = e.message;
-          box.style.display = "block";
+      try {
+        var hsDeals = await fetchHubSpotDeals();
+        if (hsDeals.length > 0) {
+          deals = hsDeals;
+          isLiveData = true;
+        } else {
           deals = DEMO_DEALS.slice();
           isLiveData = false;
         }
-      } else {
+      } catch(e) {
+        var box = document.getElementById("errorBox");
+        box.textContent = e.message;
+        box.style.display = "block";
         deals = DEMO_DEALS.slice();
         isLiveData = false;
       }
@@ -439,9 +362,8 @@
     document.getElementById("lastUpdated").textContent =
       "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
 
-    // Auto-fetch om token finns
-    if (localStorage.getItem("hs_token")) {
-      refreshData();
+    // Försök hämta live-data direkt vid laddning
+    refreshData();
     }
   </script>
 </body>
