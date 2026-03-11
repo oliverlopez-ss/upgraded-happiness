@@ -224,11 +224,9 @@
       var result = [];
       (json.results || []).forEach(function(d) {
         var p = d.properties || {};
-        if (p.hs_is_closed === "true") return;
         var amount = parseFloat(p.amount) || 0;
         var prob = parseFloat(p.hs_deal_stage_probability) || 0;
         if (prob > 1) prob = prob / 100;
-        if (amount === 0) return;
         result.push({
           name: p.dealname || "Namnlös affär",
           amount: amount,
