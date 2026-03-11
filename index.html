@@ -20,7 +20,7 @@
             padding: 2rem;
             -webkit-font-smoothing: antialiased;
         }
-        .container { max-width: 700px; width: 100%; text-align: center; }
+        .container { max-width: 960px; width: 100%; text-align: center; }
         .brand {
             display: flex; align-items: center; justify-content: center;
             gap: 0.75rem; margin-bottom: 3rem;
@@ -33,7 +33,7 @@
         .brand-name { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.15em; color: #8b8fa3; }
         h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
         .sub { color: #8b8fa3; font-size: 1rem; margin-bottom: 3rem; }
-        .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .apps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
         .app-card {
             background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 14px;
             padding: 2rem 1.5rem; text-decoration: none; color: inherit;
@@ -48,13 +48,15 @@
             width: 64px; height: 64px; border-radius: 16px;
             display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
         }
-        .app-card:first-child .app-icon { background: rgba(74, 124, 255, 0.12); }
-        .app-card:last-child .app-icon { background: rgba(74, 222, 128, 0.12); }
+        .app-card:nth-child(1) .app-icon { background: rgba(74, 124, 255, 0.12); }
+        .app-card:nth-child(2) .app-icon { background: rgba(74, 222, 128, 0.12); }
+        .app-card:nth-child(3) .app-icon { background: rgba(42, 157, 143, 0.15); }
         .app-name { font-size: 1.1rem; font-weight: 700; }
         .app-desc { font-size: 0.85rem; color: #8b8fa3; line-height: 1.5; }
         .app-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
-        .app-card:first-child .app-badge { background: rgba(74, 124, 255, 0.12); color: #4a7cff; }
-        .app-card:last-child .app-badge { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .app-card:nth-child(1) .app-badge { background: rgba(74, 124, 255, 0.12); color: #4a7cff; }
+        .app-card:nth-child(2) .app-badge { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
+        .app-card:nth-child(3) .app-badge { background: rgba(42, 157, 143, 0.15); color: #2A9D8F; }
         @media (max-width: 600px) { .apps { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
     </style>
 </head>
@@ -78,6 +80,12 @@
                 <span class="app-badge">Lärande</span>
                 <span class="app-name">FutbolLingo</span>
                 <span class="app-desc">Lär dig fotbollsspanska med flashcards, quiz, skriv- och lyssningsövningar</span>
+            </a>
+            <a href="warroom/" class="app-card">
+                <div class="app-icon">&#9876;</div>
+                <span class="app-badge">Finans</span>
+                <span class="app-name">Financial War Room</span>
+                <span class="app-desc">Dashboard med cash, burn rate, runway och live pipeline-data från HubSpot</span>
             </a>
         </div>
     </div>
