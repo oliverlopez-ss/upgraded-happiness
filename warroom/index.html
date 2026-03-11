@@ -263,10 +263,11 @@
       document.getElementById("hubspotTokenInput").value = "";
     }
 
-    // ── HubSpot API ──
+    // ── HubSpot API (via CORS proxy for GitHub Pages) ──
     async function fetchHubSpotDeals(token) {
-      var url = "https://api.hubapi.com/crm/v3/objects/deals" +
+      var hubspotUrl = "https://api.hubapi.com/crm/v3/objects/deals" +
         "?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,hs_is_closed";
+      var url = "https://corsproxy.io/?" + encodeURIComponent(hubspotUrl);
       var resp = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
       if (!resp.ok) throw new Error("HubSpot svarade " + resp.status + " – kontrollera token.");
       var json = await resp.json();
