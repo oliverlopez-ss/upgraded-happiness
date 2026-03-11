@@ -264,28 +264,57 @@
     }
 
     // ── HubSpot API (via CORS proxy for GitHub Pages) ──
+    var CORS_PROXIES = [
+      function(u) { return "https://corsproxy.io/?" + encodeURIComponent(u); },
+      function(u) { return "https://api.allorigins.win/raw?url=" + encodeURIComponent(u); }
+    ];
+
     async function fetchHubSpotDeals(token) {
       var hubspotUrl = "https://api.hubapi.com/crm/v3/objects/deals" +
         "?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,hs_is_closed";
-      var url = "https://corsproxy.io/?" + encodeURIComponent(hubspotUrl);
-      var resp = await fetch(url, { headers: { "Authorization": "Bearer " + token } });
-      if (!resp.ok) throw new Error("HubSpot svarade " + resp.status + " – kontrollera token.");
-      var json = await resp.json();
-      var result = [];
-      (json.results || []).forEach(function(d) {
-        var p = d.properties || {};
-        if (p.hs_is_closed === "true") return;
-        var amount = parseFloat(p.amount) || 0;
-        var prob = parseFloat(p.hs_deal_stage_probability) || 0;
-        if (amount === 0) return;
-        result.push({
-          name: p.dealname || "Namnlös affär",
-          amount: amount,
-          probability: prob,
-          closedate: (p.closedate || "").substring(0, 10)
-        });
-      });
-      return result;
+
+      var lastError = null;
+
+      // Try direct first (works if HubSpot allows CORS for this origin)
+      var attempts = [hubspotUrl].concat(CORS_PROXIES.map(function(p) { return p(hubspotUrl); }));
+
+      for (var i = 0; i < attempts.length; i++) {
+        try {
+          console.log("[War Room] Försöker: " + attempts[i].substring(0, 80) + "...");
+          var resp = await fetch(attempts[i], {
+            headers: { "Authorization": "Bearer " + token }
+          });
+          if (!resp.ok) {
+            var errText = "";
+            try { errText = await resp.text(); } catch(e2) {}
+            throw new Error("HTTP " + resp.status + (errText ? ": " + errText.substring(0, 200) : ""));
+          }
+          var json = await resp.json();
+          console.log("[War Room] Svar OK, antal results:", (json.results || []).length);
+          var result = [];
+          (json.results || []).forEach(function(d) {
+            var p = d.properties || {};
+            if (p.hs_is_closed === "true") return;
+            var amount = parseFloat(p.amount) || 0;
+            var prob = parseFloat(p.hs_deal_stage_probability) || 0;
+            // HubSpot returns probability as 0-1 or 0-100, normalize to 0-1
+            if (prob > 1) prob = prob / 100;
+            if (amount === 0) return;
+            result.push({
+              name: p.dealname || "Namnlös affär",
+              amount: amount,
+              probability: prob,
+              closedate: (p.closedate || "").substring(0, 10)
+            });
+          });
+          return result;
+        } catch(e) {
+          console.warn("[War Room] Misslyckades (" + (i === 0 ? "direkt" : "proxy " + i) + "):", e.message);
+          lastError = e;
+        }
+      }
+      throw new Error("Kunde inte nå HubSpot API. " + (lastError ? lastError.message : "") +
+        " – Kontrollera att din token är korrekt (börjar med pat-na1-...)");
     }
 
     // ── Render stats ──
