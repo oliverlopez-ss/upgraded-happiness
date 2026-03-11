@@ -195,7 +195,22 @@
     <div class="header-right">
       <span id="dataSourceBadge" class="data-source-badge fallback">Fallback-data</span>
       <span class="header-time" id="lastUpdated"></span>
+      <button class="btn-refresh" style="background:rgba(255,255,255,0.08);margin-right:4px" id="btnSettings" onclick="toggleSettings()">&#9881; Token</button>
       <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">&#10227; Uppdatera</button>
+    </div>
+  </div>
+
+  <div id="settingsPanel" style="display:none;background:#1C3F5E;border-bottom:1px solid rgba(255,255,255,0.1);padding:14px 32px;">
+    <div style="max-width:1200px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;color:rgba(255,255,255,0.6);white-space:nowrap">HubSpot Private App Token:</span>
+      <input id="hubspotTokenInput" type="password" placeholder="pat-na1-xxxxxxxx-..." autocomplete="off"
+        style="flex:1;min-width:260px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:6px;
+               color:#fff;padding:7px 12px;font-size:13px;font-family:monospace;outline:none" />
+      <button onclick="saveHubSpotToken()" style="background:#2A9D8F;color:#fff;border:none;border-radius:6px;
+        padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">Spara &amp; hämta</button>
+      <button onclick="clearHubSpotToken()" style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.5);
+        border:none;border-radius:6px;padding:8px 12px;font-size:13px;cursor:pointer">Rensa</button>
+      <span style="font-size:11px;color:rgba(255,255,255,0.3)">Sparas lokalt i webbläsaren, aldrig i koden.</span>
     </div>
   </div>
 
@@ -324,6 +339,66 @@
     function getCurrentMonthIndex() {
       var now = new Date();
       return now.getMonth(); // 0=Jan, 1=Feb, etc.
+    }
+
+    // ══════════════════════════════════════════════════
+    // HUBSPOT TOKEN SETTINGS
+    // ══════════════════════════════════════════════════
+    function toggleSettings() {
+      var panel = document.getElementById("settingsPanel");
+      var visible = panel.style.display !== "none";
+      panel.style.display = visible ? "none" : "block";
+      if (!visible) {
+        var stored = localStorage.getItem("hs_token") || "";
+        document.getElementById("hubspotTokenInput").value = stored;
+      }
+    }
+
+    function saveHubSpotToken() {
+      var token = document.getElementById("hubspotTokenInput").value.trim();
+      if (token) {
+        localStorage.setItem("hs_token", token);
+        document.getElementById("settingsPanel").style.display = "none";
+        refreshData();
+      }
+    }
+
+    function clearHubSpotToken() {
+      localStorage.removeItem("hs_token");
+      document.getElementById("hubspotTokenInput").value = "";
+    }
+
+    function getHubSpotToken() {
+      return localStorage.getItem("hs_token") || "";
+    }
+
+    // ══════════════════════════════════════════════════
+    // HUBSPOT API FETCH
+    // ══════════════════════════════════════════════════
+    async function fetchFromHubSpot(token) {
+      var url = "https://api.hubapi.com/crm/v3/objects/deals" +
+        "?limit=100&properties=dealname,amount,closedate,hs_deal_stage_probability,dealstage,hs_is_closed";
+      var resp = await fetch(url, {
+        headers: { "Authorization": "Bearer " + token }
+      });
+      if (!resp.ok) throw new Error("HubSpot svarade " + resp.status);
+      var json = await resp.json();
+      var parsed = [];
+      (json.results || []).forEach(function(d) {
+        var props = d.properties || {};
+        // Skip closed deals
+        if (props.hs_is_closed === "true") return;
+        var amount = parseFloat(props.amount) || 0;
+        var prob = parseFloat(props.hs_deal_stage_probability) || 0;
+        if (amount === 0 && prob === 0) return;
+        parsed.push({
+          name: props.dealname || "Namnlös affär",
+          amount: amount,
+          probability: prob,
+          closedate: props.closedate ? props.closedate.substring(0, 10) : ""
+        });
+      });
+      return parsed;
     }
 
     // ══════════════════════════════════════════════════
@@ -653,9 +728,15 @@
       renderDeals();
     }
 
-    function updateBadge() {
+    function updateBadge(hubspotOk) {
       var badge = document.getElementById("dataSourceBadge");
-      if (isLiveData) {
+      if (hubspotOk && isLiveData) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live · Sheets + HubSpot";
+      } else if (hubspotOk) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live HubSpot";
+      } else if (isLiveData) {
         badge.className = "data-source-badge live";
         badge.textContent = "Live Google Sheets";
       } else {
@@ -700,19 +781,34 @@
       btn.innerHTML = "&#10227; Hämtar...";
       document.getElementById("errorBox").style.display = "none";
 
-      // Try Google Sheets first
-      var success = await fetchFromGoogleSheets();
-
-      if (success && GOOGLE_SHEET_ID) {
-        isLiveData = true;
-      } else {
-        // Use fallback data
+      // 1. Finance data from Google Sheets
+      var sheetsOk = await fetchFromGoogleSheets();
+      if (!sheetsOk || !GOOGLE_SHEET_ID) {
         financeData = FALLBACK_FINANCE;
-        deals = FALLBACK_DEALS.slice();
-        isLiveData = false;
       }
 
-      updateBadge();
+      // 2. Pipeline from HubSpot (if token saved)
+      var hsToken = getHubSpotToken();
+      var hubspotOk = false;
+      if (hsToken) {
+        try {
+          var hsDeals = await fetchFromHubSpot(hsToken);
+          if (hsDeals.length > 0) {
+            deals = hsDeals;
+            hubspotOk = true;
+          }
+        } catch (e) {
+          showError("HubSpot-fel: " + e.message + " — kontrollera din token.");
+        }
+      }
+
+      // Fall back to Google Sheets pipeline or hardcoded data
+      if (!hubspotOk && deals.length === 0) {
+        deals = FALLBACK_DEALS.slice();
+      }
+
+      isLiveData = sheetsOk && !!GOOGLE_SHEET_ID;
+      updateBadge(hubspotOk);
       renderStats();
       renderMonthTable();
       renderDeals();
@@ -736,10 +832,8 @@
     document.getElementById("lastUpdated").textContent =
       "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
 
-    // Auto-fetch from Google Sheets if configured
-    if (GOOGLE_SHEET_ID) {
-      refreshData();
-    }
+    // Auto-fetch on load
+    refreshData();
   </script>
 </body>
 </html>
