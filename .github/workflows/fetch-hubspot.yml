@@ -75,19 +75,35 @@ jobs:
             cat warroom/data/raw.json
             exit 1
           fi
-          # Filter out closedwon and closedlost stages
+          # Filter out closed deals (won/lost)
           python3 -c "
           import json
           with open('warroom/data/raw.json') as f:
             data = json.load(f)
-          excluded = {'closedwon', 'closedlost'}
-          filtered = [d for d in data.get('results', [])
-                      if d.get('properties', {}).get('dealstage', '') not in excluded]
+          all_deals = data.get('results', [])
+          # Debug: show all stages and closed status
+          print('All deals before filtering:')
+          for d in all_deals:
+            p = d.get('properties', {})
+            print(f'  {p.get(\"dealname\")}: stage={p.get(\"dealstage\")}, closed={p.get(\"hs_is_closed\")}, prob={p.get(\"hs_deal_stage_probability\")}')
+          # Filter: exclude if hs_is_closed is true, OR stage contains 'closed'/'won'/'lost'
+          def is_open(deal):
+            p = deal.get('properties', {})
+            if p.get('hs_is_closed', '').lower() == 'true':
+              return False
+            stage = (p.get('dealstage') or '').lower()
+            if any(kw in stage for kw in ['closedwon', 'closedlost', 'closed', 'won', 'lost']):
+              return False
+            prob = p.get('hs_deal_stage_probability')
+            if prob in ('1.0', '0.0'):
+              return False
+            return True
+          filtered = [d for d in all_deals if is_open(d)]
           data['results'] = filtered
           data['total'] = len(filtered)
           with open('warroom/data/deals.json', 'w') as f:
             json.dump(data, f)
-          print(f'Filtered: {len(filtered)} open deals (excluded won/lost)')
+          print(f'Filtered: {len(filtered)} open deals out of {len(all_deals)} total')
           for d in filtered:
             p = d['properties']
             print(f'  {p.get(\"dealname\")}: stage={p.get(\"dealstage\")}, amount={p.get(\"amount\")}')
