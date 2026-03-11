@@ -179,8 +179,9 @@
 
   <script>
     // ── Google Sheet config ──
-    var SHEET_ID = "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc";
-    var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/pub?output=csv";
+    // CSV hämtas av GitHub Action (fetch-google-sheet.yml) → data/finanser.csv
+    var SHEET_CSV_LOCAL = "data/finanser.csv";
+    var SHEET_CSV_FALLBACK = "import-finanser.csv";
 
     // ── Financial data (fylls från Google Sheet) ──
     var cash = 0;
@@ -213,22 +214,18 @@
       });
     }
 
-    // ── Hämta finansdata från Google Sheet (med fallback till lokal CSV) ──
+    // ── Hämta finansdata från lokal CSV (synkad av GitHub Action) ──
     async function fetchSheetData() {
       var text;
       try {
-        var resp = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
-        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
+        if (!resp.ok) throw new Error("data/finanser.csv saknas (HTTP " + resp.status + ")");
         text = await resp.text();
-        // Google returnerar HTML om sheetet inte är publicerat
-        if (text.trim().charAt(0) === "<") {
-          throw new Error("Google returnerade HTML istället för CSV – sheetet är troligen inte publicerat till webben");
-        }
       } catch(e) {
-        console.warn("Google Sheet fetch misslyckades (" + e.message + "), försöker lokal CSV...");
-        var localResp = await fetch("import-finanser.csv?" + Date.now());
-        if (!localResp.ok) throw new Error("Varken Google Sheet eller lokal CSV tillgänglig");
-        text = await localResp.text();
+        console.warn("Primär CSV misslyckades (" + e.message + "), försöker fallback...");
+        var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
+        if (!fallbackResp.ok) throw new Error("Ingen finansdata tillgänglig. Kör GitHub Action 'Fetch Google Sheet' först.");
+        text = await fallbackResp.text();
       }
       var rows = parseCSV(text);
 

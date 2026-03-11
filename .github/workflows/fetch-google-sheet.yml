@@ -1,0 +1,75 @@
+name: Fetch Google Sheet (Finansdata)
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Var 2:a timme
+  workflow_dispatch:        # Manuell körning
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch sheet as CSV via Google Sheets API
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          SHEET_ID: "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc"
+        run: |
+          if [ -z "$GOOGLE_API_KEY" ]; then
+            echo "::error::GOOGLE_API_KEY secret is not set!"
+            exit 1
+          fi
+          mkdir -p warroom/data
+
+          # Fetch all values as CSV via Sheets API v4
+          HTTP_CODE=$(curl -s -w "%{http_code}" \
+            "https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/A:Z?key=${GOOGLE_API_KEY}" \
+            -o warroom/data/sheet-raw.json)
+
+          echo "HTTP status: $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Google Sheets API returned HTTP $HTTP_CODE"
+            cat warroom/data/sheet-raw.json
+            exit 1
+          fi
+
+          # Convert JSON response to CSV
+          python3 -c "
+          import json, csv, sys
+
+          with open('warroom/data/sheet-raw.json') as f:
+              data = json.load(f)
+
+          rows = data.get('values', [])
+          if not rows:
+              print('::error::Sheet returned no data')
+              sys.exit(1)
+
+          # Pad all rows to same length
+          max_cols = max(len(r) for r in rows)
+          with open('warroom/data/finanser.csv', 'w', newline='') as f:
+              writer = csv.writer(f)
+              for row in rows:
+                  padded = row + [''] * (max_cols - len(row))
+                  writer.writerow(padded)
+
+          print(f'Wrote {len(rows)} rows to finanser.csv')
+          for i, row in enumerate(rows[:5]):
+              print(f'  Row {i}: {row[:4]}...')
+          "
+
+          # Clean up temp file
+          rm -f warroom/data/sheet-raw.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add warroom/data/finanser.csv
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Update finansdata from Google Sheet"
+          git push
