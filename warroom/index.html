@@ -179,8 +179,9 @@
 
   <script>
     // ── Google Sheet config ──
-    var SHEET_ID = "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc";
-    var SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/pub?output=csv";
+    // CSV hämtas av GitHub Action (fetch-google-sheet.yml) → data/finanser.csv
+    var SHEET_CSV_LOCAL = "data/finanser.csv";
+    var SHEET_CSV_FALLBACK = "import-finanser.csv";
 
     // ── Financial data (fylls från Google Sheet) ──
     var cash = 0;
@@ -213,11 +214,19 @@
       });
     }
 
-    // ── Hämta finansdata från Google Sheet ──
+    // ── Hämta finansdata från lokal CSV (synkad av GitHub Action) ──
     async function fetchSheetData() {
-      var resp = await fetch(SHEET_CSV_URL + "&t=" + Date.now());
-      if (!resp.ok) throw new Error("Kunde inte hämta Google Sheet (HTTP " + resp.status + ")");
-      var text = await resp.text();
+      var text;
+      try {
+        var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
+        if (!resp.ok) throw new Error("data/finanser.csv saknas (HTTP " + resp.status + ")");
+        text = await resp.text();
+      } catch(e) {
+        console.warn("Primär CSV misslyckades (" + e.message + "), försöker fallback...");
+        var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
+        if (!fallbackResp.ok) throw new Error("Ingen finansdata tillgänglig. Kör GitHub Action 'Fetch Google Sheet' först.");
+        text = await fallbackResp.text();
+      }
       var rows = parseCSV(text);
 
       // Rad 0 = headers: [Jan/label, Feb, Mar, Apr, Maj, Jun, ...]
@@ -428,6 +437,9 @@
       } catch(e) {
         console.warn("Google Sheet-fel:", e.message);
         sheetDataLoaded = false;
+        var box = document.getElementById("errorBox");
+        box.textContent = "⚠ Finansdata: " + e.message;
+        box.style.display = "block";
       }
 
       // Hämta HubSpot (pipeline)
