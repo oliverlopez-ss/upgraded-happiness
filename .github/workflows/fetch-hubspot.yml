@@ -14,85 +14,113 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Find pipeline ID for "New Sales"
+      - name: Find pipeline and open stage IDs for "New Sales"
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
         id: pipeline
         run: |
           if [ -z "$HUBSPOT_TOKEN" ]; then
-            echo "::error::HUBSPOT_TOKEN secret is not set! Go to Settings → Secrets → Actions and add it."
+            echo "::error::HUBSPOT_TOKEN secret is not set!"
             exit 1
           fi
           echo "Token starts with: ${HUBSPOT_TOKEN:0:8}..."
           PIPELINES=$(curl -s \
             -H "Authorization: Bearer $HUBSPOT_TOKEN" \
             "https://api.hubapi.com/crm/v3/pipelines/deals")
-          echo "Available pipelines:"
-          echo "$PIPELINES" | python3 -c "
-          import json,sys
-          for p in json.load(sys.stdin).get('results',[]):
-            pid = p.get('pipelineId') or p.get('id','?')
-            print(f'  {p.get(\"label\",\"?\")} -> {pid}')
-          "
-          PIPELINE_ID=$(echo "$PIPELINES" | python3 -c "
-          import json,sys
-          for p in json.load(sys.stdin).get('results',[]):
-            if 'new sales' in p.get('label','').lower():
-              print(p.get('pipelineId') or p.get('id','')); break
+          # Find pipeline ID and extract open stage IDs
+          RESULT=$(echo "$PIPELINES" | python3 -c "
+          import json, sys
+          data = json.load(sys.stdin)
+          for p in data.get('results', []):
+            if 'new sales' in p.get('label', '').lower():
+              pid = p.get('pipelineId') or p.get('id')
+              print(f'pipeline_id={pid}')
+              # Only include stages that are open (not closed won/lost)
+              open_stages = []
+              for s in p.get('stages', []):
+                sid = s.get('stageId') or s.get('id', '')
+                label = s.get('label', '')
+                metadata = s.get('metadata', {})
+                probability = metadata.get('probability', '0.5')
+                is_closed = metadata.get('isClosed', 'false')
+                print(f'  Stage: {label} -> {sid} (prob={probability}, closed={is_closed})')
+                # Keep stages where isClosed is not true and probability is between 0 and 1 exclusive
+                try:
+                  prob_f = float(probability)
+                  if is_closed == 'true' or prob_f >= 1.0 or prob_f <= 0.0:
+                    print(f'    SKIPPED (closed)')
+                    continue
+                except ValueError:
+                  pass
+                open_stages.append(sid)
+              print(f'stage_ids={\";\".join(open_stages)}')
+              break
           ")
+          echo "$RESULT"
+          PIPELINE_ID=$(echo "$RESULT" | grep '^pipeline_id=' | cut -d= -f2)
+          STAGE_IDS=$(echo "$RESULT" | grep '^stage_ids=' | cut -d= -f2)
           if [ -z "$PIPELINE_ID" ]; then
             echo "::error::Pipeline 'New Sales' not found!"
             exit 1
           fi
+          if [ -z "$STAGE_IDS" ]; then
+            echo "::error::No open stages found in pipeline!"
+            exit 1
+          fi
           echo "Using pipeline: $PIPELINE_ID"
+          echo "Open stage IDs: $STAGE_IDS"
           echo "pipeline_id=$PIPELINE_ID" >> "$GITHUB_OUTPUT"
+          echo "stage_ids=$STAGE_IDS" >> "$GITHUB_OUTPUT"
 
       - name: Fetch open deals from "New Sales" pipeline
         env:
           HUBSPOT_TOKEN: ${{ secrets.HUBSPOT_TOKEN }}
           PIPELINE_ID: ${{ steps.pipeline.outputs.pipeline_id }}
+          STAGE_IDS: ${{ steps.pipeline.outputs.stage_ids }}
         run: |
           mkdir -p warroom/data
-          # Fetch all deals in pipeline, then filter out won/lost client-side
+          # Build one filterGroup per stage (OR logic between groups)
+          FILTER_GROUPS=$(python3 -c "
+          import json, os
+          stages = os.environ['STAGE_IDS'].split(';')
+          groups = []
+          for sid in stages:
+            groups.append({
+              'filters': [
+                {'propertyName': 'pipeline', 'operator': 'EQ', 'value': os.environ['PIPELINE_ID']},
+                {'propertyName': 'dealstage', 'operator': 'EQ', 'value': sid}
+              ]
+            })
+          print(json.dumps(groups))
+          ")
+          echo "Filter groups: $FILTER_GROUPS"
           HTTP_CODE=$(curl -s -w "%{http_code}" \
             -X POST \
             -H "Authorization: Bearer $HUBSPOT_TOKEN" \
             -H "Content-Type: application/json" \
             -d "{
-              \"filterGroups\": [{
-                \"filters\": [
-                  {\"propertyName\": \"pipeline\", \"operator\": \"EQ\", \"value\": \"$PIPELINE_ID\"}
-                ]
-              }],
-              \"properties\": [\"dealname\", \"amount\", \"closedate\", \"dealstage\", \"hs_deal_stage_probability\", \"hs_is_closed\", \"pipeline\"],
+              \"filterGroups\": $FILTER_GROUPS,
+              \"properties\": [\"dealname\", \"amount\", \"closedate\", \"dealstage\", \"hs_deal_stage_probability\", \"pipeline\"],
               \"limit\": 100
             }" \
             "https://api.hubapi.com/crm/v3/objects/deals/search" \
-            -o warroom/data/raw.json)
+            -o warroom/data/deals.json)
           echo "HTTP status: $HTTP_CODE"
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::HubSpot Search API returned HTTP $HTTP_CODE"
-            cat warroom/data/raw.json
+            cat warroom/data/deals.json
             exit 1
           fi
-          # Filter out closedwon and closedlost stages
           python3 -c "
           import json
-          with open('warroom/data/raw.json') as f:
+          with open('warroom/data/deals.json') as f:
             data = json.load(f)
-          excluded = {'closedwon', 'closedlost'}
-          filtered = [d for d in data.get('results', [])
-                      if d.get('properties', {}).get('dealstage', '') not in excluded]
-          data['results'] = filtered
-          data['total'] = len(filtered)
-          with open('warroom/data/deals.json', 'w') as f:
-            json.dump(data, f)
-          print(f'Filtered: {len(filtered)} open deals (excluded won/lost)')
-          for d in filtered:
+          deals = data.get('results', [])
+          print(f'Fetched {len(deals)} open deals')
+          for d in deals:
             p = d['properties']
             print(f'  {p.get(\"dealname\")}: stage={p.get(\"dealstage\")}, amount={p.get(\"amount\")}')
           "
-          rm -f warroom/data/raw.json
 
       - name: Commit and push
         run: |
