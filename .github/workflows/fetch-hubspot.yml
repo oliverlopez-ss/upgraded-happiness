@@ -28,12 +28,17 @@ jobs:
             -H "Authorization: Bearer $HUBSPOT_TOKEN" \
             "https://api.hubapi.com/crm/v3/pipelines/deals")
           echo "Available pipelines:"
-          echo "$PIPELINES" | python3 -c "import json,sys; [print(f'  {p[\"label\"]} -> {p[\"pipelineId\"]}') for p in json.load(sys.stdin).get('results',[])]"
+          echo "$PIPELINES" | python3 -c "
+          import json,sys
+          for p in json.load(sys.stdin).get('results',[]):
+            pid = p.get('pipelineId') or p.get('id','?')
+            print(f'  {p.get(\"label\",\"?\")} -> {pid}')
+          "
           PIPELINE_ID=$(echo "$PIPELINES" | python3 -c "
           import json,sys
           for p in json.load(sys.stdin).get('results',[]):
-            if 'new sales' in p['label'].lower():
-              print(p['pipelineId']); break
+            if 'new sales' in p.get('label','').lower():
+              print(p.get('pipelineId') or p.get('id','')); break
           ")
           if [ -z "$PIPELINE_ID" ]; then
             echo "::error::Pipeline 'New Sales' not found!"
