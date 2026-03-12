@@ -8,135 +8,279 @@
   <meta name="theme-color" content="#0a0e1a">
   <title>Fortnite Pro Guide</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
-    <!-- Animated background -->
-    <div class="bg-effects">
-      <div class="bg-grid"></div>
-      <div class="bg-glow bg-glow-1"></div>
-      <div class="bg-glow bg-glow-2"></div>
-      <div class="bg-glow bg-glow-3"></div>
-    </div>
+    <!-- Game Canvas Background -->
+    <canvas id="gameCanvas"></canvas>
 
-    <!-- Header -->
-    <header class="app-header" id="appHeader">
-      <div class="header-content">
-        <div class="header-left" id="headerBack" style="display:none">
-          <button class="back-btn" aria-label="Tillbaka">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-          </button>
-        </div>
-        <div class="header-center">
-          <h1 class="logo" id="headerTitle">
-            <span class="logo-icon">🎮</span>
-            <span class="logo-text">FN Pro Guide</span>
-          </h1>
-        </div>
-        <div class="header-right">
-          <button class="pro-badge" id="proButton" aria-label="Pro Pass">
-            <span class="pro-icon">⚡</span>
-            <span class="pro-label">PRO</span>
-          </button>
+    <!-- Ambient particles -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Storm circle effect -->
+    <div class="storm-edge"></div>
+
+    <!-- HUD Top Bar -->
+    <div class="hud-top">
+      <div class="hud-top-left">
+        <div class="minimap" id="minimap">
+          <canvas id="minimapCanvas" width="120" height="120"></canvas>
+          <div class="minimap-player"></div>
+          <div class="storm-circle-indicator"></div>
         </div>
       </div>
-    </header>
-
-    <!-- Main content area -->
-    <main class="main-content" id="mainContent">
-      <!-- Home view (categories) -->
-      <div class="view" id="homeView">
-        <div class="hero-section">
-          <h2 class="hero-title">Bli bättre på<br><span class="gradient-text">Fortnite</span></h2>
-          <p class="hero-subtitle">Guider, tips och tricks från erfarna spelare</p>
-        </div>
-
-        <div class="stats-bar" id="statsBar">
-          <div class="stat">
-            <span class="stat-value" id="totalGuides">0</span>
-            <span class="stat-label">Guider</span>
+      <div class="hud-top-center">
+        <div class="match-info">
+          <div class="alive-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            <span id="aliveCount">47</span>
           </div>
-          <div class="stat">
-            <span class="stat-value" id="totalTips">0</span>
-            <span class="stat-label">Tips</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value" id="completedGuides">0</span>
-            <span class="stat-label">Lästa</span>
+          <div class="kill-count">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span id="killCount">3</span>
           </div>
         </div>
+      </div>
+      <div class="hud-top-right">
+        <button class="menu-btn" id="menuBtn" aria-label="Menu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
 
-        <div class="categories-grid" id="categoriesGrid"></div>
+    <!-- HUD Bottom -->
+    <div class="hud-bottom">
+      <!-- Health & Shield -->
+      <div class="hud-bars">
+        <div class="bar-row shield-bar">
+          <span class="bar-icon">🛡️</span>
+          <div class="bar-track">
+            <div class="bar-fill shield-fill" id="shieldBar" style="width:75%"></div>
+          </div>
+          <span class="bar-value" id="shieldValue">75</span>
+        </div>
+        <div class="bar-row health-bar">
+          <span class="bar-icon">❤️</span>
+          <div class="bar-track">
+            <div class="bar-fill health-fill" id="healthBar" style="width:100%"></div>
+          </div>
+          <span class="bar-value" id="healthValue">100</span>
+        </div>
       </div>
 
-      <!-- Category view (list of guides) -->
-      <div class="view hidden" id="categoryView">
-        <div class="category-header" id="categoryHeader"></div>
-        <div class="guides-list" id="guidesList"></div>
+      <!-- Weapon Slots -->
+      <div class="weapon-slots" id="weaponSlots">
+        <div class="weapon-slot active" data-slot="0">
+          <span class="slot-key">1</span>
+          <div class="weapon-icon">🔫</div>
+          <div class="weapon-name">AR</div>
+          <div class="ammo-count">📦 120</div>
+        </div>
+        <div class="weapon-slot" data-slot="1">
+          <span class="slot-key">2</span>
+          <div class="weapon-icon">💥</div>
+          <div class="weapon-name">Pump</div>
+          <div class="ammo-count">📦 21</div>
+        </div>
+        <div class="weapon-slot" data-slot="2">
+          <span class="slot-key">3</span>
+          <div class="weapon-icon">🔥</div>
+          <div class="weapon-name">SMG</div>
+          <div class="ammo-count">📦 90</div>
+        </div>
+        <div class="weapon-slot" data-slot="3">
+          <span class="slot-key">4</span>
+          <div class="weapon-icon">💊</div>
+          <div class="weapon-name">Meds</div>
+          <div class="ammo-count">x3</div>
+        </div>
+        <div class="weapon-slot" data-slot="4">
+          <span class="slot-key">5</span>
+          <div class="weapon-icon">🧃</div>
+          <div class="weapon-name">Shield</div>
+          <div class="ammo-count">x2</div>
+        </div>
       </div>
 
-      <!-- Guide view (single guide content) -->
-      <div class="view hidden" id="guideView">
-        <div class="guide-content" id="guideContent"></div>
+      <!-- Materials -->
+      <div class="materials-bar">
+        <div class="material" data-type="wood">
+          <div class="mat-icon">🪵</div>
+          <span class="mat-count" id="woodCount">487</span>
+        </div>
+        <div class="material" data-type="brick">
+          <div class="mat-icon">🧱</div>
+          <span class="mat-count" id="brickCount">234</span>
+        </div>
+        <div class="material" data-type="metal">
+          <div class="mat-icon">⚙️</div>
+          <span class="mat-count" id="metalCount">156</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Build Mode Selector (floating) -->
+    <div class="build-mode hidden" id="buildMode">
+      <div class="build-option" data-build="wall">
+        <div class="build-icon">🧱</div>
+        <span>Vägg</span>
+        <span class="build-key">Q</span>
+      </div>
+      <div class="build-option" data-build="floor">
+        <div class="build-icon">⬜</div>
+        <span>Golv</span>
+        <span class="build-key">F</span>
+      </div>
+      <div class="build-option" data-build="ramp">
+        <div class="build-icon">📐</div>
+        <span>Ramp</span>
+        <span class="build-key">C</span>
+      </div>
+      <div class="build-option" data-build="roof">
+        <div class="build-icon">🔺</div>
+        <span>Tak</span>
+        <span class="build-key">V</span>
+      </div>
+    </div>
+
+    <!-- Crosshair -->
+    <div class="crosshair" id="crosshair">
+      <div class="ch-line ch-top"></div>
+      <div class="ch-line ch-right"></div>
+      <div class="ch-line ch-bottom"></div>
+      <div class="ch-line ch-left"></div>
+      <div class="ch-dot"></div>
+    </div>
+
+    <!-- Main Menu Overlay (Guide Categories) -->
+    <div class="game-menu" id="gameMenu">
+      <div class="menu-header">
+        <div class="menu-logo">
+          <span class="logo-glow">FORTNITE</span>
+          <span class="logo-sub">PRO GUIDE</span>
+        </div>
+        <button class="close-menu-btn" id="closeMenu">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
 
-      <!-- Premium modal -->
-      <div class="modal-overlay hidden" id="premiumModal">
-        <div class="modal">
-          <button class="modal-close" id="modalClose">✕</button>
-          <div class="modal-icon">⚡</div>
-          <h2 class="modal-title">Uppgradera till <span class="gradient-text">Pro Pass</span></h2>
-          <p class="modal-subtitle">Lås upp alla avancerade guider och hemliga tricks</p>
-          <ul class="modal-features" id="modalFeatures"></ul>
-          <button class="modal-cta" id="modalCta">
-            <span class="cta-price" id="ctaPrice"></span>
-            <span class="cta-label">Engångsköp - Inga prenumerationer</span>
+      <!-- Menu Tabs -->
+      <div class="menu-tabs" id="menuTabs">
+        <button class="menu-tab active" data-tab="lobby">LOBBY</button>
+        <button class="menu-tab" data-tab="locker">LOCKER</button>
+        <button class="menu-tab" data-tab="guides">GUIDER</button>
+        <button class="menu-tab" data-tab="progress">FRAMSTEG</button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="menu-content" id="menuContent">
+        <!-- Lobby Tab -->
+        <div class="tab-panel active" id="lobbyPanel">
+          <div class="lobby-scene">
+            <div class="lobby-character" id="lobbyCharacter">
+              <canvas id="characterCanvas" width="300" height="400"></canvas>
+            </div>
+            <div class="lobby-info">
+              <div class="season-banner">
+                <span class="season-chapter">KAPITEL 6</span>
+                <span class="season-name">SÄSONG 2</span>
+              </div>
+              <div class="daily-challenges">
+                <h3>DAGLIGA UTMANINGAR</h3>
+                <div class="challenge-item">
+                  <span class="challenge-icon">🎯</span>
+                  <span class="challenge-text">Läs 3 guider</span>
+                  <div class="challenge-progress">
+                    <div class="challenge-bar"><div class="challenge-fill" id="challengeFill1"></div></div>
+                    <span class="challenge-count" id="challengeCount1">0/3</span>
+                  </div>
+                </div>
+                <div class="challenge-item">
+                  <span class="challenge-icon">⚔️</span>
+                  <span class="challenge-text">Slutför en kategori</span>
+                  <div class="challenge-progress">
+                    <div class="challenge-bar"><div class="challenge-fill" id="challengeFill2"></div></div>
+                    <span class="challenge-count" id="challengeCount2">0/1</span>
+                  </div>
+                </div>
+              </div>
+              <button class="play-btn" id="playBtn">
+                <span class="play-text">STARTA SPEL</span>
+                <span class="play-sub">Välj en guide och börja lära</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Locker Tab (Weapon/Character selection) -->
+        <div class="tab-panel hidden" id="lockerPanel">
+          <div class="locker-grid">
+            <div class="locker-section">
+              <h3 class="locker-title">VAPEN</h3>
+              <div class="locker-items" id="weaponLocker"></div>
+            </div>
+            <div class="locker-section">
+              <h3 class="locker-title">UTRUSTNING</h3>
+              <div class="locker-items" id="gearLocker"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Guides Tab -->
+        <div class="tab-panel hidden" id="guidesPanel">
+          <div class="guides-container" id="guidesContainer">
+            <!-- Categories rendered here -->
+          </div>
+        </div>
+
+        <!-- Category Detail -->
+        <div class="tab-panel hidden" id="categoryPanel">
+          <button class="back-nav" id="categoryBack">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>TILLBAKA</span>
           </button>
-          <button class="modal-restore" id="modalRestore">Återställ köp</button>
+          <div class="category-detail" id="categoryDetail"></div>
+        </div>
+
+        <!-- Guide Detail -->
+        <div class="tab-panel hidden" id="guidePanel">
+          <button class="back-nav" id="guideBack">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <span>TILLBAKA</span>
+          </button>
+          <div class="guide-detail" id="guideDetail"></div>
+        </div>
+
+        <!-- Progress Tab -->
+        <div class="tab-panel hidden" id="progressPanel">
+          <div class="progress-content" id="progressContent"></div>
         </div>
       </div>
-    </main>
+    </div>
 
-    <!-- Bottom nav -->
-    <nav class="bottom-nav">
-      <button class="nav-item active" data-view="home" id="navHome">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        <span>Hem</span>
-      </button>
-      <button class="nav-item" data-view="search" id="navSearch">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <span>Sök</span>
-      </button>
-      <button class="nav-item" data-view="progress" id="navProgress">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        <span>Framsteg</span>
-      </button>
-    </nav>
-
-    <!-- Search overlay -->
-    <div class="search-overlay hidden" id="searchOverlay">
-      <div class="search-header">
-        <div class="search-input-wrap">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" class="search-input" id="searchInput" placeholder="Sök guider, tips...">
+    <!-- Premium Modal -->
+    <div class="modal-overlay hidden" id="premiumModal">
+      <div class="modal battle-pass-modal">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div class="bp-header">
+          <div class="bp-icon">⚡</div>
+          <h2 class="bp-title">BATTLE PASS</h2>
+          <p class="bp-subtitle">Lås upp alla avancerade guider</p>
         </div>
-        <button class="search-cancel" id="searchCancel">Avbryt</button>
+        <div class="bp-rewards" id="bpRewards"></div>
+        <button class="bp-buy-btn" id="modalCta">
+          <span class="bp-price" id="ctaPrice"></span>
+          <span class="bp-label">Engångsköp</span>
+        </button>
+        <button class="bp-restore" id="modalRestore">Återställ köp</button>
       </div>
-      <div class="search-results" id="searchResults"></div>
     </div>
 
-    <!-- Progress overlay -->
-    <div class="progress-overlay hidden" id="progressOverlay">
-      <div class="progress-header-section">
-        <h2>Din Framsteg</h2>
-        <p class="progress-subtitle">Håll koll på din resa mot att bli proffs</p>
-      </div>
-      <div class="progress-content" id="progressContent"></div>
-    </div>
+    <!-- Damage numbers (floating) -->
+    <div class="damage-numbers" id="damageNumbers"></div>
   </div>
 
   <script src="data.js"></script>
