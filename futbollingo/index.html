@@ -14,6 +14,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .back-to-hub {
+            position: fixed; top: 12px; left: 12px; z-index: 999;
+            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+            text-decoration: none; border-radius: 8px;
+            padding: 6px 12px; font-size: 0.75rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+        .back-to-hub:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    </style>
 </head>
 <body>
     <div class="bg-glow bg-glow-1"></div>
@@ -30,6 +42,8 @@
             <div class="levelup-title" id="levelup-title"></div>
         </div>
     </div>
+
+    <a href="../" class="back-to-hub">&#8592; Alla appar</a>
 
     <div id="app">
         <!-- Start Screen -->
