@@ -78,6 +78,13 @@
       font-family: 'DM Mono', monospace; line-height: 1;
     }
     .stat-card .sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+    .stat-card .trend {
+      font-size: 11px; font-weight: 600; margin-top: 2px;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .trend-up { color: #2A9D8F; }
+    .trend-down { color: #E76F51; }
+    .trend-flat { color: rgba(255,255,255,0.3); }
     .accent-top { border-top: 3px solid #2A9D8F; }
     .warn-top { border-top: 3px solid #E76F51; }
     .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 24px 0; }
@@ -245,6 +252,63 @@
     .prob-high { background: rgba(42,157,143,0.13); color: #2A9D8F; border: 1px solid rgba(42,157,143,0.33); }
     .prob-mid { background: rgba(233,196,106,0.13); color: #E9C46A; border: 1px solid rgba(233,196,106,0.33); }
     .prob-low { background: rgba(231,111,81,0.13); color: #E76F51; border: 1px solid rgba(231,111,81,0.33); }
+    /* Scenario analysis */
+    .scenario-wrap {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 20px;
+    }
+    .scenario-controls {
+      display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .scenario-slider {
+      flex: 1; min-width: 200px;
+    }
+    .scenario-slider label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+    .scenario-slider label .scenario-val {
+      font-family: 'DM Mono', monospace; font-weight: 700; font-size: 13px;
+    }
+    .scenario-slider input[type=range] {
+      width: 100%; accent-color: #2A9D8F; height: 6px;
+      -webkit-appearance: none; background: rgba(255,255,255,0.1); border-radius: 3px;
+      outline: none;
+    }
+    .scenario-slider input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: #2A9D8F; cursor: pointer; border: 2px solid #0D1F2D;
+    }
+    .scenario-result {
+      display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 16px;
+      background: rgba(255,255,255,0.03); border-radius: 8px;
+    }
+    .scenario-result .runway-stat { font-size: 13px; }
+    .scenario-reset {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.5);
+      border-radius: 6px; padding: 4px 12px; font-size: 11px; cursor: pointer; margin-left: auto;
+    }
+    .scenario-reset:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+    /* Cash flow timing */
+    .cashflow-wrap {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; padding: 20px;
+    }
+    .cashflow-svg { width: 100%; height: 200px; }
+    .cashflow-legend {
+      display: flex; gap: 16px; margin-top: 8px; justify-content: center;
+    }
+    .cashflow-legend span {
+      font-size: 10px; color: rgba(255,255,255,0.45); display: flex;
+      align-items: center; gap: 5px;
+    }
+    .cashflow-summary {
+      display: flex; gap: 20px; margin-top: 12px; flex-wrap: wrap;
+    }
+    .cashflow-summary .runway-stat { font-size: 12px; }
+
     .error-box {
       background: rgba(231,111,81,0.15); border: 1px solid rgba(231,111,81,0.25);
       border-radius: 8px; padding: 12px 16px; color: #E76F51; font-size: 13px;
@@ -320,6 +384,43 @@
         <span><span class="line-sample dashed"></span> Kassa (prognos)</span>
         <span><span class="line-sample" style="background:rgba(42,157,143,0.15);height:12px"></span> + Pipeline (viktat)</span>
       </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Scenario analysis -->
+    <div class="section-label">Scenarioanalys &ndash; Vad h&auml;nder om...</div>
+    <div class="scenario-wrap">
+      <div class="scenario-controls">
+        <div class="scenario-slider">
+          <label>Burn f&ouml;r&auml;ndring <span class="scenario-val" id="scenBurnVal">0%</span></label>
+          <input type="range" id="scenBurn" min="-50" max="100" value="0" oninput="updateScenario()">
+        </div>
+        <div class="scenario-slider">
+          <label>Int&auml;ktsf&ouml;r&auml;ndring <span class="scenario-val" id="scenRevVal">0%</span></label>
+          <input type="range" id="scenRev" min="-100" max="100" value="0" oninput="updateScenario()">
+        </div>
+        <div class="scenario-slider">
+          <label>Tappa deal (viktat) <span class="scenario-val" id="scenDealVal">0 kr</span></label>
+          <input type="range" id="scenDeal" min="0" max="100" value="0" oninput="updateScenario()">
+        </div>
+        <button class="scenario-reset" onclick="resetScenario()">&circlearrowright; &Aring;terst&auml;ll</button>
+      </div>
+      <div class="scenario-result" id="scenarioResult"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Cash flow timing -->
+    <div class="section-label">Kassafl&ouml;destiming &ndash; N&auml;r pengarna r&ouml;r sig</div>
+    <div class="cashflow-wrap">
+      <svg id="cashflowSvg" class="cashflow-svg"></svg>
+      <div class="cashflow-legend">
+        <span><span class="dot" style="background:#2A9D8F"></span> Inbetalningar</span>
+        <span><span class="dot" style="background:#E76F51"></span> Utbetalningar</span>
+        <span><span class="line-sample" style="background:#E9C46A;width:20px;height:2px;display:inline-block;border-radius:1px"></span> Kassa</span>
+      </div>
+      <div class="cashflow-summary" id="cashflowSummary"></div>
     </div>
 
     <div class="divider"></div>
@@ -715,6 +816,51 @@
       return parseHubSpotDeals(await resp.json());
     }
 
+    // ── Trend helpers ──
+    function getPrevPeriod() {
+      if (currentPeriod.type === "month") {
+        return { type: "month", index: currentPeriod.index > 0 ? currentPeriod.index - 1 : 11 };
+      }
+      if (currentPeriod.type === "quarter") {
+        return { type: "quarter", index: currentPeriod.index > 0 ? currentPeriod.index - 1 : 3 };
+      }
+      return null; // No previous for year
+    }
+
+    function sumPeriodFor(field, period) {
+      var months;
+      if (period.type === "month") months = [period.index];
+      else if (period.type === "quarter") { var q = period.index; months = [q*3, q*3+1, q*3+2]; }
+      else months = [0,1,2,3,4,5,6,7,8,9,10,11];
+      return months.reduce(function(s, mi) { return s + (monthlyData[mi] ? monthlyData[mi][field] : 0); }, 0);
+    }
+
+    function getPeriodEndLiquidityFor(period) {
+      var months;
+      if (period.type === "month") months = [period.index];
+      else if (period.type === "quarter") { var q = period.index; months = [q*3, q*3+1, q*3+2]; }
+      else months = [0,1,2,3,4,5,6,7,8,9,10,11];
+      for (var i = months.length - 1; i >= 0; i--) {
+        var m = monthlyData[months[i]];
+        if (m && m.hasData && m.liquidity !== 0) return m.liquidity;
+      }
+      var last = monthlyData[months[months.length - 1]];
+      return last ? last.liquidity : 0;
+    }
+
+    function trendHtml(current, previous, invertWarn) {
+      if (previous === 0 && current === 0) return '';
+      if (previous === 0) return '<div class="trend trend-flat">&#8211; ny</div>';
+      var pct = ((current - previous) / Math.abs(previous)) * 100;
+      if (Math.abs(pct) < 1) return '<div class="trend trend-flat">&#8596; 0%</div>';
+      var isUp = pct > 0;
+      var arrow = isUp ? '&#9650;' : '&#9660;';
+      // For expenses, up is bad. For revenue/netto/liquidity, up is good
+      var isGood = invertWarn ? !isUp : isUp;
+      var cls = isGood ? 'trend-up' : 'trend-down';
+      return '<div class="trend ' + cls + '">' + arrow + ' ' + Math.abs(Math.round(pct)) + '% vs f.g.</div>';
+    }
+
     // ── Render stats ──
     function renderStats() {
       var periodRevenue = sumPeriod("revenue");
@@ -729,18 +875,27 @@
       var src = sheetDataLoaded ? "Google Sheet" : "Ej kopplad";
       var dataSub = numMonths > 1 ? (monthsWithData + " av " + numMonths + " m\u00e5n med data") : src;
 
+      // Trend calculations
+      var prev = getPrevPeriod();
+      var prevRev = prev ? sumPeriodFor("revenue", prev) : 0;
+      var prevExp = prev ? sumPeriodFor("expenses", prev) : 0;
+      var prevNetto = prevRev - prevExp;
+      var prevLiq = prev ? getPeriodEndLiquidityFor(prev) : 0;
+      var hasPrev = prev !== null;
+
       var cards = [
-        { label: "Cash idag", value: fmt(cashPosition), sub: src, warn: cashPosition < 0 },
-        { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: dataSub, warn: false },
-        { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: numMonths > 1 ? dataSub : "Total burn", warn: true },
-        { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: numMonths > 1 ? ("Snitt burn/m\u00e5n: " + fmt(avgBurn)) : "Int\u00e4kter \u2013 Utgifter", warn: periodNetto < 0 },
-        { label: "Likviditet " + endLiq.month, value: fmt(endLiq.value), sub: numMonths > 1 ? "Kassa vid periodens slut" : "Kassa vid m\u00e5nadens slut", warn: endLiq.value < 0 }
+        { label: "Cash idag", value: fmt(cashPosition), sub: src, warn: cashPosition < 0, trend: '' },
+        { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: dataSub, warn: false, trend: hasPrev ? trendHtml(periodRevenue, prevRev, false) : '' },
+        { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: numMonths > 1 ? dataSub : "Total burn", warn: true, trend: hasPrev ? trendHtml(periodExpenses, prevExp, true) : '' },
+        { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: numMonths > 1 ? ("Snitt burn/m\u00e5n: " + fmt(avgBurn)) : "Int\u00e4kter \u2013 Utgifter", warn: periodNetto < 0, trend: hasPrev ? trendHtml(periodNetto, prevNetto, false) : '' },
+        { label: "Likviditet " + endLiq.month, value: fmt(endLiq.value), sub: numMonths > 1 ? "Kassa vid periodens slut" : "Kassa vid m\u00e5nadens slut", warn: endLiq.value < 0, trend: hasPrev ? trendHtml(endLiq.value, prevLiq, false) : '' }
       ];
 
       document.getElementById("statsGrid").innerHTML = cards.map(function(c) {
         return '<div class="stat-card ' + (c.warn ? 'warn-top' : 'accent-top') + '">' +
           '<div class="label">' + c.label + '</div>' +
           '<div class="value">' + c.value + '</div>' +
+          c.trend +
           (c.sub ? '<div class="sub">' + c.sub + '</div>' : '') + '</div>';
       }).join('');
 
@@ -1104,12 +1259,219 @@
         (pipelineMonthly > 0 ? '<div class="runway-stat">Pipeline/m\u00e5n (viktat): <span class="rv ok">+' + fmt(pipelineMonthly) + '</span></div>' : '');
     }
 
+    // ── Scenario analysis ──
+    function updateScenario() {
+      var burnPct = parseInt(document.getElementById("scenBurn").value);
+      var revPct = parseInt(document.getElementById("scenRev").value);
+      var dealPct = parseInt(document.getElementById("scenDeal").value);
+
+      document.getElementById("scenBurnVal").textContent = (burnPct >= 0 ? "+" : "") + burnPct + "%";
+      document.getElementById("scenBurnVal").style.color = burnPct > 0 ? "#E76F51" : burnPct < 0 ? "#2A9D8F" : "rgba(255,255,255,0.5)";
+      document.getElementById("scenRevVal").textContent = (revPct >= 0 ? "+" : "") + revPct + "%";
+      document.getElementById("scenRevVal").style.color = revPct > 0 ? "#2A9D8F" : revPct < 0 ? "#E76F51" : "rgba(255,255,255,0.5)";
+
+      var totalWeighted = deals.reduce(function(s, d) { return s + d.amount * d.probability; }, 0);
+      var dealLoss = totalWeighted * (dealPct / 100);
+      document.getElementById("scenDealVal").textContent = dealPct > 0 ? "-" + fmtShort(dealLoss) : "0 kr";
+      document.getElementById("scenDealVal").style.color = dealPct > 0 ? "#E76F51" : "rgba(255,255,255,0.5)";
+
+      // Calculate scenario
+      var monthsWithData = monthlyData.filter(function(m) { return m.hasData; });
+      var avgBurn = 0, avgRev = 0;
+      if (monthsWithData.length > 0) {
+        avgBurn = monthsWithData.reduce(function(s, m) { return s + m.expenses; }, 0) / monthsWithData.length;
+        avgRev = monthsWithData.reduce(function(s, m) { return s + m.revenue; }, 0) / monthsWithData.length;
+      }
+
+      var scenBurn = avgBurn * (1 + burnPct / 100);
+      var scenRev = avgRev * (1 + revPct / 100);
+      var scenPipeline = (totalWeighted - dealLoss) / 6;
+      var scenNetto = scenRev - scenBurn;
+      var scenRunway = scenBurn > scenRev ? cashPosition / (scenBurn - scenRev) : Infinity;
+
+      // Find zero-month
+      var scenZeroMonth = null;
+      var scenCash = cashPosition;
+      var curMonth = new Date().getMonth();
+      for (var i = 1; i <= 24; i++) {
+        scenCash += scenRev - scenBurn;
+        if (scenCash <= 0) {
+          scenZeroMonth = MONTH_NAMES[(curMonth + i) % 12];
+          break;
+        }
+      }
+
+      var rClass = scenRunway === Infinity ? 'ok' : scenRunway > 6 ? 'ok' : scenRunway > 3 ? 'warn' : 'danger';
+      var scenWithPipeline = scenBurn > (scenRev + scenPipeline) ? cashPosition / (scenBurn - scenRev - scenPipeline) : Infinity;
+
+      var html =
+        '<div class="runway-stat">Runway: <span class="rv ' + rClass + '">' +
+          (scenRunway === Infinity ? '\u221e (l\u00f6nsamt)' : scenRunway.toFixed(1) + ' m\u00e5n') +
+        '</span></div>' +
+        '<div class="runway-stat">Netto/m\u00e5n: <span class="rv ' + (scenNetto >= 0 ? 'ok' : 'danger') + '">' + fmt(scenNetto) + '</span></div>' +
+        '<div class="runway-stat">Burn/m\u00e5n: <span class="rv">' + fmt(scenBurn) + '</span></div>' +
+        '<div class="runway-stat">Int\u00e4kt/m\u00e5n: <span class="rv">' + fmt(scenRev) + '</span></div>' +
+        (scenZeroMonth ? '<div class="runway-stat">Kassa = 0: <span class="rv danger">' + scenZeroMonth + '</span></div>' : '') +
+        (scenPipeline > 0 ? '<div class="runway-stat">Med pipeline: <span class="rv ' + (scenWithPipeline === Infinity ? 'ok' : scenWithPipeline > 6 ? 'ok' : 'warn') + '">' +
+          (scenWithPipeline === Infinity ? '\u221e' : scenWithPipeline.toFixed(1) + ' m\u00e5n') + '</span></div>' : '');
+
+      document.getElementById("scenarioResult").innerHTML = html;
+    }
+
+    function resetScenario() {
+      document.getElementById("scenBurn").value = 0;
+      document.getElementById("scenRev").value = 0;
+      document.getElementById("scenDeal").value = 0;
+      updateScenario();
+    }
+
+    // ── Cash flow timing chart ──
+    function renderCashflowTiming() {
+      var svg = document.getElementById("cashflowSvg");
+      var summary = document.getElementById("cashflowSummary");
+      var curMonth = new Date().getMonth();
+
+      // Simulate weekly cash flow pattern based on monthly data
+      // Typical Swedish business: revenue comes mid/late month, expenses early month (salaries 25th, rent 1st, etc.)
+      var m = monthlyData[curMonth];
+      var rev = m ? m.revenue : 0;
+      var exp = m ? m.expenses : 0;
+      var startCash = curMonth > 0 && monthlyData[curMonth - 1] ? monthlyData[curMonth - 1].liquidity : cashPosition;
+
+      // Distribute into ~4 weeks with realistic timing
+      // Expenses: salary 25th prev = week 1 impact, rent/fixed = week 1, variable = spread
+      // Revenue: invoices typically paid 15-30 days, so mid-to-late month
+      var weeks = [
+        { label: "V1 (1-7)", revPct: 0.05, expPct: 0.40 },
+        { label: "V2 (8-14)", revPct: 0.15, expPct: 0.20 },
+        { label: "V3 (15-21)", revPct: 0.35, expPct: 0.15 },
+        { label: "V4 (22-28)", revPct: 0.35, expPct: 0.20 },
+        { label: "V5 (29+)", revPct: 0.10, expPct: 0.05 }
+      ];
+
+      var weekData = [];
+      var runningCash = startCash;
+      var lowestCash = startCash;
+      var lowestWeek = "";
+
+      weeks.forEach(function(w) {
+        var wRev = rev * w.revPct;
+        var wExp = exp * w.expPct;
+        var prevCash = runningCash;
+        runningCash += wRev - wExp;
+        if (runningCash < lowestCash) { lowestCash = runningCash; lowestWeek = w.label; }
+        weekData.push({ label: w.label, revenue: wRev, expenses: wExp, cashStart: prevCash, cashEnd: runningCash });
+      });
+
+      // Also show next 2 months
+      for (var nm = 1; nm <= 2; nm++) {
+        var nextIdx = (curMonth + nm) % 12;
+        var nxt = monthlyData[nextIdx];
+        var nRev = nxt && nxt.hasData ? nxt.revenue : rev; // use current if no data
+        var nExp = nxt && nxt.hasData ? nxt.expenses : exp;
+        [
+          { label: MONTH_NAMES[nextIdx] + " V1-2", revPct: 0.20, expPct: 0.60 },
+          { label: MONTH_NAMES[nextIdx] + " V3-4", revPct: 0.80, expPct: 0.40 }
+        ].forEach(function(w) {
+          var wRev = nRev * w.revPct;
+          var wExp = nExp * w.expPct;
+          var prevCash = runningCash;
+          runningCash += wRev - wExp;
+          if (runningCash < lowestCash) { lowestCash = runningCash; lowestWeek = w.label; }
+          weekData.push({ label: w.label, revenue: wRev, expenses: wExp, cashStart: prevCash, cashEnd: runningCash });
+        });
+      }
+
+      // SVG rendering
+      var W = svg.clientWidth || 800;
+      var H = 200;
+      var padL = 60, padR = 20, padT = 20, padB = 40;
+      var chartW = W - padL - padR;
+      var chartH = H - padT - padB;
+
+      var maxBar = Math.max.apply(null, weekData.map(function(w) { return Math.max(w.revenue, w.expenses); })) || 1;
+      var allCash = weekData.map(function(w) { return w.cashEnd; }).concat([startCash]);
+      var minCash = Math.min.apply(null, allCash);
+      var maxCash = Math.max.apply(null, allCash);
+      var cashRange = maxCash - minCash || 1;
+      minCash -= cashRange * 0.1;
+      maxCash += cashRange * 0.1;
+
+      var barW = chartW / weekData.length;
+
+      function yBar(val) { return padT + (1 - val / maxBar) * (chartH * 0.6); }
+      function yCash(val) { return padT + (1 - (val - minCash) / (maxCash - minCash)) * chartH; }
+
+      var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg">';
+
+      // Grid lines for cash axis
+      for (var g = 0; g <= 4; g++) {
+        var gVal = minCash + (maxCash - minCash) * (g / 4);
+        var gy = yCash(gVal);
+        s += '<line x1="' + padL + '" y1="' + gy + '" x2="' + (W - padR) + '" y2="' + gy + '" stroke="rgba(255,255,255,0.04)" />';
+        s += '<text x="' + (padL - 8) + '" y="' + (gy + 3) + '" text-anchor="end" fill="rgba(255,255,255,0.2)" font-size="8" font-family="DM Mono,monospace">' + fmtShort(gVal) + '</text>';
+      }
+
+      // Bars and labels
+      weekData.forEach(function(w, idx) {
+        var x = padL + idx * barW;
+        var bw = barW * 0.35;
+
+        // Revenue bar
+        var revH = (w.revenue / maxBar) * (chartH * 0.55);
+        s += '<rect x="' + (x + barW * 0.1) + '" y="' + (padT + chartH * 0.6 - revH) + '" width="' + bw + '" height="' + Math.max(1, revH) + '" fill="#2A9D8F" rx="2" opacity="0.8" />';
+
+        // Expense bar
+        var expH = (w.expenses / maxBar) * (chartH * 0.55);
+        s += '<rect x="' + (x + barW * 0.1 + bw + 2) + '" y="' + (padT + chartH * 0.6 - expH) + '" width="' + bw + '" height="' + Math.max(1, expH) + '" fill="#E76F51" rx="2" opacity="0.8" />';
+
+        // Week label
+        var lblParts = w.label.split(" ");
+        var shortLabel = lblParts.length > 1 ? lblParts[lblParts.length - 1] : w.label;
+        if (w.label.indexOf("V1 ") === 0) shortLabel = MONTH_NAMES[curMonth] + " " + shortLabel;
+        s += '<text x="' + (x + barW / 2) + '" y="' + (H - 6) + '" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="8" font-family="IBM Plex Sans,sans-serif">' + shortLabel + '</text>';
+      });
+
+      // Cash line overlay
+      var cashPath = '';
+      weekData.forEach(function(w, idx) {
+        var x = padL + (idx + 0.5) * barW;
+        var y = yCash(w.cashEnd);
+        cashPath += (idx === 0 ? 'M' : 'L') + x + ',' + y;
+      });
+      s += '<path d="' + cashPath + '" fill="none" stroke="#E9C46A" stroke-width="2" stroke-linecap="round" />';
+
+      // Cash dots
+      weekData.forEach(function(w, idx) {
+        var x = padL + (idx + 0.5) * barW;
+        var y = yCash(w.cashEnd);
+        var isLowest = w.cashEnd === lowestCash;
+        s += '<circle cx="' + x + '" cy="' + y + '" r="' + (isLowest ? 5 : 3) + '" fill="' + (isLowest ? '#E76F51' : '#E9C46A') + '" />';
+        if (isLowest) {
+          s += '<text x="' + x + '" y="' + (y - 8) + '" text-anchor="middle" fill="#E76F51" font-size="9" font-weight="700" font-family="DM Mono,monospace">' + fmtShort(lowestCash) + '</text>';
+        }
+      });
+
+      s += '</svg>';
+      svg.outerHTML = '<svg id="cashflowSvg" class="cashflow-svg">' + s.replace(/<svg[^>]*>/, '').replace(/<\/svg>/, '') + '</svg>';
+
+      // Summary stats
+      var netFlow = rev - exp;
+      summary.innerHTML =
+        '<div class="runway-stat">Kassa m\u00e5nadsstart: <span class="rv">' + fmt(startCash) + '</span></div>' +
+        '<div class="runway-stat">L\u00e4gsta punkt: <span class="rv ' + (lowestCash < 0 ? 'danger' : lowestCash < startCash * 0.5 ? 'warn' : 'ok') + '">' + fmt(lowestCash) + '</span> (' + lowestWeek + ')</div>' +
+        '<div class="runway-stat">Netto ' + MONTH_NAMES[curMonth] + ': <span class="rv ' + (netFlow >= 0 ? 'ok' : 'danger') + '">' + fmt(netFlow) + '</span></div>' +
+        '<div class="runway-stat">Kassa m\u00e5nadsslut: <span class="rv ' + (m && m.liquidity >= 0 ? 'ok' : 'warn') + '">' + fmt(m ? m.liquidity : startCash + netFlow) + '</span></div>';
+    }
+
     function renderAll() {
       renderPeriodTabs();
       renderStats();
       renderDetail();
       renderMonthlyChart();
       renderRunway();
+      updateScenario();
+      renderCashflowTiming();
       renderDeals();
       updateBadge();
     }
