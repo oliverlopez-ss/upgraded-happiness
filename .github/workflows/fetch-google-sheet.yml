@@ -1,0 +1,77 @@
+name: Fetch Google Sheet (Finansdata)
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Var 2:a timme
+  workflow_dispatch:        # Manuell körning
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Google auth library
+        run: pip install google-auth
+
+      - name: Fetch sheet as CSV via Google Sheets API (Service Account)
+        env:
+          GOOGLE_SA_KEY: ${{ secrets.GOOGLE_SA_KEY }}
+          SHEET_ID: "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc"
+        run: |
+          if [ -z "$GOOGLE_SA_KEY" ]; then
+            echo "::error::GOOGLE_SA_KEY secret is not set!"
+            exit 1
+          fi
+          mkdir -p warroom/data
+
+          python3 << 'PYEOF'
+          import json, csv, os, sys
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+          import urllib.request
+
+          # Auth via service account
+          sa_info = json.loads(os.environ["GOOGLE_SA_KEY"])
+          creds = service_account.Credentials.from_service_account_info(
+              sa_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+          )
+          creds.refresh(Request())
+
+          sheet_id = os.environ["SHEET_ID"]
+          url = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/A:Z?valueRenderOption=UNFORMATTED_VALUE"
+
+          req = urllib.request.Request(url)
+          req.add_header("Authorization", f"Bearer {creds.token}")
+          resp = urllib.request.urlopen(req)
+          data = json.loads(resp.read())
+
+          rows = data.get("values", [])
+          if not rows:
+              print("::error::Sheet returned no data")
+              sys.exit(1)
+
+          # Pad all rows to same length and write CSV
+          max_cols = max(len(r) for r in rows)
+          with open("warroom/data/finanser.csv", "w", newline="") as f:
+              writer = csv.writer(f)
+              for row in rows:
+                  padded = row + [""] * (max_cols - len(row))
+                  writer.writerow(padded)
+
+          print(f"Wrote {len(rows)} rows to finanser.csv")
+          for i, row in enumerate(rows[:5]):
+              print(f"  Row {i}: {row[:4]}...")
+          PYEOF
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add warroom/data/finanser.csv
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Update finansdata from Google Sheet"
+          git push
