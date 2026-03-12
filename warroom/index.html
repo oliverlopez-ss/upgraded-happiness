@@ -229,17 +229,36 @@
       }
       var rows = parseCSV(text);
 
-      // Rad 0 = headers: [Jan/label, Feb, Mar, Apr, Maj, Jun, ...]
-      var headers = rows[0];
+      // Hitta rader dynamiskt via etiketter (kolumn A) istället för hårdkodade index
+      function findRowByLabel(rows, label) {
+        for (var i = 0; i < rows.length; i++) {
+          if (rows[i][0] && rows[i][0].toLowerCase().indexOf(label.toLowerCase()) === 0) return i;
+        }
+        return -1;
+      }
+
+      // Hitta header-rad (den som innehåller månadsnamn)
+      var headerRowIdx = -1;
+      var monthNames = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+      for (var ri = 0; ri < Math.min(rows.length, 5); ri++) {
+        for (var ci = 0; ci < rows[ri].length; ci++) {
+          if (rows[ri][ci] && monthNames.some(function(mn) { return rows[ri][ci].toLowerCase().indexOf(mn.toLowerCase()) === 0; })) {
+            headerRowIdx = ri;
+            break;
+          }
+        }
+        if (headerRowIdx >= 0) break;
+      }
+      if (headerRowIdx < 0) headerRowIdx = 0;
+      var headers = rows[headerRowIdx];
 
       // Hitta kolumn för aktuell månad
-      var monthNames = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
       var now = new Date();
       var targetMonth = monthNames[now.getMonth()];
 
       var colIdx = -1;
       for (var i = 0; i < headers.length; i++) {
-        if (headers[i].toLowerCase().indexOf(targetMonth.toLowerCase()) === 0) {
+        if (headers[i] && headers[i].toLowerCase().indexOf(targetMonth.toLowerCase()) === 0) {
           colIdx = i;
           break;
         }
@@ -249,33 +268,46 @@
 
       sheetMonth = targetMonth;
 
-      // Rad 1 = Startbalans (värdet finns i kolumn B = index 1)
-      var startbalans = parseFloat((rows[1][1] || "").replace(/\s/g, "")) || 0;
+      // Hitta rader via etiketter
+      var startbalansRow = findRowByLabel(rows, "startbalans");
+      var intakterRow = findRowByLabel(rows, "intäkter");
+      var utgifterRow = findRowByLabel(rows, "utgifter");
 
-      // Rad 2 = INTÄKTER
-      // Rad 3 = UTGIFTER header (tom)
-      // Rad 4+ = utgiftsposter
+      // Startbalans: första numeriska värdet på den raden
+      var startbalans = 0;
+      if (startbalansRow >= 0) {
+        for (var si = 1; si < rows[startbalansRow].length; si++) {
+          var val = parseFloat((rows[startbalansRow][si] || "").replace(/\s/g, ""));
+          if (!isNaN(val) && val !== 0) { startbalans = val; break; }
+        }
+      }
+
+      // Utgiftsrader = alla rader efter "UTGIFTER"-raden, exklusive header-liknande rader
+      var expenseStartRow = (utgifterRow >= 0) ? utgifterRow + 1 : -1;
 
       // Beräkna kassa: startbalans + kumulativa (intäkter - utgifter) per månad
-      // Kolumn A (index 0) är etiketter, data börjar vid index 1 (Feb)
-      var dataStartCol = 1; // Feb
+      var dataStartCol = 1;
       var cashPosition = startbalans;
 
       for (var m = dataStartCol; m <= colIdx; m++) {
-        var monthRevenue = parseFloat((rows[2][m] || "").replace(/\s/g, "")) || 0;
+        var monthRevenue = (intakterRow >= 0) ? (parseFloat((rows[intakterRow][m] || "").replace(/\s/g, "")) || 0) : 0;
         var monthExpenses = 0;
-        for (var r = 4; r < rows.length; r++) {
-          monthExpenses += parseFloat((rows[r][m] || "").replace(/\s/g, "")) || 0;
+        if (expenseStartRow >= 0) {
+          for (var r = expenseStartRow; r < rows.length; r++) {
+            monthExpenses += parseFloat((rows[r][m] || "").replace(/\s/g, "")) || 0;
+          }
         }
         cashPosition += monthRevenue - monthExpenses;
       }
 
       // Aktuell månads burn och intäkter
       var burn = 0;
-      for (var r = 4; r < rows.length; r++) {
-        burn += parseFloat((rows[r][colIdx] || "").replace(/\s/g, "")) || 0;
+      if (expenseStartRow >= 0) {
+        for (var r = expenseStartRow; r < rows.length; r++) {
+          burn += parseFloat((rows[r][colIdx] || "").replace(/\s/g, "")) || 0;
+        }
       }
-      var revenue = parseFloat((rows[2][colIdx] || "").replace(/\s/g, "")) || 0;
+      var revenue = (intakterRow >= 0) ? (parseFloat((rows[intakterRow][colIdx] || "").replace(/\s/g, "")) || 0) : 0;
 
       cash = cashPosition;
       totalBurn = burn;
