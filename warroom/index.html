@@ -212,7 +212,7 @@
       <span id="dataSourceBadge" class="data-source-badge fallback">Demo-data</span>
       <span class="header-time" id="lastUpdated"></span>
       <button class="btn-refresh" id="btnRefresh" onclick="refreshData(false)">&#10227; Uppdatera</button>
-      <button class="btn-refresh" style="padding:6px 8px;font-size:0.75rem;background:transparent;border:1px solid rgba(255,255,255,0.15)" onclick="localStorage.removeItem('gh_pat');alert('Token borttagen.')" title="Rensa sparad GitHub-token">&#9881;</button>
+      <button class="btn-refresh" style="padding:6px 8px;font-size:0.75rem;background:transparent;border:1px solid rgba(255,255,255,0.15)" onclick="setupGhToken()" id="btnGhSetup" title="Koppla GitHub PAT f&ouml;r att trigga Actions fr&aring;n appen">&#9881;</button>
     </div>
   </div>
 
@@ -296,6 +296,21 @@
       return "";
     }
 
+    function setupGhToken() {
+      var existing = getGhToken();
+      if (existing) {
+        if (confirm("En GitHub-token \u00e4r redan sparad. Vill du ta bort den?")) {
+          localStorage.removeItem("gh_pat");
+          alert("Token borttagen. Uppdatera-knappen h\u00e4mtar nu bara cachad data.");
+        }
+      } else {
+        var token = promptGhToken();
+        if (token) {
+          alert("Token sparad! Uppdatera-knappen triggar nu \u00e4ven GitHub Actions.");
+        }
+      }
+    }
+
     async function triggerWorkflow(workflowFile, token) {
       var resp = await fetch("https://api.github.com/repos/" + GH_REPO + "/actions/workflows/" + workflowFile + "/dispatches", {
         method: "POST",
@@ -312,9 +327,9 @@
       if (!resp.ok) throw new Error(workflowFile + " misslyckades (HTTP " + resp.status + ")");
     }
 
-    async function triggerAllWorkflows() {
+    async function triggerAllWorkflows(forcePrompt) {
       var token = getGhToken();
-      if (!token) token = promptGhToken();
+      if (!token && forcePrompt) token = promptGhToken();
       if (!token) return false;
       await Promise.all(GH_WORKFLOWS.map(function(wf) {
         return triggerWorkflow(wf, token);
@@ -773,18 +788,22 @@
       document.getElementById("errorBox").style.display = "none";
 
       if (!skipWorkflowTrigger) {
-        btn.innerHTML = "&#10227; Triggar Actions...";
-        try {
-          var triggered = await triggerAllWorkflows();
-          if (triggered) {
-            btn.innerHTML = "&#10227; V\u00e4ntar p\u00e5 data (~30s)...";
-            await new Promise(function(r) { setTimeout(r, 35000); });
+        // Only trigger workflows if a PAT is already saved — never prompt on normal refresh
+        var hasToken = !!getGhToken();
+        if (hasToken) {
+          btn.innerHTML = "&#10227; Triggar Actions...";
+          try {
+            var triggered = await triggerAllWorkflows(false);
+            if (triggered) {
+              btn.innerHTML = "&#10227; V\u00e4ntar p\u00e5 data (~30s)...";
+              await new Promise(function(r) { setTimeout(r, 35000); });
+            }
+          } catch(e) {
+            console.warn("Workflow-trigger misslyckades:", e.message);
+            var box = document.getElementById("errorBox");
+            box.textContent = "\u26a0 " + e.message;
+            box.style.display = "block";
           }
-        } catch(e) {
-          console.warn("Workflow-trigger misslyckades:", e.message);
-          var box = document.getElementById("errorBox");
-          box.textContent = "\u26a0 " + e.message;
-          box.style.display = "block";
         }
       }
 
