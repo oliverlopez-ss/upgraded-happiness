@@ -42,7 +42,7 @@ jobs:
           creds.refresh(Request())
 
           sheet_id = os.environ["SHEET_ID"]
-          url = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/A:Z"
+          url = f"https://sheets.googleapis.com/v4/spreadsheets/{sheet_id}/values/A:Z?valueRenderOption=UNFORMATTED_VALUE"
 
           req = urllib.request.Request(url)
           req.add_header("Authorization", f"Bearer {creds.token}")
