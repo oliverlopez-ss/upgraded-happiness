@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameVerse - Spel Lobby</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Particle background -->
+    <canvas id="particles"></canvas>
+
+    <!-- Top navigation bar -->
+    <nav class="top-bar">
+        <a href="../" class="nav-back" style="color:inherit;text-decoration:none;font-size:0.85rem;opacity:0.7;">&#8592; Alla appar</a>
+        <div class="logo">
+            <span class="logo-icon">&#9889;</span>
+            <span class="logo-text">GameVerse</span>
+        </div>
+        <div class="nav-links">
+            <a href="#" class="nav-link active" data-section="lobby">Lobby</a>
+            <a href="#" class="nav-link" data-section="popular">Populära</a>
+            <a href="#" class="nav-link" data-section="new">Nya</a>
+        </div>
+        <div class="player-info">
+            <div class="player-avatar" id="playerAvatar">P</div>
+            <div class="player-details">
+                <span class="player-name" id="playerName">Spelare</span>
+                <span class="player-level">Nivå <span id="playerLevel">1</span></span>
+            </div>
+            <div class="xp-bar">
+                <div class="xp-fill" id="xpFill" style="width: 30%"></div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome modal -->
+    <div class="modal-overlay" id="welcomeModal">
+        <div class="modal">
+            <h2>Välkommen till GameVerse!</h2>
+            <p>Ange ditt spelarnamn för att börja:</p>
+            <input type="text" id="nameInput" class="modal-input" placeholder="Ditt namn..." maxlength="20" autofocus>
+            <button class="btn-primary" id="startBtn">Starta!</button>
+        </div>
+    </div>
+
+    <!-- Main lobby content -->
+    <main class="lobby-container" id="lobbyContainer">
+        <!-- Hero banner -->
+        <section class="hero-banner">
+            <div class="hero-content">
+                <h1 class="hero-title">Välj ditt äventyr</h1>
+                <p class="hero-subtitle">Utforska världar, tävla med vänner och erövra utmaningar!</p>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-box">
+                    <span class="stat-number" id="onlinePlayers">247</span>
+                    <span class="stat-label">Online</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Spel</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured game -->
+        <section class="featured-section">
+            <h2 class="section-title">Utvalt Spel</h2>
+            <div class="featured-card" data-game="battle-royale">
+                <div class="featured-image battle-royale-bg">
+                    <div class="featured-badge">HOT</div>
+                    <div class="featured-players">
+                        <span class="player-count-icon">&#128101;</span>
+                        <span id="brPlayers">89</span> spelar nu
+                    </div>
+                </div>
+                <div class="featured-info">
+                    <h3>Battle Royale</h3>
+                    <p>100 spelare, en vinnare! Samla vapen, bygg försvar och överlev stormen i denna episka strid.</p>
+                    <button class="btn-play btn-play-large" onclick="launchGame('battle-royale')">
+                        <span class="play-icon">&#9654;</span> SPELA NU
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game grid -->
+        <section class="games-section">
+            <h2 class="section-title">Alla Spel</h2>
+            <div class="games-grid">
+                <!-- Battle Royale -->
+                <div class="game-card" data-game="battle-royale" onclick="launchGame('battle-royale')">
+                    <div class="game-card-image battle-royale-bg">
+                        <div class="game-card-overlay">
+                            <span class="play-icon-large">&#9654;</span>
+                        </div>
+                        <div class="game-card-badge badge-hot">HOT</div>
+                        <div class="game-card-players">
+                            <span>&#128101;</span> 89
+                        </div>
+                    </div>
+                    <div class="game-card-info">
+                        <h3>Battle Royale</h3>
+                        <p>Överlev stormen och bli sist kvar!</p>
+                        <div class="game-card-tags">
+                            <span class="tag tag-action">Action</span>
+                            <span class="tag tag-pvp">PvP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tower Defense -->
+                <div class="game-card" data-game="tower-defense" onclick="launchGame('tower-defense')">
+                    <div class="game-card-image tower-defense-bg">
+                        <div class="game-card-overlay">
+                            <span class="play-icon-large">&#9654;</span>
+                        </div>
+                        <div class="game-card-badge badge-new">NY</div>
+                        <div class="game-card-players">
+                            <span>&#128101;</span> 52
+                        </div>
+                    </div>
+                    <div class="game-card-info">
+                        <h3>Tower Defense</h3>
+                        <p>Bygg torn och försvara din bas mot fiender!</p>
+                        <div class="game-card-tags">
+                            <span class="tag tag-strategy">Strategi</span>
+                            <span class="tag tag-coop">Co-op</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Racing -->
+                <div class="game-card" data-game="racing" onclick="launchGame('racing')">
+                    <div class="game-card-image racing-bg">
+                        <div class="game-card-overlay">
+                            <span class="play-icon-large">&#9654;</span>
+                        </div>
+                        <div class="game-card-players">
+                            <span>&#128101;</span> 34
+                        </div>
+                    </div>
+                    <div class="game-card-info">
+                        <h3>Turbo Racing</h3>
+                        <p>Kör i rasande fart och vinn loppet!</p>
+                        <div class="game-card-tags">
+                            <span class="tag tag-racing">Racing</span>
+                            <span class="tag tag-pvp">PvP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parkour -->
+                <div class="game-card" data-game="parkour" onclick="launchGame('parkour')">
+                    <div class="game-card-image parkour-bg">
+                        <div class="game-card-overlay">
+                            <span class="play-icon-large">&#9654;</span>
+                        </div>
+                        <div class="game-card-badge badge-easy">LÄTT</div>
+                        <div class="game-card-players">
+                            <span>&#128101;</span> 72
+                        </div>
+                    </div>
+                    <div class="game-card-info">
+                        <h3>Parkour Obby</h3>
+                        <p>Hoppa, klättra och ta dig igenom hinderbanan!</p>
+                        <div class="game-card-tags">
+                            <span class="tag tag-platform">Plattform</span>
+                            <span class="tag tag-casual">Casual</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Loading screen (shown when entering a game) -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 id="loadingGameName">Laddar spel...</h2>
+            <div class="loading-bar">
+                <div class="loading-bar-fill" id="loadingBarFill"></div>
+            </div>
+            <p class="loading-tip" id="loadingTip">Tips: Samla material tidigt i spelet!</p>
+        </div>
+    </div>
+
+    <!-- Back to lobby button (shown inside games) -->
+    <button class="btn-back-lobby" id="backToLobby" style="display:none" onclick="returnToLobby()">
+        &#8592; Tillbaka till Lobby
+    </button>
+
+    <!-- Game container -->
+    <div id="gameContainer" style="display:none"></div>
+
+    <script src="games/battle-royale.js"></script>
+    <script src="games/tower-defense.js"></script>
+    <script src="games/racing.js"></script>
+    <script src="games/parkour.js"></script>
+    <script src="lobby.js"></script>
+</body>
+</html>
