@@ -239,6 +239,10 @@
     <div class="chart-legend">
       <span><span class="dot" style="background:#2A9D8F"></span> Int&auml;kter</span>
       <span><span class="dot" style="background:#E76F51"></span> Utgifter</span>
+      <span style="color:rgba(255,255,255,0.3)">|</span>
+      <span>Netto = int &minus; utg</span>
+      <span style="color:rgba(255,255,255,0.3)">|</span>
+      <span>Likviditet = kassa vid m&aring;nadens slut</span>
     </div>
 
     <div class="divider"></div>
@@ -577,6 +581,24 @@
       return parseHubSpotDeals(json);
     }
 
+    // ── Period end liquidity ──
+    function getPeriodEndLiquidity() {
+      var months = getPeriodMonths();
+      // Find last month in period that has data
+      for (var i = months.length - 1; i >= 0; i--) {
+        var m = monthlyData[months[i]];
+        if (m && m.hasData && m.liquidity !== 0) return { value: m.liquidity, month: m.name };
+      }
+      // Fallback: last month in period
+      var last = monthlyData[months[months.length - 1]];
+      return { value: last ? last.liquidity : 0, month: last ? last.name : "" };
+    }
+
+    function countMonthsWithData() {
+      var months = getPeriodMonths();
+      return months.filter(function(mi) { return monthlyData[mi] && monthlyData[mi].hasData; }).length;
+    }
+
     // ── Render stats ──
     function renderStats() {
       var periodMonths = getPeriodMonths();
@@ -584,30 +606,33 @@
       var periodExpenses = sumPeriod("expenses");
       var periodNetto = periodRevenue - periodExpenses;
       var numMonths = periodMonths.length;
-      var avgBurn = numMonths > 0 ? periodExpenses / numMonths : 0;
+      var monthsWithData = countMonthsWithData();
+      var avgBurn = monthsWithData > 0 ? periodExpenses / monthsWithData : 0;
       var runway = avgBurn > 0 ? Math.abs(cashPosition) / avgBurn : 0;
+      var endLiq = getPeriodEndLiquidity();
 
       var periodLbl = getPeriodLabel();
       var grid = document.getElementById("statsGrid");
       var src = sheetDataLoaded ? "Google Sheet" : "Ej kopplad";
+      var dataSub = monthsWithData + " av " + numMonths + " m\u00e5n med data";
 
+      // Consistent order across all views: Cash → Intäkter → Utgifter → Netto → Likviditet
       var cards;
       if (currentPeriod === "month") {
-        var netto90 = cashPosition + periodRevenue * 3 - (periodExpenses * 3);
         cards = [
           { label: "Cash idag", value: fmt(cashPosition), sub: src, warn: cashPosition < 0 },
-          { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: "Total burn", warn: true },
-          { label: "Runway", value: runway.toFixed(1) + " m\u00e5n", sub: "vid nuvarande burn", warn: runway < 3 },
           { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: "Fr\u00e5n Google Sheet", warn: false },
-          { label: "Netto 90 dagar", value: fmt(netto90), sub: "Cash + 3\u00d7int \u2013 3\u00d7utg", warn: netto90 < 0 }
+          { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: "Total burn", warn: true },
+          { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: "Int\u00e4kter \u2013 Utgifter", warn: periodNetto < 0 },
+          { label: "Likviditet " + endLiq.month, value: fmt(endLiq.value), sub: "Kassa vid m\u00e5nadens slut", warn: endLiq.value < 0 }
         ];
       } else {
         cards = [
           { label: "Cash idag", value: fmt(cashPosition), sub: src, warn: cashPosition < 0 },
-          { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: numMonths + " m\u00e5nader", warn: false },
-          { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: numMonths + " m\u00e5nader", warn: true },
-          { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: "Int\u00e4kter \u2013 Utgifter", warn: periodNetto < 0 },
-          { label: "Snitt burn/m\u00e5n", value: fmt(avgBurn), sub: "Runway: " + runway.toFixed(1) + " m\u00e5n", warn: runway < 3 }
+          { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: dataSub, warn: false },
+          { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: dataSub, warn: true },
+          { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: "Snitt burn/m\u00e5n: " + fmt(avgBurn), warn: periodNetto < 0 },
+          { label: "Likviditet " + endLiq.month, value: fmt(endLiq.value), sub: "Kassa vid periodens slut", warn: endLiq.value < 0 }
         ];
       }
 
@@ -635,7 +660,8 @@
       var curMonth = getCurrentMonthIdx();
 
       var html = '<div class="monthly-grid">';
-      var nettoHtml = '<div class="netto-row">';
+      var nettoHtml = '<div class="netto-row" style="margin-top:2px">';
+      var liqHtml = '<div class="netto-row" style="margin-top:1px">';
 
       monthlyData.forEach(function(m, idx) {
         var inPeriod = periodMonths.indexOf(idx) >= 0;
@@ -658,13 +684,18 @@
         var nettoClass = netto >= 0 ? 'netto-pos' : 'netto-neg';
         var nettoLabel = (m.revenue === 0 && m.expenses === 0) ? '\u2013' : fmtShort(netto);
         nettoHtml += '<div class="netto-cell ' + (inPeriod ? '' : 'out-period') + ' ' + nettoClass + '">' + nettoLabel + '</div>';
+
+        var liqClass = m.liquidity >= 0 ? 'netto-pos' : 'netto-neg';
+        var liqLabel = (m.revenue === 0 && m.expenses === 0 && m.liquidity === 0) ? '\u2013' : fmtShort(m.liquidity);
+        liqHtml += '<div class="netto-cell ' + (inPeriod ? '' : 'out-period') + ' ' + liqClass + '">' + liqLabel + '</div>';
       });
 
       html += '</div>';
       nettoHtml += '</div>';
+      liqHtml += '</div>';
 
       document.getElementById("monthlyChart").innerHTML = html;
-      document.getElementById("nettoRow").innerHTML = nettoHtml;
+      document.getElementById("nettoRow").innerHTML = nettoHtml + liqHtml;
     }
 
     // ── Render deals ──
