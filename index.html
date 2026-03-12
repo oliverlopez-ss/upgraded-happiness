@@ -34,7 +34,6 @@
         h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
         .sub { color: #8b8fa3; font-size: 1rem; margin-bottom: 3rem; }
         .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        @media (min-width: 601px) { .apps.five-apps { grid-template-columns: repeat(3, 1fr); } }
         .app-card {
             background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 14px;
             padding: 2rem 1.5rem; text-decoration: none; color: inherit;
@@ -54,6 +53,7 @@
         .app-card:nth-child(3) .app-icon { background: rgba(42, 157, 143, 0.15); }
         .app-card:nth-child(4) .app-icon { background: rgba(249, 115, 22, 0.12); }
         .app-card:nth-child(5) .app-icon { background: rgba(168, 85, 247, 0.12); }
+        .app-card:nth-child(6) .app-icon { background: rgba(234, 179, 8, 0.12); }
         .app-name { font-size: 1.1rem; font-weight: 700; }
         .app-desc { font-size: 0.85rem; color: #8b8fa3; line-height: 1.5; }
         .app-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
@@ -62,6 +62,7 @@
         .app-card:nth-child(3) .app-badge { background: rgba(42, 157, 143, 0.15); color: #2A9D8F; }
         .app-card:nth-child(4) .app-badge { background: rgba(249, 115, 22, 0.12); color: #f97316; }
         .app-card:nth-child(5) .app-badge { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
+        .app-card:nth-child(6) .app-badge { background: rgba(234, 179, 8, 0.12); color: #eab308; }
         .app-url { font-size: 0.72rem; color: #4a4e5e; font-family: 'SF Mono', 'Fira Code', monospace; margin-top: auto; }
         @media (max-width: 600px) { .apps { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
     </style>
@@ -74,7 +75,7 @@
         </div>
         <h1>Välj applikation</h1>
         <p class="sub">Välj vilken app du vill använda</p>
-        <div class="apps five-apps">
+        <div class="apps">
             <a href="diagnostic/" class="app-card">
                 <div class="app-icon">&#9878;</div>
                 <span class="app-badge">Revenue Tool</span>
@@ -110,6 +111,13 @@
                 <span class="app-desc">Spellobby med 4 minispel — Battle Royale, Parkour, Racing och Tower Defense</span>
                 <span class="app-url" id="url-gamelobby">/gamelobby/</span>
             </a>
+            <a href="sales-game/" class="app-card">
+                <div class="app-icon">&#128188;</div>
+                <span class="app-badge">Säljträning</span>
+                <span class="app-name">SalesMaster</span>
+                <span class="app-desc">B2B-säljspel med 5 realistiska scenarion — kallringning, behovsanalys, förhandling och closing</span>
+                <span class="app-url" id="url-salesgame">/sales-game/</span>
+            </a>
         </div>
     </div>
     <script>
@@ -119,6 +127,7 @@
         document.getElementById('url-warroom').textContent = base + '/warroom/';
         document.getElementById('url-fortnite').textContent = base + '/fortnite-guide/';
         document.getElementById('url-gamelobby').textContent = base + '/gamelobby/';
+        document.getElementById('url-salesgame').textContent = base + '/sales-game/';
     </script>
 </body>
 </html>
