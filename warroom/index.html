@@ -139,7 +139,8 @@
     <div class="header-right">
       <span id="dataSourceBadge" class="data-source-badge fallback">Demo-data</span>
       <span class="header-time" id="lastUpdated"></span>
-      <button class="btn-refresh" id="btnRefresh" onclick="refreshData()">&#10227; Uppdatera</button>
+      <button class="btn-refresh" id="btnRefresh" onclick="refreshData(false)">&#10227; Uppdatera</button>
+      <button class="btn-refresh" style="padding:6px 8px;font-size:0.75rem;background:transparent;border:1px solid rgba(255,255,255,0.15)" onclick="localStorage.removeItem('gh_pat');alert('Token borttagen.')" title="Rensa sparad GitHub-token">&#9881;</button>
     </div>
   </div>
 
@@ -178,6 +179,57 @@
   </div>
 
   <script>
+    // ── GitHub config (för att trigga Actions via API) ──
+    var GH_REPO = "oliverlopez-ss/upgraded-happiness";
+    var GH_WORKFLOWS = ["fetch-google-sheet.yml", "fetch-hubspot.yml"];
+
+    function getGhToken() {
+      return localStorage.getItem("gh_pat") || "";
+    }
+
+    function promptGhToken() {
+      var token = prompt(
+        "Ange en GitHub Personal Access Token (PAT) med 'actions:write' och 'contents:read' behörighet.\n\n" +
+        "Skapa en på: github.com/settings/tokens\n" +
+        "Tokenen sparas lokalt i din webbläsare."
+      );
+      if (token && token.trim()) {
+        localStorage.setItem("gh_pat", token.trim());
+        return token.trim();
+      }
+      return "";
+    }
+
+    // Trigga en GitHub Actions workflow via API
+    async function triggerWorkflow(workflowFile, token) {
+      var resp = await fetch("https://api.github.com/repos/" + GH_REPO + "/actions/workflows/" + workflowFile + "/dispatches", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer " + token,
+          "Accept": "application/vnd.github+json"
+        },
+        body: JSON.stringify({ ref: "main" })
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        localStorage.removeItem("gh_pat");
+        throw new Error("Ogiltig token – borttagen. Försök igen.");
+      }
+      if (!resp.ok) throw new Error(workflowFile + " misslyckades (HTTP " + resp.status + ")");
+    }
+
+    // Trigga alla workflows och vänta på att data uppdateras
+    async function triggerAllWorkflows() {
+      var token = getGhToken();
+      if (!token) token = promptGhToken();
+      if (!token) return false;
+
+      // Trigga båda parallellt
+      await Promise.all(GH_WORKFLOWS.map(function(wf) {
+        return triggerWorkflow(wf, token);
+      }));
+      return true;
+    }
+
     // ── Google Sheet config ──
     // CSV hämtas av GitHub Action (fetch-google-sheet.yml) → data/finanser.csv
     var SHEET_CSV_LOCAL = "data/finanser.csv";
@@ -500,13 +552,32 @@
     }
 
     // ── Refresh ──
-    async function refreshData() {
+    async function refreshData(skipWorkflowTrigger) {
       var btn = document.getElementById("btnRefresh");
       btn.disabled = true;
-      btn.innerHTML = "&#10227; Hämtar...";
       document.getElementById("errorBox").style.display = "none";
 
-      // Hämta Google Sheet (finansdata)
+      // Steg 1: Trigga GitHub Actions (om inte skippad, t.ex. vid sidladdning)
+      if (!skipWorkflowTrigger) {
+        btn.innerHTML = "&#10227; Triggar Actions...";
+        try {
+          var triggered = await triggerAllWorkflows();
+          if (triggered) {
+            // Vänta på att workflows kör klart och committar ny data
+            btn.innerHTML = "&#10227; Väntar på data (~30s)...";
+            await new Promise(function(r) { setTimeout(r, 35000); });
+          }
+        } catch(e) {
+          console.warn("Workflow-trigger misslyckades:", e.message);
+          var box = document.getElementById("errorBox");
+          box.textContent = "⚠ " + e.message;
+          box.style.display = "block";
+        }
+      }
+
+      btn.innerHTML = "&#10227; Hämtar data...";
+
+      // Steg 2: Hämta Google Sheet (finansdata)
       try {
         await fetchSheetData();
       } catch(e) {
@@ -517,7 +588,7 @@
         box.style.display = "block";
       }
 
-      // Hämta HubSpot (pipeline)
+      // Steg 3: Hämta HubSpot (pipeline)
       try {
         var hsDeals = await fetchHubSpotDeals();
         if (hsDeals.length > 0) {
@@ -554,8 +625,8 @@
     document.getElementById("lastUpdated").textContent =
       "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
 
-    // Försök hämta live-data direkt vid laddning
-    refreshData();
+    // Hämta cachad data vid laddning (trigga INTE workflows)
+    refreshData(true);
   </script>
 </body>
 </html>
