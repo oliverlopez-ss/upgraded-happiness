@@ -609,7 +609,7 @@ const GUIDE_DATA = {
   // Premium pricing info
   premium: {
     price: '29 kr',
-    title: 'Pro Pass',
+    title: 'Battle Pass',
     features: [
       'Alla avancerade guider',
       'Boxfighting masterclass',
@@ -621,5 +621,37 @@ const GUIDE_DATA = {
       'Retake-guider',
       'Nya guider varje vecka'
     ]
-  }
+  },
+
+  // Weapons for Locker
+  weapons: [
+    { id: 'ar-gold', name: 'Assault Rifle', icon: '🔫', rarity: 'legendary', damage: 36, firerate: 5.5, mag: 30 },
+    { id: 'pump-purple', name: 'Pump Shotgun', icon: '💥', rarity: 'epic', damage: 110, firerate: 0.7, mag: 5 },
+    { id: 'smg-blue', name: 'SMG', icon: '🔥', rarity: 'rare', damage: 19, firerate: 12, mag: 30 },
+    { id: 'sniper-gold', name: 'Bolt Sniper', icon: '🎯', rarity: 'legendary', damage: 132, firerate: 0.3, mag: 1 },
+    { id: 'tac-blue', name: 'Tac Shotgun', icon: '💨', rarity: 'rare', damage: 72, firerate: 1.5, mag: 8 },
+    { id: 'pistol-green', name: 'Pistol', icon: '🔫', rarity: 'uncommon', damage: 26, firerate: 6.75, mag: 16 },
+    { id: 'rpg-gold', name: 'RPG', icon: '🚀', rarity: 'legendary', damage: 130, firerate: 0.4, mag: 1 },
+    { id: 'minigun-purple', name: 'Minigun', icon: '⚡', rarity: 'epic', damage: 20, firerate: 12, mag: 999 },
+    { id: 'bow-purple', name: 'Boom Bow', icon: '🏹', rarity: 'epic', damage: 115, firerate: 0.7, mag: 1 },
+    { id: 'scar-gold', name: 'SCAR', icon: '⭐', rarity: 'legendary', damage: 36, firerate: 5.5, mag: 30 },
+    { id: 'drum-blue', name: 'Drum Gun', icon: '🥁', rarity: 'rare', damage: 22, firerate: 9, mag: 40 },
+    { id: 'revolver', name: 'Revolver', icon: '🤠', rarity: 'common', damage: 54, firerate: 1.2, mag: 6 }
+  ],
+
+  // Gear for Locker
+  gear: [
+    { id: 'medkit', name: 'Medkit', icon: '💊', rarity: 'uncommon' },
+    { id: 'shield-pot', name: 'Shield Pot', icon: '🧃', rarity: 'rare' },
+    { id: 'chug-jug', name: 'Chug Jug', icon: '🏆', rarity: 'legendary' },
+    { id: 'minis', name: 'Minis', icon: '🫗', rarity: 'uncommon' },
+    { id: 'bandage', name: 'Bandage', icon: '🩹', rarity: 'common' },
+    { id: 'rift', name: 'Rift-to-Go', icon: '🌀', rarity: 'epic' },
+    { id: 'shockwave', name: 'Shockwave', icon: '💫', rarity: 'epic' },
+    { id: 'boogie', name: 'Boogie Bomb', icon: '🪩', rarity: 'rare' },
+    { id: 'campfire', name: 'Campfire', icon: '🔥', rarity: 'rare' },
+    { id: 'launch-pad', name: 'Launch Pad', icon: '🛸', rarity: 'epic' },
+    { id: 'grappler', name: 'Grappler', icon: '🪝', rarity: 'legendary' },
+    { id: 'bush', name: 'Bush', icon: '🌳', rarity: 'legendary' }
+  ]
 };
