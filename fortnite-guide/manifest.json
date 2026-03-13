@@ -1,0 +1,22 @@
+{
+  "name": "Fortnite Pro Guide",
+  "short_name": "FN Guide",
+  "description": "Bli bättre på Fortnite med guider, tips och tricks",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0a0e1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

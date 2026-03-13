@@ -958,8 +958,18 @@ body {
 .results-container h2 {
     font-size: 28px;
     font-weight: 800;
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     letter-spacing: -0.5px;
+}
+
+.result-xp {
+    font-size: 20px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--yellow), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 20px;
 }
 
 .results-stats {
@@ -1124,6 +1134,175 @@ body {
         height: 64px;
         font-size: 32px;
         border-radius: 20px;
+    }
+}
+
+/* XP Bar */
+.xp-bar {
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px 12px;
+    margin-bottom: 16px;
+}
+
+.xp-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.xp-level {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--yellow);
+}
+
+.xp-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.xp-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-dim);
+    margin-left: auto;
+}
+
+.xp-progress {
+    height: 8px;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yellow), var(--orange));
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0%;
+}
+
+.xp-next {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+/* Level Up Overlay */
+.levelup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
+}
+
+.levelup-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.levelup-content {
+    text-align: center;
+    animation: levelUpIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes levelUpIn {
+    0% { transform: scale(0.5) translateY(30px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.levelup-icon {
+    font-size: 72px;
+    margin-bottom: 12px;
+}
+
+.levelup-text {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.levelup-level {
+    font-size: 42px;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--yellow), var(--orange));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 4px;
+}
+
+.levelup-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Sentence Mode */
+.sentence-situation {
+    font-size: 13px;
+    color: var(--orange);
+    font-weight: 600;
+    padding: 8px 14px;
+    background: rgba(251, 146, 60, 0.08);
+    border: 1px solid rgba(251, 146, 60, 0.15);
+    border-radius: var(--radius-xs);
+    margin-bottom: 16px;
+    font-style: italic;
+}
+
+.sentence-direction {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sentence-prompt {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    line-height: 1.4;
+    color: var(--text);
+}
+
+.sentence-tip {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-style: italic;
+}
+
+@media (max-width: 440px) {
+    .sentence-prompt {
+        font-size: 18px;
+    }
+
+    .mode-btn span:not(.mode-icon) {
+        font-size: 10px;
     }
 }
 

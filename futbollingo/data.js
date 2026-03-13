@@ -209,3 +209,61 @@ const VOCABULARY = [
     { es: "¡Muévete!", sv: "Rör dig!", category: "fraser", example: "¡Muévete sin balón!", context: "Rör dig utan boll!" },
     { es: "¡Al primer toque!", sv: "Direkt! (ett touch)", category: "fraser", example: "¡Juega al primer toque!", context: "Spela direkt!" },
 ];
+
+// === MENINGAR / SENTENCES ===
+// Full sentences in realistic match/training contexts
+const SENTENCES = [
+    // === TRÄNING ===
+    { es: "Hoy vamos a trabajar la posesión de balón.", sv: "Idag ska vi jobba med bollinnehav.", category: "traning", situation: "Tränaren samlar laget innan träningen", tip: "'Trabajar' = jobba/träna, 'posesión' = bollinnehav" },
+    { es: "Empezad a calentar dando dos vueltas al campo.", sv: "Börja värma upp genom att springa två varv runt planen.", category: "traning", situation: "Uppvärmning börjar", tip: "'Dar vueltas' = springa varv, 'calentar' = värma upp" },
+    { es: "Hacemos un rondo de cinco contra dos.", sv: "Vi kör en rondo med fem mot två.", category: "traning", situation: "Tränaren organiserar en övning", tip: "'Rondo' = passningsövning i ring (burken)" },
+    { es: "A dos toques máximo, jugad rápido.", sv: "Max två toucher, spela snabbt.", category: "traning", situation: "Tränaren ger instruktioner under övningen", tip: "'Toques' = toucher/beröringar" },
+    { es: "Estirad bien después del partido.", sv: "Stretcha ordentligt efter matchen.", category: "traning", situation: "Efter matchen i omklädningsrummet", tip: "'Estirar' = stretcha, 'después de' = efter" },
+    { es: "Necesito más intensidad en la presión.", sv: "Jag behöver mer intensitet i pressen.", category: "traning", situation: "Tränaren är inte nöjd med insatsen", tip: "'Intensidad' = intensitet, 'presión' = press" },
+    { es: "El que pierda el balón, presiona primero.", sv: "Den som tappar bollen pressar först.", category: "traning", situation: "Tränaren förklarar en regel i övningen", tip: "'Perder el balón' = tappa bollen" },
+    { es: "Acabamos con un partidillo de veinte minutos.", sv: "Vi avslutar med en liten match på tjugo minuter.", category: "traning", situation: "Slutet av träningen", tip: "'Partidillo' = liten övningsmatch" },
+
+    // === MATCH - ANFALLSSPEL ===
+    { es: "¡Pásala al hueco, que estoy solo!", sv: "Passa i luckan, jag är fri!", category: "aktioner", situation: "En anfallare ropar efter bollen i en lucka", tip: "'Hueco' = lucka/yta, 'solo' = ensam/fri" },
+    { es: "Centra al segundo palo que llego.", sv: "Slå in mot bortre stolpen, jag kommer.", category: "aktioner", situation: "Yttern har bollen på kanten", tip: "'Segundo palo' = bortre stolpen, 'llego' = jag kommer" },
+    { es: "Juega de primera y haz la diagonal.", sv: "Spela direkt och gör en diagonallöpning.", category: "passningar", situation: "Tränaren ropar instruktioner", tip: "'De primera' = direkt (utan att ta emot)" },
+    { es: "Busca el pase en profundidad al delantero.", sv: "Leta efter djupledspassningen till anfallaren.", category: "passningar", situation: "Mittfältaren har bollen i uppspel", tip: "'En profundidad' = i djupled" },
+    { es: "El extremo desborda por la banda derecha.", sv: "Yttern tar sig förbi på högerkanten.", category: "aktioner", situation: "Kommentator beskriver spelet", tip: "'Desbordar' = ta sig förbi/dribbla förbi" },
+    { es: "Haz una pared conmigo y corre al espacio.", sv: "Gör en vägg med mig och spring i ytan.", category: "passningar", situation: "Spelaren vill göra en väggpassning", tip: "'Pared' = vägg(passning), 'espacio' = yta" },
+    { es: "Controla con el pecho y gira rápido.", sv: "Ta emot med bröstet och vänd snabbt.", category: "aktioner", situation: "Tränaren instruerar en spelare", tip: "'Pecho' = bröstet, 'girar' = vända" },
+    { es: "¡Tira a portería, no la pienses!", sv: "Skjut mot mål, tänk inte!", category: "aktioner", situation: "Lagkamraten skriver till en spelare som tvekar", tip: "'Tirar a portería' = skjuta mot mål" },
+
+    // === MATCH - FÖRSVARSSPEL ===
+    { es: "¡Cierra el espacio y no le dejes girar!", sv: "Stäng ytan och låt honom inte vända!", category: "forsvar", situation: "Backen pressar en anfallare", tip: "'Cerrar' = stänga, 'dejar' = låta" },
+    { es: "Presiona arriba y no le dejes recibir cómodo.", sv: "Pressa högt och låt honom inte ta emot bekvämt.", category: "forsvar", situation: "Tränaren ropar från sidlinjen", tip: "'Presionar arriba' = pressa högt upp" },
+    { es: "Haz la cobertura al central que ha subido.", sv: "Ge täckning åt mittbacken som har gått upp.", category: "forsvar", situation: "En back instruerar en lagkamrat", tip: "'Cobertura' = täckning, 'subir' = gå upp" },
+    { es: "¡Replieguen rápido, contraataque!", sv: "Fall tillbaka snabbt, kontring!", category: "forsvar", situation: "Laget har tappat bollen högt", tip: "'Replegar' = falla tillbaka" },
+    { es: "El lateral tiene que cubrir el palo.", sv: "Ytterbacken måste täcka stolpen.", category: "forsvar", situation: "Vid hörnor och frisparkar", tip: "'Cubrir el palo' = täcka vid stolpen" },
+    { es: "Basculad hacia la derecha, el balón está ahí.", sv: "Förskjut mot höger, bollen är där.", category: "forsvar", situation: "Tränaren justerar försvarslinje", tip: "'Bascular' = sidoförskjuta försvaret" },
+    { es: "No hagas falta dentro del área, es penalti.", sv: "Gör inte frispark inuti straffområdet, det blir straff.", category: "forsvar", situation: "Tränaren varnar en back", tip: "'Falta' = frispark/förseelse, 'área' = straffområdet" },
+
+    // === MATCH - KOMMANDON & ROP ===
+    { es: "¡Línea, arriba todos juntos!", sv: "Linjen, upp alla tillsammans!", category: "kommandon", situation: "Kaptenen organiserar offsidefällan", tip: "'Línea' = håll linjen, 'juntos' = tillsammans" },
+    { es: "¡Conmigo, que estoy solo en la banda!", sv: "Till mig, jag är fri på kanten!", category: "kommandon", situation: "En ytter ropar efter bollen", tip: "'Conmigo' = med mig/till mig" },
+    { es: "¡Tiempo, tranquilo, hay tiempo!", sv: "Lugn, det finns tid!", category: "kommandon", situation: "Laget stressar och gör misstag", tip: "'Tiempo' = tid/lugn, 'tranquilo' = lugn" },
+    { es: "¡Hombre detrás, suelta rápido!", sv: "Man bakom, passa av snabbt!", category: "kommandon", situation: "En lagkamrat varnar bollhållaren", tip: "'Detrás' = bakom, 'soltar' = släppa/passa av" },
+    { es: "¡Cambia el juego a la otra banda!", sv: "Byt spel till andra kanten!", category: "kommandon", situation: "En sida är överbelastad", tip: "'Cambiar el juego' = byta sida" },
+
+    // === MATCH - RESULTAT & SITUATIONER ===
+    { es: "Vamos perdiendo dos a uno, hay que apretar.", sv: "Vi ligger under 2-1, vi måste trycka på.", category: "match", situation: "Halvtidspaus, tränaren pratar till laget", tip: "'Ir perdiendo' = ligga under, 'apretar' = trycka på" },
+    { es: "Quedan cinco minutos, aguantad el resultado.", sv: "Det är fem minuter kvar, håll resultatet.", category: "match", situation: "Laget leder sent i matchen", tip: "'Quedar' = återstå, 'aguantar' = hålla ut" },
+    { es: "El árbitro ha pitado fuera de juego.", sv: "Domaren har blåst för offside.", category: "match", situation: "Ett mål underkänns", tip: "'Pitar' = blåsa/döma, 'fuera de juego' = offside" },
+    { es: "Metemos un cambio, entra el mediapunta.", sv: "Vi gör ett byte, tian kommer in.", category: "match", situation: "Tränaren gör ett taktiskt byte", tip: "'Cambio' = byte, 'mediapunta' = offensiv mittfältare (tian)" },
+    { es: "El primer tiempo ha sido muy igualado.", sv: "Första halvlek var väldigt jämn.", category: "match", situation: "Analys i halvtid", tip: "'Igualado' = jämn/jämlik" },
+    { es: "Nos han sacado tarjeta amarilla por protestar.", sv: "Vi har fått gult kort för att vi protesterade.", category: "match", situation: "En spelare har protesterat mot domaren", tip: "'Protestar' = protestera, 'tarjeta amarilla' = gult kort" },
+
+    // === KROPP & SKADOR ===
+    { es: "Me duele mucho la rodilla, no puedo seguir.", sv: "Jag har väldigt ont i knäet, jag kan inte fortsätta.", category: "kropp", situation: "En spelare har skadat sig", tip: "'Doler' = göra ont, 'seguir' = fortsätta" },
+    { es: "Tengo un calambre en el gemelo.", sv: "Jag har kramp i vaden.", category: "kropp", situation: "Slutet av matchen, spelaren stannar", tip: "'Calambre' = kramp, 'gemelo' = vaden" },
+    { es: "Creo que me he torcido el tobillo.", sv: "Jag tror att jag har vrickat vristen.", category: "kropp", situation: "Spelare ligger på marken efter en duell", tip: "'Torcer' = vricka, 'tobillo' = vrist/ankel" },
+
+    // === PLANEN & UTRUSTNING ===
+    { es: "Pon los conos en línea recta cada cinco metros.", sv: "Ställ konorna på rakt led var femte meter.", category: "utrustning", situation: "Tränaren förbereder en övning", tip: "'En línea recta' = på rakt led, 'cada' = varje" },
+    { es: "El césped está muy mojado, cuidado al frenar.", sv: "Gräsmattan är väldigt blöt, var försiktig vid inbromsning.", category: "plan", situation: "Det har regnat innan matchen", tip: "'Mojado' = blöt, 'frenar' = bromsa" },
+    { es: "Ponte las espinilleras antes de salir al campo.", sv: "Ta på dig benskydden innan du går ut på planen.", category: "utrustning", situation: "I omklädningsrummet innan match", tip: "'Ponerse' = ta på sig, 'espinilleras' = benskydd" },
+];

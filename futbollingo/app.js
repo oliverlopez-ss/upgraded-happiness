@@ -1,19 +1,57 @@
+// === XP & Levels ===
+const XP_PER_CORRECT = 10;
+const XP_PER_STREAK_BONUS = 5;
+const XP_PER_SENTENCE = 15;
+
+const LEVELS = [
+    { level: 1, title: 'Bollkalle', xpNeeded: 0 },
+    { level: 2, title: 'Ungdomsspelare', xpNeeded: 50 },
+    { level: 3, title: 'Reserv', xpNeeded: 150 },
+    { level: 4, title: 'Startspelare', xpNeeded: 300 },
+    { level: 5, title: 'Nyckelspelare', xpNeeded: 500 },
+    { level: 6, title: 'Lagkapten', xpNeeded: 800 },
+    { level: 7, title: 'Stjärnspelare', xpNeeded: 1200 },
+    { level: 8, title: 'Landslagsspelare', xpNeeded: 1800 },
+    { level: 9, title: 'Världsstjärna', xpNeeded: 2500 },
+    { level: 10, title: 'Ballon d\'Or', xpNeeded: 3500 },
+];
+
+function getLevelInfo(xp) {
+    let current = LEVELS[0];
+    let next = LEVELS[1];
+    for (let i = LEVELS.length - 1; i >= 0; i--) {
+        if (xp >= LEVELS[i].xpNeeded) {
+            current = LEVELS[i];
+            next = LEVELS[i + 1] || null;
+            break;
+        }
+    }
+    const xpInLevel = xp - current.xpNeeded;
+    const xpForNext = next ? next.xpNeeded - current.xpNeeded : 1;
+    const progress = next ? xpInLevel / xpForNext : 1;
+    return { current, next, xpInLevel, xpForNext, progress };
+}
+
 // === State ===
 const state = {
     selectedCategory: 'all',
     selectedMode: 'flashcard',
     currentWords: [],
+    currentSentences: [],
     currentIndex: 0,
     streak: 0,
     bestStreak: 0,
     sessionCorrect: 0,
     sessionWrong: 0,
     sessionResults: [],
+    sessionXP: 0,
     masteredWords: new Set(),
     wordScores: {},
+    totalXP: 0,
 };
 
 const WORDS_PER_SESSION = 15;
+const SENTENCES_PER_SESSION = 8;
 
 // === Persistence ===
 function loadProgress() {
@@ -24,6 +62,7 @@ function loadProgress() {
             state.masteredWords = new Set(data.mastered || []);
             state.wordScores = data.scores || {};
             state.bestStreak = data.bestStreak || 0;
+            state.totalXP = data.totalXP || 0;
         }
     } catch (e) {
         // ignore
@@ -36,10 +75,32 @@ function saveProgress() {
             mastered: [...state.masteredWords],
             scores: state.wordScores,
             bestStreak: state.bestStreak,
+            totalXP: state.totalXP,
         }));
     } catch (e) {
         // ignore
     }
+}
+
+// === XP Helpers ===
+function awardXP(amount) {
+    const oldLevel = getLevelInfo(state.totalXP).current.level;
+    state.totalXP += amount;
+    state.sessionXP += amount;
+    const newLevel = getLevelInfo(state.totalXP).current.level;
+    saveProgress();
+    if (newLevel > oldLevel) {
+        showLevelUp(getLevelInfo(state.totalXP).current);
+    }
+}
+
+function showLevelUp(levelData) {
+    const overlay = document.getElementById('levelup-overlay');
+    document.getElementById('levelup-level').textContent = `Nivå ${levelData.level}`;
+    document.getElementById('levelup-title').textContent = levelData.title;
+    overlay.classList.add('active');
+    launchConfetti();
+    setTimeout(() => overlay.classList.remove('active'), 3000);
 }
 
 // === Helpers ===
@@ -57,18 +118,26 @@ function getWordsByCategory(category) {
     return VOCABULARY.filter(w => w.category === category);
 }
 
+function getSentencesByCategory(category) {
+    if (category === 'all') return [...SENTENCES];
+    return SENTENCES.filter(s => s.category === category);
+}
+
 function selectSessionWords(category) {
     const pool = getWordsByCategory(category);
-    // Prioritize words with lower scores
     pool.sort((a, b) => {
         const scoreA = state.wordScores[a.es] || 0;
         const scoreB = state.wordScores[b.es] || 0;
         return scoreA - scoreB;
     });
-    // Take some weak + some random
     const weak = pool.slice(0, Math.ceil(WORDS_PER_SESSION * 0.6));
     const rest = shuffle(pool.slice(weak.length)).slice(0, WORDS_PER_SESSION - weak.length);
     return shuffle([...weak, ...rest]).slice(0, WORDS_PER_SESSION);
+}
+
+function selectSessionSentences(category) {
+    const pool = getSentencesByCategory(category);
+    return shuffle(pool).slice(0, SENTENCES_PER_SESSION);
 }
 
 function getCategoryName(cat) {
@@ -107,6 +176,7 @@ function initStartScreen() {
     loadProgress();
     updateCategoryCounts();
     updateStats();
+    updateXPDisplay();
 
     // Category selection
     document.querySelectorAll('.category-btn').forEach(btn => {
@@ -117,7 +187,6 @@ function initStartScreen() {
         });
     });
 
-    // Select "all" by default
     document.querySelector('[data-category="all"]').classList.add('selected');
 
     // Mode selection
@@ -129,7 +198,6 @@ function initStartScreen() {
         });
     });
 
-    // Start button
     document.getElementById('start-btn').addEventListener('click', startSession);
 }
 
@@ -151,20 +219,41 @@ function updateStats() {
     document.getElementById('stat-total').textContent = VOCABULARY.length;
 }
 
+function updateXPDisplay() {
+    const info = getLevelInfo(state.totalXP);
+    document.getElementById('xp-level').textContent = `Nivå ${info.current.level}`;
+    document.getElementById('xp-title').textContent = info.current.title;
+    document.getElementById('xp-amount').textContent = `${state.totalXP} XP`;
+    const fill = document.getElementById('xp-fill');
+    fill.style.width = (info.progress * 100) + '%';
+    const nextText = document.getElementById('xp-next');
+    if (info.next) {
+        nextText.textContent = `${info.xpInLevel}/${info.xpForNext} XP till ${info.next.title}`;
+    } else {
+        nextText.textContent = 'Max nivå uppnådd!';
+    }
+}
+
 // === Session ===
 function startSession() {
-    state.currentWords = selectSessionWords(state.selectedCategory);
     state.currentIndex = 0;
     state.streak = 0;
     state.sessionCorrect = 0;
     state.sessionWrong = 0;
     state.sessionResults = [];
+    state.sessionXP = 0;
 
-    switch (state.selectedMode) {
-        case 'flashcard': startFlashcards(); break;
-        case 'quiz': startQuiz(); break;
-        case 'write': startWrite(); break;
-        case 'listen': startListen(); break;
+    if (state.selectedMode === 'sentences') {
+        state.currentSentences = selectSessionSentences(state.selectedCategory);
+        startSentences();
+    } else {
+        state.currentWords = selectSessionWords(state.selectedCategory);
+        switch (state.selectedMode) {
+            case 'flashcard': startFlashcards(); break;
+            case 'quiz': startQuiz(); break;
+            case 'write': startWrite(); break;
+            case 'listen': startListen(); break;
+        }
     }
 }
 
@@ -215,6 +304,7 @@ function rateCard(rating) {
         const score = (state.wordScores[word.es] || 0) + 1;
         state.wordScores[word.es] = score;
         if (score >= 3) state.masteredWords.add(word.es);
+        awardXP(XP_PER_CORRECT + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
     } else if (rating === 0) {
         state.sessionWrong++;
         state.streak = 0;
@@ -253,7 +343,6 @@ function showQuizQuestion() {
     feedback.style.display = 'none';
     nextBtn.style.display = 'none';
 
-    // Randomly choose direction
     const estoSv = Math.random() > 0.5;
 
     if (estoSv) {
@@ -264,7 +353,6 @@ function showQuizQuestion() {
         document.getElementById('quiz-prompt').textContent = word.sv;
     }
 
-    // Generate options
     const correctAnswer = estoSv ? word.sv : word.es;
     const distractors = shuffle(VOCABULARY.filter(w => w.es !== word.es))
         .slice(0, 3)
@@ -304,6 +392,7 @@ function handleQuizAnswer(btn, selected, correct, word) {
         state.wordScores[word.es] = score;
         if (score >= 3) state.masteredWords.add(word.es);
         btn.classList.add('pop');
+        awardXP(XP_PER_CORRECT + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
     } else {
         btn.classList.add('wrong');
         feedback.className = 'quiz-feedback wrong';
@@ -313,7 +402,6 @@ function handleQuizAnswer(btn, selected, correct, word) {
         state.sessionResults.push({ word, correct: false });
         state.wordScores[word.es] = Math.max(0, (state.wordScores[word.es] || 0) - 1);
         state.masteredWords.delete(word.es);
-        // Highlight correct
         options.forEach(o => {
             if (o.textContent === correct) o.classList.add('correct');
         });
@@ -405,6 +493,7 @@ function checkWriteAnswer(input, correct, word, feedback, checkBtn, nextBtn) {
         const score = (state.wordScores[word.es] || 0) + 1;
         state.wordScores[word.es] = score;
         if (score >= 3) state.masteredWords.add(word.es);
+        awardXP(XP_PER_CORRECT + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
     } else {
         input.className = 'write-input wrong';
         feedback.className = 'write-feedback wrong';
@@ -440,7 +529,6 @@ function speakWord(text, rate = 1) {
         utterance.rate = rate;
         utterance.pitch = 1;
 
-        // Try to find a Spanish voice
         const voices = window.speechSynthesis.getVoices();
         const spanishVoice = voices.find(v => v.lang.startsWith('es'));
         if (spanishVoice) utterance.voice = spanishVoice;
@@ -470,7 +558,6 @@ function showListenQuestion() {
     checkBtn.style.display = 'block';
     nextBtn.style.display = 'none';
 
-    // Auto-play
     setTimeout(() => speakWord(word.es), 300);
 
     document.getElementById('listen-play').onclick = () => speakWord(word.es);
@@ -508,6 +595,7 @@ function checkListenAnswer(input, word, feedback, checkBtn, nextBtn) {
         const score = (state.wordScores[word.es] || 0) + 1;
         state.wordScores[word.es] = score;
         if (score >= 3) state.masteredWords.add(word.es);
+        awardXP(XP_PER_CORRECT + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
     } else {
         input.className = 'write-input wrong';
         feedback.className = 'write-feedback wrong';
@@ -527,9 +615,110 @@ function checkListenAnswer(input, word, feedback, checkBtn, nextBtn) {
     updateProgress('listen-progress-fill', 'listen-progress-text', 'listen-streak');
 }
 
+// === Sentences Mode ===
+function startSentences() {
+    showScreen('sentence-screen');
+    showSentenceQuestion();
+
+    document.querySelector('.sentence-back-btn').onclick = () => goHome();
+}
+
+function showSentenceQuestion() {
+    if (state.currentIndex >= state.currentSentences.length) {
+        showResults();
+        return;
+    }
+
+    const sentence = state.currentSentences[state.currentIndex];
+    const feedback = document.getElementById('sentence-feedback');
+    const nextBtn = document.getElementById('sentence-next');
+    feedback.className = 'quiz-feedback';
+    feedback.style.display = 'none';
+    nextBtn.style.display = 'none';
+
+    // Show the situation/context
+    document.getElementById('sentence-situation').textContent = sentence.situation;
+
+    // Decide direction
+    const showSpanish = Math.random() > 0.4; // More often show Spanish (harder)
+
+    if (showSpanish) {
+        document.getElementById('sentence-direction').textContent = 'Vad betyder denna mening?';
+        document.getElementById('sentence-prompt').textContent = sentence.es;
+    } else {
+        document.getElementById('sentence-direction').textContent = 'Hur säger man detta på spanska?';
+        document.getElementById('sentence-prompt').textContent = sentence.sv;
+    }
+
+    const correctAnswer = showSpanish ? sentence.sv : sentence.es;
+
+    // Generate distractors from same category if possible
+    const pool = SENTENCES.filter(s => s.es !== sentence.es);
+    const distractors = shuffle(pool)
+        .slice(0, 3)
+        .map(s => showSpanish ? s.sv : s.es);
+
+    const options = shuffle([correctAnswer, ...distractors]);
+
+    const optionsEl = document.getElementById('sentence-options');
+    optionsEl.innerHTML = '';
+
+    options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.onclick = () => handleSentenceAnswer(btn, opt, correctAnswer, sentence);
+        optionsEl.appendChild(btn);
+    });
+
+    updateProgress('sentence-progress-fill', 'sentence-progress-text', 'sentence-streak');
+}
+
+function handleSentenceAnswer(btn, selected, correct, sentence) {
+    const options = document.querySelectorAll('#sentence-options .quiz-option');
+    options.forEach(o => o.classList.add('disabled'));
+
+    const feedback = document.getElementById('sentence-feedback');
+    const nextBtn = document.getElementById('sentence-next');
+
+    if (selected === correct) {
+        btn.classList.add('correct');
+        feedback.className = 'quiz-feedback correct';
+        feedback.innerHTML = `Rätt! <span class="sentence-tip">${sentence.tip || ''}</span>`;
+        state.sessionCorrect++;
+        state.streak++;
+        state.sessionResults.push({ word: { es: sentence.es, sv: sentence.sv }, correct: true });
+        btn.classList.add('pop');
+        awardXP(XP_PER_SENTENCE + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
+    } else {
+        btn.classList.add('wrong');
+        feedback.className = 'quiz-feedback wrong';
+        feedback.textContent = `Rätt svar: ${correct}`;
+        state.sessionWrong++;
+        state.streak = 0;
+        state.sessionResults.push({ word: { es: sentence.es, sv: sentence.sv }, correct: false });
+        options.forEach(o => {
+            if (o.textContent === correct) o.classList.add('correct');
+        });
+        btn.classList.add('shake');
+    }
+
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    saveProgress();
+
+    nextBtn.style.display = 'block';
+    nextBtn.onclick = () => {
+        state.currentIndex++;
+        showSentenceQuestion();
+    };
+
+    updateProgress('sentence-progress-fill', 'sentence-progress-text', 'sentence-streak');
+}
+
 // === Progress ===
 function updateProgress(fillId, textId, streakId) {
-    const total = state.currentWords.length;
+    const items = state.selectedMode === 'sentences' ? state.currentSentences : state.currentWords;
+    const total = items.length;
     const current = state.currentIndex;
     const pct = total > 0 ? (current / total) * 100 : 0;
 
@@ -567,6 +756,7 @@ function showResults() {
     document.getElementById('result-correct').textContent = state.sessionCorrect;
     document.getElementById('result-wrong').textContent = state.sessionWrong;
     document.getElementById('result-streak').textContent = state.bestStreak;
+    document.getElementById('result-xp').textContent = `+${state.sessionXP} XP`;
 
     const wordsEl = document.getElementById('results-words');
     wordsEl.innerHTML = '';
@@ -589,6 +779,7 @@ function showResults() {
 function goHome() {
     updateCategoryCounts();
     updateStats();
+    updateXPDisplay();
     showScreen('start-screen');
 }
 
@@ -600,5 +791,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if ('speechSynthesis' in window) {
         window.speechSynthesis.getVoices();
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 });
