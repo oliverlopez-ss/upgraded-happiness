@@ -33,7 +33,7 @@
         .brand-name { font-weight: 700; font-size: 0.85rem; letter-spacing: 0.15em; color: #8b8fa3; }
         h1 { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; }
         .sub { color: #8b8fa3; font-size: 1rem; margin-bottom: 3rem; }
-        .apps { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 720px; margin: 0 auto; }
+        .apps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .app-card {
             background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 14px;
             padding: 2rem 1.5rem; text-decoration: none; color: inherit;
@@ -51,14 +51,19 @@
         .app-card:nth-child(1) .app-icon { background: rgba(74, 124, 255, 0.12); }
         .app-card:nth-child(2) .app-icon { background: rgba(74, 222, 128, 0.12); }
         .app-card:nth-child(3) .app-icon { background: rgba(42, 157, 143, 0.15); }
-        .app-card:nth-child(4) .app-icon { background: rgba(139, 92, 246, 0.15); }
+        .app-card:nth-child(4) .app-icon { background: rgba(249, 115, 22, 0.12); }
+        .app-card:nth-child(5) .app-icon { background: rgba(168, 85, 247, 0.12); }
+        .app-card:nth-child(6) .app-icon { background: rgba(234, 179, 8, 0.12); }
         .app-name { font-size: 1.1rem; font-weight: 700; }
         .app-desc { font-size: 0.85rem; color: #8b8fa3; line-height: 1.5; }
         .app-badge { padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; }
         .app-card:nth-child(1) .app-badge { background: rgba(74, 124, 255, 0.12); color: #4a7cff; }
         .app-card:nth-child(2) .app-badge { background: rgba(74, 222, 128, 0.12); color: #4ade80; }
         .app-card:nth-child(3) .app-badge { background: rgba(42, 157, 143, 0.15); color: #2A9D8F; }
-        .app-card:nth-child(4) .app-badge { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+        .app-card:nth-child(4) .app-badge { background: rgba(249, 115, 22, 0.12); color: #f97316; }
+        .app-card:nth-child(5) .app-badge { background: rgba(168, 85, 247, 0.12); color: #a855f7; }
+        .app-card:nth-child(6) .app-badge { background: rgba(234, 179, 8, 0.12); color: #eab308; }
+        .app-url { font-size: 0.72rem; color: #4a4e5e; font-family: 'SF Mono', 'Fira Code', monospace; margin-top: auto; }
         @media (max-width: 600px) { .apps { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
     </style>
 </head>
@@ -76,26 +81,53 @@
                 <span class="app-badge">Revenue Tool</span>
                 <span class="app-name">Revenue Diagnostic</span>
                 <span class="app-desc">Strukturerad analys av kommersiell arkitektur med intervjuer, gap-analys och rapport</span>
+                <span class="app-url" id="url-diagnostic">/diagnostic/</span>
             </a>
             <a href="futbollingo/" class="app-card">
                 <div class="app-icon">&#9917;</div>
                 <span class="app-badge">Lärande</span>
                 <span class="app-name">FutbolLingo</span>
                 <span class="app-desc">Lär dig fotbollsspanska med flashcards, quiz, skriv- och lyssningsövningar</span>
+                <span class="app-url" id="url-futbollingo">/futbollingo/</span>
             </a>
             <a href="warroom/" class="app-card">
                 <div class="app-icon">&#9876;</div>
                 <span class="app-badge">Finans</span>
                 <span class="app-name">Financial War Room</span>
                 <span class="app-desc">Dashboard med cash, burn rate, runway och live pipeline-data från HubSpot</span>
+                <span class="app-url" id="url-warroom">/warroom/</span>
             </a>
             <a href="fortnite-guide/" class="app-card">
                 <div class="app-icon">&#127918;</div>
                 <span class="app-badge">Gaming</span>
                 <span class="app-name">Fortnite Pro Guide</span>
-                <span class="app-desc">Editing tutorials, building tips, competitive strategies och weapon loadouts</span>
+                <span class="app-desc">Redigerings- och byggtips, stridsstrategier och pro-guider för Fortnite</span>
+                <span class="app-url" id="url-fortnite">/fortnite-guide/</span>
+            </a>
+            <a href="gamelobby/" class="app-card">
+                <div class="app-icon">&#127381;</div>
+                <span class="app-badge">Gaming</span>
+                <span class="app-name">GameVerse Lobby</span>
+                <span class="app-desc">Spellobby med 4 minispel — Battle Royale, Parkour, Racing och Tower Defense</span>
+                <span class="app-url" id="url-gamelobby">/gamelobby/</span>
+            </a>
+            <a href="sales-game/" class="app-card">
+                <div class="app-icon">&#128188;</div>
+                <span class="app-badge">Säljträning</span>
+                <span class="app-name">SalesMaster</span>
+                <span class="app-desc">B2B-säljspel med 5 realistiska scenarion — kallringning, behovsanalys, förhandling och closing</span>
+                <span class="app-url" id="url-salesgame">/sales-game/</span>
             </a>
         </div>
     </div>
+    <script>
+        const base = window.location.origin + window.location.pathname.replace(/\/?$/, '');
+        document.getElementById('url-diagnostic').textContent = base + '/diagnostic/';
+        document.getElementById('url-futbollingo').textContent = base + '/futbollingo/';
+        document.getElementById('url-warroom').textContent = base + '/warroom/';
+        document.getElementById('url-fortnite').textContent = base + '/fortnite-guide/';
+        document.getElementById('url-gamelobby').textContent = base + '/gamelobby/';
+        document.getElementById('url-salesgame').textContent = base + '/sales-game/';
+    </script>
 </body>
 </html>

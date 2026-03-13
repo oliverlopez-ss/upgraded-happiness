@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financial War Room – Structsales AB</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+      background: #0D1F2D;
+      color: #fff;
+      min-height: 100vh;
+    }
+    .header {
+      background: #1C3F5E;
+      border-bottom: 3px solid #2A9D8F;
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-brand { font-size: 11px; color: #2A9D8F; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+    .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+    .header-right { display: flex; align-items: center; gap: 12px; }
+    .header-time { font-size: 11px; color: rgba(255,255,255,0.4); }
+    .data-source-badge {
+      font-size: 10px; padding: 3px 8px; border-radius: 4px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .data-source-badge.live { background: rgba(42,157,143,0.2); color: #2A9D8F; border: 1px solid rgba(42,157,143,0.4); }
+    .data-source-badge.fallback { background: rgba(233,196,106,0.2); color: #E9C46A; border: 1px solid rgba(233,196,106,0.4); }
+    .btn-refresh {
+      background: #2A9D8F; color: #fff; border: none; border-radius: 6px;
+      padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+    }
+    .btn-refresh:hover { background: #238b7f; }
+    .btn-refresh:disabled { background: rgba(42,157,143,0.3); cursor: not-allowed; }
+    .content { padding: 24px 32px; max-width: 1200px; }
+    .section-label {
+      font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase;
+      letter-spacing: 2px; margin-bottom: 12px;
+    }
+
+    /* Period selector */
+    .period-bar { margin-bottom: 20px; }
+    .period-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .period-sep {
+      width: 1px; height: 24px; background: rgba(255,255,255,0.12); margin: 0 4px;
+    }
+    .period-tab {
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+      border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px;
+      cursor: pointer; font-weight: 500; transition: all 0.2s;
+    }
+    .period-tab.active { background: #2A9D8F; color: #fff; font-weight: 700; }
+    .period-tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
+    .period-tab.no-data { opacity: 0.35; }
+    .period-tab.has-data { }
+    .period-label {
+      font-size: 13px; color: rgba(255,255,255,0.5); margin-left: 12px;
+    }
+    .period-label .hl { color: #2A9D8F; font-weight: 600; }
+
+    .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+    .stat-card {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px; padding: 16px 20px; flex: 1; min-width: 160px;
+    }
+    .stat-card .label {
+      font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .stat-card .value {
+      font-size: 22px; font-weight: 700; color: #fff;
+      font-family: 'DM Mono', monospace; line-height: 1;
+    }
+    .stat-card .sub { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 4px; }
+    .accent-top { border-top: 3px solid #2A9D8F; }
+    .warn-top { border-top: 3px solid #E76F51; }
+    .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 24px 0; }
+
+    /* Monthly breakdown chart */
+    .monthly-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 6px; margin-top: 12px;
+    }
+    .month-col {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+    }
+    .month-col .bar-wrap {
+      width: 100%; height: 100px; display: flex; flex-direction: column;
+      justify-content: flex-end; align-items: center; gap: 2px;
+      position: relative;
+    }
+    .month-col .bar {
+      width: 60%; border-radius: 3px 3px 0 0; min-height: 2px;
+      transition: height 0.3s;
+    }
+    .bar-rev { background: #2A9D8F; }
+    .bar-exp { background: #E76F51; }
+    .month-col .month-label {
+      font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase;
+      font-weight: 600; letter-spacing: 0.5px;
+    }
+    .month-col .month-label.current { color: #2A9D8F; }
+    .month-col.in-period { opacity: 1; }
+    .month-col.out-period { opacity: 0.3; }
+    .chart-legend {
+      display: flex; gap: 16px; margin-top: 10px; justify-content: center;
+    }
+    .chart-legend span {
+      font-size: 10px; color: rgba(255,255,255,0.45); display: flex;
+      align-items: center; gap: 5px;
+    }
+    .chart-legend .dot {
+      width: 8px; height: 8px; border-radius: 2px; display: inline-block;
+    }
+    .netto-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 6px; margin-top: 2px;
+    }
+    .netto-cell {
+      text-align: center; font-size: 9px; font-family: 'DM Mono', monospace;
+      padding: 2px 0;
+    }
+    .netto-pos { color: #2A9D8F; }
+    .netto-neg { color: #E76F51; }
+
+    /* Line items detail */
+    .detail-section { margin-top: 16px; }
+    .detail-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .detail-block {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; overflow: hidden;
+    }
+    .detail-block-header {
+      padding: 10px 16px; font-size: 10px; text-transform: uppercase;
+      letter-spacing: 1px; font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .detail-block-header.rev { color: #2A9D8F; background: rgba(42,157,143,0.06); }
+    .detail-block-header.exp { color: #E76F51; background: rgba(231,111,81,0.06); }
+    .detail-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
+      font-size: 13px;
+    }
+    .detail-item:last-child { border-bottom: none; }
+    .detail-item:nth-child(odd) { background: rgba(255,255,255,0.015); }
+    .detail-item .item-name { color: rgba(255,255,255,0.7); }
+    .detail-item .item-amount {
+      font-family: 'DM Mono', monospace; font-weight: 500;
+      color: rgba(255,255,255,0.6);
+    }
+    .detail-item.zero .item-name, .detail-item.zero .item-amount { opacity: 0.3; }
+    .detail-total {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; font-weight: 700; font-size: 13px;
+    }
+    .detail-total.rev { background: rgba(42,157,143,0.1); color: #2A9D8F; border-top: 1px solid rgba(42,157,143,0.25); }
+    .detail-total.exp { background: rgba(231,111,81,0.1); color: #E76F51; border-top: 1px solid rgba(231,111,81,0.25); }
+    .detail-total .item-amount { font-family: 'DM Mono', monospace; }
+
+    .pipeline-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .pipeline-info { font-size: 13px; color: rgba(255,255,255,0.5); }
+    .pipeline-info .hl { color: #2A9D8F; font-weight: 700; }
+    .sort-buttons { display: flex; gap: 6px; }
+    .sort-btn {
+      background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5);
+      border: none; border-radius: 4px; padding: 5px 12px; font-size: 11px;
+      cursor: pointer; font-weight: 400;
+    }
+    .sort-btn.active { background: #2A9D8F; color: #fff; font-weight: 700; }
+    .table-wrap {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; overflow: hidden;
+    }
+    .table-head {
+      display: grid; grid-template-columns: 1fr 130px 80px 130px 90px;
+      padding: 10px 20px; background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px;
+    }
+    .table-row {
+      display: grid; grid-template-columns: 1fr 130px 80px 130px 90px;
+      padding: 12px 20px; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:nth-child(odd) { background: rgba(255,255,255,0.015); }
+    .table-row:hover { background: rgba(42,157,143,0.08); }
+    .table-footer {
+      display: grid; grid-template-columns: 1fr 130px 80px 130px 90px;
+      padding: 12px 20px; background: rgba(42,157,143,0.1);
+      border-top: 1px solid rgba(42,157,143,0.25);
+      font-size: 13px; font-weight: 700;
+    }
+    .deal-name { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500; }
+    .deal-amount { text-align: right; font-size: 13px; color: rgba(255,255,255,0.6); font-family: 'DM Mono', monospace; }
+    .deal-weighted { text-align: right; font-size: 13px; font-weight: 600; color: #2A9D8F; font-family: 'DM Mono', monospace; }
+    .deal-date { text-align: right; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .prob-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+      font-weight: 700; min-width: 38px; text-align: center;
+    }
+    .prob-high { background: rgba(42,157,143,0.13); color: #2A9D8F; border: 1px solid rgba(42,157,143,0.33); }
+    .prob-mid { background: rgba(233,196,106,0.13); color: #E9C46A; border: 1px solid rgba(233,196,106,0.33); }
+    .prob-low { background: rgba(231,111,81,0.13); color: #E76F51; border: 1px solid rgba(231,111,81,0.33); }
+    .error-box {
+      background: rgba(231,111,81,0.15); border: 1px solid rgba(231,111,81,0.25);
+      border-radius: 8px; padding: 12px 16px; color: #E76F51; font-size: 13px;
+      margin-bottom: 16px; display: none;
+    }
+    .back-link {
+      color: rgba(255,255,255,0.4); text-decoration: none; font-size: 12px;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { color: #2A9D8F; }
+    @media (max-width: 768px) {
+      .header { padding: 12px 16px; flex-direction: column; gap: 12px; }
+      .content { padding: 16px; }
+      .stats { flex-direction: column; }
+      .stat-card { min-width: auto; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .table-head, .table-row, .table-footer { grid-template-columns: 1fr 100px 60px 100px; }
+      .table-head span:last-child, .table-row span:last-child, .table-footer span:last-child { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <a href="../" class="back-link">&larr; Tillbaka</a>
+      <div class="header-brand">Structsales AB</div>
+      <div class="header-title">Financial War Room</div>
+    </div>
+    <div class="header-right">
+      <span id="dataSourceBadge" class="data-source-badge fallback">Demo-data</span>
+      <span class="header-time" id="lastUpdated"></span>
+      <button class="btn-refresh" id="btnRefresh" onclick="refreshData(false)">&#10227; Uppdatera</button>
+      <button class="btn-refresh" style="padding:6px 8px;font-size:0.75rem;background:transparent;border:1px solid rgba(255,255,255,0.15)" onclick="setupGhToken()" id="btnGhSetup" title="Koppla GitHub PAT f&ouml;r att trigga Actions fr&aring;n appen">&#9881;</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Period selector -->
+    <div class="period-bar">
+      <div class="period-row" id="periodTabs"></div>
+    </div>
+
+    <div class="section-label">Snapshot <span class="period-label" id="periodLabel"></span></div>
+    <div class="stats" id="statsGrid"></div>
+
+    <!-- Line items detail (shown for single month) -->
+    <div id="detailSection" class="detail-section" style="display:none"></div>
+
+    <div class="divider"></div>
+
+    <!-- Monthly breakdown chart -->
+    <div class="section-label">M&aring;nads&ouml;versikt</div>
+    <div id="monthlyChart"></div>
+    <div id="nettoRow"></div>
+    <div class="chart-legend">
+      <span><span class="dot" style="background:#2A9D8F"></span> Int&auml;kter</span>
+      <span><span class="dot" style="background:#E76F51"></span> Utgifter</span>
+      <span style="color:rgba(255,255,255,0.3)">|</span>
+      <span>Netto</span>
+      <span style="color:rgba(255,255,255,0.3)">|</span>
+      <span>Likviditet</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="pipeline-header">
+      <div>
+        <div class="section-label" style="margin-bottom:4px">Pipeline (HubSpot)</div>
+        <div class="pipeline-info" id="pipelineSummary"></div>
+      </div>
+      <div class="sort-buttons">
+        <button class="sort-btn active" data-sort="weighted" onclick="sortDeals('weighted',this)">Viktat</button>
+        <button class="sort-btn" data-sort="amount" onclick="sortDeals('amount',this)">V&auml;rde</button>
+        <button class="sort-btn" data-sort="prob" onclick="sortDeals('prob',this)">Sannolikhet</button>
+      </div>
+    </div>
+
+    <div id="errorBox" class="error-box"></div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <span>Aff&auml;r</span>
+        <span style="text-align:right">V&auml;rde</span>
+        <span style="text-align:center">Sannol.</span>
+        <span style="text-align:right">Viktat v&auml;rde</span>
+        <span style="text-align:right">Close date</span>
+      </div>
+      <div id="dealsBody"></div>
+      <div class="table-footer" id="dealsFooter"></div>
+    </div>
+  </div>
+
+  <script>
+    // ── GitHub config ──
+    var GH_REPO = "oliverlopez-ss/upgraded-happiness";
+    var GH_WORKFLOWS = ["fetch-google-sheet.yml", "fetch-hubspot.yml"];
+
+    function getGhToken() { return localStorage.getItem("gh_pat") || ""; }
+
+    function promptGhToken() {
+      var token = prompt(
+        "Ange en GitHub Personal Access Token (PAT) med 'actions:write' och 'contents:read' beh\u00f6righet.\n\n" +
+        "Skapa en p\u00e5: github.com/settings/tokens\n" +
+        "Tokenen sparas lokalt i din webbl\u00e4sare."
+      );
+      if (token && token.trim()) { localStorage.setItem("gh_pat", token.trim()); return token.trim(); }
+      return "";
+    }
+
+    function setupGhToken() {
+      var existing = getGhToken();
+      if (existing) {
+        if (confirm("En GitHub-token \u00e4r redan sparad. Vill du ta bort den?")) {
+          localStorage.removeItem("gh_pat");
+          alert("Token borttagen.");
+        }
+      } else {
+        var token = promptGhToken();
+        if (token) alert("Token sparad!");
+      }
+    }
+
+    async function triggerWorkflow(workflowFile, token) {
+      var resp = await fetch("https://api.github.com/repos/" + GH_REPO + "/actions/workflows/" + workflowFile + "/dispatches", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Accept": "application/vnd.github+json" },
+        body: JSON.stringify({ ref: "main" })
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        localStorage.removeItem("gh_pat");
+        throw new Error("Ogiltig token.");
+      }
+      if (!resp.ok) throw new Error(workflowFile + " misslyckades (HTTP " + resp.status + ")");
+    }
+
+    async function triggerAllWorkflows() {
+      var token = getGhToken();
+      if (!token) return false;
+      await Promise.all(GH_WORKFLOWS.map(function(wf) { return triggerWorkflow(wf, token); }));
+      return true;
+    }
+
+    // ── Data model ──
+    var SHEET_CSV_LOCAL = "data/finanser.csv";
+    var SHEET_CSV_FALLBACK = "import-finanser.csv";
+    var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
+    var MONTH_SHORT = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+
+    var monthlyData = []; // [{name, revenue, expenses, liquidity, hasData, revenueItems:[], expenseItems:[]}]
+    var cashPosition = 0;
+    var sheetDataLoaded = false;
+
+    // Period state: {type:"month", index:2} or {type:"quarter", index:0} or {type:"year"}
+    var currentPeriod = { type: "month", index: new Date().getMonth() };
+
+    // ── CSV parser ──
+    function parseCSV(text) {
+      var lines = text.trim().split("\n");
+      return lines.map(function(line) {
+        var cells = [], current = "", inQuotes = false;
+        for (var i = 0; i < line.length; i++) {
+          var ch = line[i];
+          if (ch === '"') inQuotes = !inQuotes;
+          else if (ch === ',' && !inQuotes) { cells.push(current.trim()); current = ""; }
+          else current += ch;
+        }
+        cells.push(current.trim());
+        return cells;
+      });
+    }
+
+    function parseNum(s) {
+      if (!s) return 0;
+      s = s.replace(/kr/gi, "").replace(/\s/g, "").replace(/,/g, "");
+      var v = parseFloat(s);
+      return isNaN(v) ? 0 : v;
+    }
+
+    function findRowByLabel(rows, label) {
+      var lbl = label.toLowerCase();
+      for (var i = 0; i < rows.length; i++) {
+        if (rows[i][0] && rows[i][0].toLowerCase().indexOf(lbl) >= 0) return i;
+      }
+      return -1;
+    }
+
+    // ── Fetch and parse sheet ──
+    async function fetchSheetData() {
+      var text;
+      try {
+        var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
+        if (!resp.ok) throw new Error("data/finanser.csv saknas");
+        text = await resp.text();
+      } catch(e) {
+        var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
+        if (!fallbackResp.ok) throw new Error("Ingen finansdata tillg\u00e4nglig.");
+        text = await fallbackResp.text();
+      }
+      var rows = parseCSV(text);
+
+      // Find header row with month names
+      var headerRowIdx = -1;
+      for (var ri = 0; ri < Math.min(rows.length, 10); ri++) {
+        for (var ci = 0; ci < rows[ri].length; ci++) {
+          if (rows[ri][ci] && MONTH_NAMES.some(function(mn) { return rows[ri][ci].toLowerCase().indexOf(mn.toLowerCase()) === 0; })) {
+            headerRowIdx = ri; break;
+          }
+        }
+        if (headerRowIdx >= 0) break;
+      }
+      if (headerRowIdx < 0) headerRowIdx = 0;
+      var headers = rows[headerRowIdx];
+
+      // Map columns to month indices
+      var colToMonth = {};
+      for (var ci = 0; ci < headers.length; ci++) {
+        if (!headers[ci]) continue;
+        for (var mi = 0; mi < MONTH_NAMES.length; mi++) {
+          if (headers[ci].toLowerCase().indexOf(MONTH_NAMES[mi].toLowerCase()) === 0) {
+            colToMonth[ci] = mi; break;
+          }
+        }
+      }
+
+      // Find section boundaries
+      var intakterHeaderRow = findRowByLabel(rows, "int\u00e4kter structsales");
+      if (intakterHeaderRow < 0) intakterHeaderRow = findRowByLabel(rows, "int\u00e4kter");
+      var intakterManRow = findRowByLabel(rows, "int\u00e4kter/m\u00e5n");
+
+      var utgifterHeaderRow = findRowByLabel(rows, "utgifter structsales");
+      if (utgifterHeaderRow < 0) utgifterHeaderRow = findRowByLabel(rows, "utgifter");
+      var utgifterManRow = findRowByLabel(rows, "utgifter/m\u00e5n");
+
+      var likviditetRow = findRowByLabel(rows, "likviditet");
+      var paKontotRow = findRowByLabel(rows, "p\u00e5 kontot");
+
+      // Parse individual line items
+      function parseLineItems(startRow, endRow) {
+        var items = [];
+        for (var r = startRow; r < endRow; r++) {
+          var name = (rows[r][0] || "").trim();
+          if (!name) continue;
+          // Skip if it's the header row with month names
+          if (r === headerRowIdx) continue;
+          var amounts = {};
+          var hasAny = false;
+          Object.keys(colToMonth).forEach(function(colStr) {
+            var col = parseInt(colStr);
+            var val = parseNum(rows[r][col]);
+            amounts[colToMonth[col]] = val;
+            if (val !== 0) hasAny = true;
+          });
+          if (hasAny) items.push({ name: name, amounts: amounts });
+        }
+        return items;
+      }
+
+      var revenueItems = [];
+      if (intakterHeaderRow >= 0 && intakterManRow >= 0) {
+        revenueItems = parseLineItems(intakterHeaderRow + 1, intakterManRow);
+      }
+
+      var expenseItems = [];
+      if (utgifterHeaderRow >= 0 && utgifterManRow >= 0) {
+        expenseItems = parseLineItems(utgifterHeaderRow + 1, utgifterManRow);
+      }
+
+      // Build monthly data
+      monthlyData = MONTH_NAMES.map(function(name, idx) {
+        return {
+          name: name, revenue: 0, expenses: 0, liquidity: 0, hasData: false,
+          revenueItems: [], expenseItems: []
+        };
+      });
+
+      // Fill summary data
+      Object.keys(colToMonth).forEach(function(colStr) {
+        var col = parseInt(colStr);
+        var mi = colToMonth[col];
+        var rev = intakterManRow >= 0 ? parseNum(rows[intakterManRow][col]) : 0;
+        var exp = utgifterManRow >= 0 ? parseNum(rows[utgifterManRow][col]) : 0;
+        var liq = likviditetRow >= 0 ? parseNum(rows[likviditetRow][col]) : 0;
+        monthlyData[mi].revenue = rev;
+        monthlyData[mi].expenses = exp;
+        monthlyData[mi].liquidity = liq;
+        monthlyData[mi].hasData = (rev !== 0 || exp !== 0);
+      });
+
+      // Attach line items to each month
+      revenueItems.forEach(function(item) {
+        MONTH_NAMES.forEach(function(_, mi) {
+          var val = item.amounts[mi] || 0;
+          if (val !== 0) {
+            monthlyData[mi].revenueItems.push({ name: item.name, amount: val });
+          }
+        });
+      });
+
+      expenseItems.forEach(function(item) {
+        MONTH_NAMES.forEach(function(_, mi) {
+          var val = item.amounts[mi] || 0;
+          if (val !== 0) {
+            monthlyData[mi].expenseItems.push({ name: item.name, amount: val });
+          }
+        });
+      });
+
+      // Cash position
+      cashPosition = 0;
+      if (paKontotRow >= 0) {
+        var pv = parseNum(rows[paKontotRow][1]);
+        if (pv === 0 && paKontotRow + 1 < rows.length) {
+          for (var pc = 0; pc < rows[paKontotRow + 1].length; pc++) {
+            pv = parseNum(rows[paKontotRow + 1][pc]);
+            if (pv !== 0) break;
+          }
+        }
+        cashPosition = pv;
+      } else if (likviditetRow >= 0) {
+        cashPosition = monthlyData[new Date().getMonth()].liquidity;
+      }
+
+      sheetDataLoaded = true;
+      console.log("[Finanser] Monthly data:", monthlyData);
+    }
+
+    // ── Period helpers ──
+    function getPeriodMonths() {
+      if (currentPeriod.type === "month") return [currentPeriod.index];
+      if (currentPeriod.type === "quarter") {
+        var q = currentPeriod.index;
+        return [q * 3, q * 3 + 1, q * 3 + 2];
+      }
+      return [0,1,2,3,4,5,6,7,8,9,10,11];
+    }
+
+    function getPeriodLabel() {
+      var yr = new Date().getFullYear();
+      if (currentPeriod.type === "month") return MONTH_NAMES[currentPeriod.index] + " " + yr;
+      if (currentPeriod.type === "quarter") return "Q" + (currentPeriod.index + 1) + " " + yr;
+      return "Hel\u00e5r " + yr;
+    }
+
+    function sumPeriod(field) {
+      var months = getPeriodMonths();
+      return months.reduce(function(s, mi) { return s + (monthlyData[mi] ? monthlyData[mi][field] : 0); }, 0);
+    }
+
+    function countMonthsWithData() {
+      return getPeriodMonths().filter(function(mi) { return monthlyData[mi] && monthlyData[mi].hasData; }).length;
+    }
+
+    function getPeriodEndLiquidity() {
+      var months = getPeriodMonths();
+      for (var i = months.length - 1; i >= 0; i--) {
+        var m = monthlyData[months[i]];
+        if (m && m.hasData && m.liquidity !== 0) return { value: m.liquidity, month: m.name };
+      }
+      var last = monthlyData[months[months.length - 1]];
+      return { value: last ? last.liquidity : 0, month: last ? last.name : "" };
+    }
+
+    function setPeriod(type, index) {
+      currentPeriod = { type: type, index: index || 0 };
+      renderAll();
+    }
+
+    // ── Render period tabs ──
+    function renderPeriodTabs() {
+      var curMonth = new Date().getMonth();
+      var html = '';
+
+      // Month buttons
+      MONTH_SHORT.forEach(function(name, idx) {
+        var isActive = currentPeriod.type === "month" && currentPeriod.index === idx;
+        var hasData = monthlyData[idx] && monthlyData[idx].hasData;
+        var isCurrent = idx === curMonth;
+        var cls = "period-tab" + (isActive ? " active" : "") + (hasData ? " has-data" : " no-data");
+        html += '<button class="' + cls + '" onclick="setPeriod(\'month\',' + idx + ')">' +
+          (isCurrent && !isActive ? '<u>' + name + '</u>' : name) + '</button>';
+      });
+
+      html += '<div class="period-sep"></div>';
+
+      // Quarter buttons
+      for (var q = 0; q < 4; q++) {
+        var isActive = currentPeriod.type === "quarter" && currentPeriod.index === q;
+        var qMonths = [q*3, q*3+1, q*3+2];
+        var hasData = qMonths.some(function(mi) { return monthlyData[mi] && monthlyData[mi].hasData; });
+        var cls = "period-tab" + (isActive ? " active" : "") + (hasData ? " has-data" : " no-data");
+        html += '<button class="' + cls + '" onclick="setPeriod(\'quarter\',' + q + ')">Q' + (q+1) + '</button>';
+      }
+
+      html += '<div class="period-sep"></div>';
+
+      // Year button
+      var yrActive = currentPeriod.type === "year";
+      html += '<button class="period-tab' + (yrActive ? ' active' : '') + '" onclick="setPeriod(\'year\')">Hel\u00e5r</button>';
+
+      document.getElementById("periodTabs").innerHTML = html;
+    }
+
+    // ── Demo pipeline ──
+    var DEMO_DEALS = [
+      { name: "Acme Corp \u2013 Sales Transformation", amount: 850000, probability: 0.6, closedate: "2026-04-15" },
+      { name: "Nordic Retail \u2013 Revenue Architecture", amount: 620000, probability: 0.75, closedate: "2026-03-28" },
+      { name: "TechForward AB \u2013 Go-to-Market", amount: 480000, probability: 0.5, closedate: "2026-05-10" },
+      { name: "eFuel Scandinavia \u2013 Retainer Extension", amount: 570000, probability: 0.9, closedate: "2026-03-20" },
+      { name: "GreenEnergy Nordic \u2013 Pipeline Review", amount: 320000, probability: 0.35, closedate: "2026-06-01" },
+      { name: "Logistics Pro \u2013 Sales Enablement", amount: 410000, probability: 0.45, closedate: "2026-04-30" },
+      { name: "Medtech Solutions \u2013 CRO Advisory", amount: 290000, probability: 0.8, closedate: "2026-03-25" },
+      { name: "DataDriven AB \u2013 Commercial Due Diligence", amount: 750000, probability: 0.3, closedate: "2026-05-20" }
+    ];
+    var deals = DEMO_DEALS.slice();
+    var currentSort = "weighted";
+    var isLiveData = false;
+
+    // ── Helpers ──
+    function fmt(n) {
+      if (n == null || n === "") return "\u2013";
+      return new Intl.NumberFormat("sv-SE", { style: "currency", currency: "SEK", maximumFractionDigits: 0 }).format(n);
+    }
+    function fmtShort(n) {
+      if (n == null) return "\u2013";
+      if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(1) + "M";
+      if (Math.abs(n) >= 1000) return Math.round(n / 1000) + "k";
+      return String(Math.round(n));
+    }
+    function fmtDate(d) {
+      if (!d) return "\u2013";
+      return new Date(d).toLocaleDateString("sv-SE", { day: "numeric", month: "short" });
+    }
+    function probBadge(prob) {
+      var pct = Math.round((prob || 0) * 100);
+      var cls = pct >= 70 ? "prob-high" : pct >= 40 ? "prob-mid" : "prob-low";
+      return '<span class="prob-badge ' + cls + '">' + pct + '%</span>';
+    }
+
+    // ── HubSpot ──
+    function parseHubSpotDeals(json) {
+      var result = [];
+      (json.results || []).forEach(function(d) {
+        var p = d.properties || {};
+        var amount = parseFloat(p.amount) || 0;
+        var prob = parseFloat(p.hs_deal_stage_probability) || 0;
+        if (prob > 1) prob = prob / 100;
+        result.push({ name: p.dealname || "Namnl\u00f6s", amount: amount, probability: prob, closedate: (p.closedate || "").substring(0, 10) });
+      });
+      return result;
+    }
+    async function fetchHubSpotDeals() {
+      var resp = await fetch("data/deals.json?" + Date.now());
+      if (!resp.ok) throw new Error("Ingen deals.json hittad.");
+      return parseHubSpotDeals(await resp.json());
+    }
+
+    // ── Render stats ──
+    function renderStats() {
+      var periodRevenue = sumPeriod("revenue");
+      var periodExpenses = sumPeriod("expenses");
+      var periodNetto = periodRevenue - periodExpenses;
+      var monthsWithData = countMonthsWithData();
+      var numMonths = getPeriodMonths().length;
+      var avgBurn = monthsWithData > 0 ? periodExpenses / monthsWithData : 0;
+      var runway = avgBurn > 0 ? Math.abs(cashPosition) / avgBurn : 0;
+      var endLiq = getPeriodEndLiquidity();
+      var periodLbl = getPeriodLabel();
+      var src = sheetDataLoaded ? "Google Sheet" : "Ej kopplad";
+      var dataSub = numMonths > 1 ? (monthsWithData + " av " + numMonths + " m\u00e5n med data") : src;
+
+      var cards = [
+        { label: "Cash idag", value: fmt(cashPosition), sub: src, warn: cashPosition < 0 },
+        { label: "Int\u00e4kter " + periodLbl, value: fmt(periodRevenue), sub: dataSub, warn: false },
+        { label: "Utgifter " + periodLbl, value: fmt(periodExpenses), sub: numMonths > 1 ? dataSub : "Total burn", warn: true },
+        { label: "Netto " + periodLbl, value: fmt(periodNetto), sub: numMonths > 1 ? ("Snitt burn/m\u00e5n: " + fmt(avgBurn)) : "Int\u00e4kter \u2013 Utgifter", warn: periodNetto < 0 },
+        { label: "Likviditet " + endLiq.month, value: fmt(endLiq.value), sub: numMonths > 1 ? "Kassa vid periodens slut" : "Kassa vid m\u00e5nadens slut", warn: endLiq.value < 0 }
+      ];
+
+      document.getElementById("statsGrid").innerHTML = cards.map(function(c) {
+        return '<div class="stat-card ' + (c.warn ? 'warn-top' : 'accent-top') + '">' +
+          '<div class="label">' + c.label + '</div>' +
+          '<div class="value">' + c.value + '</div>' +
+          (c.sub ? '<div class="sub">' + c.sub + '</div>' : '') + '</div>';
+      }).join('');
+
+      document.getElementById("periodLabel").innerHTML =
+        '\u2013 <span class="hl">' + periodLbl + '</span>';
+    }
+
+    // ── Render line items detail ──
+    function renderDetail() {
+      var section = document.getElementById("detailSection");
+      var months = getPeriodMonths();
+
+      // Collect line items across period months
+      var revItems = {};
+      var expItems = {};
+
+      months.forEach(function(mi) {
+        var m = monthlyData[mi];
+        if (!m) return;
+        m.revenueItems.forEach(function(item) {
+          if (!revItems[item.name]) revItems[item.name] = 0;
+          revItems[item.name] += item.amount;
+        });
+        m.expenseItems.forEach(function(item) {
+          if (!expItems[item.name]) expItems[item.name] = 0;
+          expItems[item.name] += item.amount;
+        });
+      });
+
+      var revList = Object.keys(revItems).map(function(k) { return { name: k, amount: revItems[k] }; });
+      var expList = Object.keys(expItems).map(function(k) { return { name: k, amount: expItems[k] }; });
+
+      revList.sort(function(a, b) { return b.amount - a.amount; });
+      expList.sort(function(a, b) { return b.amount - a.amount; });
+
+      if (revList.length === 0 && expList.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      var revTotal = revList.reduce(function(s, i) { return s + i.amount; }, 0);
+      var expTotal = expList.reduce(function(s, i) { return s + i.amount; }, 0);
+
+      function renderBlock(items, total, type) {
+        var label = type === "rev" ? "Int\u00e4kter" : "Utgifter";
+        var html = '<div class="detail-block">';
+        html += '<div class="detail-block-header ' + type + '">' + label + ' \u2013 ' + getPeriodLabel() + '</div>';
+        items.forEach(function(item) {
+          var zero = item.amount === 0 ? " zero" : "";
+          html += '<div class="detail-item' + zero + '">' +
+            '<span class="item-name">' + item.name + '</span>' +
+            '<span class="item-amount">' + fmt(item.amount) + '</span></div>';
+        });
+        html += '<div class="detail-total ' + type + '">' +
+          '<span>Summa</span><span class="item-amount">' + fmt(total) + '</span></div>';
+        html += '</div>';
+        return html;
+      }
+
+      section.style.display = "block";
+      section.innerHTML = '<div class="detail-grid">' +
+        renderBlock(revList, revTotal, "rev") +
+        renderBlock(expList, expTotal, "exp") +
+        '</div>';
+    }
+
+    // ── Render monthly chart ──
+    function renderMonthlyChart() {
+      var periodMonths = getPeriodMonths();
+      var maxVal = 1;
+      monthlyData.forEach(function(m) {
+        if (m.revenue > maxVal) maxVal = m.revenue;
+        if (m.expenses > maxVal) maxVal = m.expenses;
+      });
+
+      var curMonth = new Date().getMonth();
+      var html = '<div class="monthly-grid">';
+      var nettoHtml = '<div class="netto-row">';
+      var liqHtml = '<div class="netto-row" style="margin-top:1px">';
+
+      monthlyData.forEach(function(m, idx) {
+        var inPeriod = periodMonths.indexOf(idx) >= 0;
+        var isCurrent = idx === curMonth;
+        var revH = maxVal > 0 ? Math.max(2, (m.revenue / maxVal) * 90) : 2;
+        var expH = maxVal > 0 ? Math.max(2, (m.expenses / maxVal) * 90) : 2;
+        if (m.revenue === 0 && m.expenses === 0) { revH = 2; expH = 2; }
+        var netto = m.revenue - m.expenses;
+
+        html += '<div class="month-col ' + (inPeriod ? 'in-period' : 'out-period') + '">' +
+          '<div class="bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;width:100%;justify-content:center;height:100%">' +
+            '<div class="bar bar-rev" style="height:' + revH + 'px"></div>' +
+            '<div class="bar bar-exp" style="height:' + expH + 'px"></div>' +
+          '</div></div>' +
+          '<div class="month-label' + (isCurrent ? ' current' : '') + '">' + m.name + '</div></div>';
+
+        var noData = m.revenue === 0 && m.expenses === 0;
+        var nettoClass = netto >= 0 ? 'netto-pos' : 'netto-neg';
+        nettoHtml += '<div class="netto-cell ' + (inPeriod ? '' : 'out-period') + ' ' + nettoClass + '">' + (noData ? '\u2013' : fmtShort(netto)) + '</div>';
+
+        var liqClass = m.liquidity >= 0 ? 'netto-pos' : 'netto-neg';
+        liqHtml += '<div class="netto-cell ' + (inPeriod ? '' : 'out-period') + ' ' + liqClass + '">' +
+          (noData && m.liquidity === 0 ? '\u2013' : fmtShort(m.liquidity)) + '</div>';
+      });
+
+      html += '</div>';
+      nettoHtml += '</div>';
+      liqHtml += '</div>';
+      document.getElementById("monthlyChart").innerHTML = html;
+      document.getElementById("nettoRow").innerHTML = nettoHtml + liqHtml;
+    }
+
+    // ── Render deals ──
+    function renderDeals() {
+      var enriched = deals.map(function(d) { return Object.assign({}, d, { weighted: d.amount * d.probability }); });
+      var sorted = enriched.slice().sort(function(a, b) {
+        if (currentSort === "weighted") return (b.weighted || 0) - (a.weighted || 0);
+        if (currentSort === "amount") return (b.amount || 0) - (a.amount || 0);
+        if (currentSort === "prob") return (b.probability || 0) - (a.probability || 0);
+        return 0;
+      });
+      var totalWeighted = enriched.reduce(function(s, d) { return s + (d.weighted || 0); }, 0);
+      var totalPipeline = enriched.reduce(function(s, d) { return s + (d.amount || 0); }, 0);
+
+      document.getElementById("pipelineSummary").innerHTML =
+        deals.length + ' aktiva aff\u00e4rer \u00b7 Viktat v\u00e4rde: <span class="hl">' + fmt(totalWeighted) +
+        '</span> \u00b7 Pipeline totalt: ' + fmt(totalPipeline);
+
+      document.getElementById("dealsBody").innerHTML = sorted.map(function(deal) {
+        return '<div class="table-row">' +
+          '<span class="deal-name">' + deal.name + '</span>' +
+          '<span class="deal-amount">' + fmt(deal.amount) + '</span>' +
+          '<span style="text-align:center">' + probBadge(deal.probability) + '</span>' +
+          '<span class="deal-weighted">' + fmt(deal.weighted) + '</span>' +
+          '<span class="deal-date">' + fmtDate(deal.closedate) + '</span></div>';
+      }).join('');
+
+      document.getElementById("dealsFooter").innerHTML =
+        '<span style="color:rgba(255,255,255,0.7)">TOTALT (' + deals.length + ' aff\u00e4rer)</span>' +
+        '<span class="deal-amount">' + fmt(totalPipeline) + '</span><span></span>' +
+        '<span class="deal-weighted">' + fmt(totalWeighted) + '</span><span></span>';
+    }
+
+    function sortDeals(key, el) {
+      currentSort = key;
+      document.querySelectorAll('.sort-btn').forEach(function(b) { b.classList.remove('active'); });
+      el.classList.add('active');
+      renderDeals();
+    }
+
+    function renderAll() {
+      renderPeriodTabs();
+      renderStats();
+      renderDetail();
+      renderMonthlyChart();
+      renderDeals();
+      updateBadge();
+    }
+
+    function updateBadge() {
+      var badge = document.getElementById("dataSourceBadge");
+      if (sheetDataLoaded && isLiveData) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 Sheet + HubSpot"; }
+      else if (sheetDataLoaded) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 Google Sheet"; }
+      else if (isLiveData) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 HubSpot"; }
+      else { badge.className = "data-source-badge fallback"; badge.textContent = "Demo-data"; }
+    }
+
+    // ── Refresh ──
+    async function refreshData(skipWorkflowTrigger) {
+      var btn = document.getElementById("btnRefresh");
+      btn.disabled = true;
+      document.getElementById("errorBox").style.display = "none";
+
+      if (!skipWorkflowTrigger && getGhToken()) {
+        btn.innerHTML = "&#10227; Triggar Actions...";
+        try {
+          var triggered = await triggerAllWorkflows();
+          if (triggered) {
+            btn.innerHTML = "&#10227; V\u00e4ntar p\u00e5 data (~30s)...";
+            await new Promise(function(r) { setTimeout(r, 35000); });
+          }
+        } catch(e) {
+          var box = document.getElementById("errorBox");
+          box.textContent = "\u26a0 " + e.message;
+          box.style.display = "block";
+        }
+      }
+
+      btn.innerHTML = "&#10227; H\u00e4mtar data...";
+
+      try { await fetchSheetData(); } catch(e) {
+        sheetDataLoaded = false;
+        var box = document.getElementById("errorBox");
+        box.textContent = "\u26a0 " + e.message;
+        box.style.display = "block";
+      }
+
+      try {
+        var hsDeals = await fetchHubSpotDeals();
+        if (hsDeals.length > 0) { deals = hsDeals; isLiveData = true; }
+        else { deals = DEMO_DEALS.slice(); isLiveData = false; }
+      } catch(e) {
+        deals = DEMO_DEALS.slice(); isLiveData = false;
+      }
+
+      renderAll();
+      btn.disabled = false;
+      btn.innerHTML = "&#10227; Uppdatera";
+      document.getElementById("lastUpdated").textContent =
+        "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+    }
+
+    // ── Init ──
+    renderAll();
+    document.getElementById("lastUpdated").textContent =
+      "Uppdaterad " + new Date().toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" });
+    refreshData(true);
+  </script>
+</body>
+</html>
