@@ -128,15 +128,10 @@ for ep in supplier_endpoints:
 
 # Supplier invoices use State (not Status/PaymentState):
 #   State 0=Ny, 2=Attesterad, 4=Betald, 7=Bokförd, 8=Makulerad
-# Unpaid = not paid (IsPaid=False) AND has balance (LeftToPay>0)
-#          AND active state (exclude 4=Betald, 7=Bokförd, 8=Makulerad)
-SUPPLIER_DONE_STATES = {4, 7, 8}
-
+# "Bokförd" means booked in accounting, NOT necessarily paid.
+# Only exclude State=8 (Makulerad/cancelled). Use LeftToPay as primary filter.
 def is_supplier_unpaid(inv):
-    state = inv.get("State")
-    if state in SUPPLIER_DONE_STATES:
-        return False
-    if inv.get("IsPaid") or inv.get("IsAlreadyPaid"):
+    if inv.get("State") == 8:  # Makulerad
         return False
     left = inv.get("LeftToPay") or 0
     return left > 0
