@@ -567,9 +567,12 @@
               return;
             }
             var table = response.table;
-            console.log("[JSONP] cols:", table.cols.map(function(c){return c.label;}));
-            console.log("[JSONP] antal rader:", table.rows.length);
             var csvLines = [];
+
+            // Prepend column labels (contains MAR/APR/etc that gviz puts in cols)
+            var colHeaders = table.cols.map(function(c) { return c.label || ""; });
+            csvLines.push(colHeaders.join(","));
+
             table.rows.forEach(function(row) {
               var cells = (row.c || []).map(function(cell) {
                 if (!cell || cell.v === null || cell.v === undefined) return "";
@@ -580,7 +583,7 @@
               csvLines.push(cells.join(","));
             });
             var csv = csvLines.join("\n");
-            console.log("[JSONP] Första 3 rader:\n" + csvLines.slice(0,3).join("\n"));
+            console.log("[JSONP] " + csvLines.length + " rader, första 4:\n" + csvLines.slice(0,4).join("\n"));
             resolve(csv);
           } catch(e) { console.error("[JSONP] parse-fel:", e); reject(e); }
         };
