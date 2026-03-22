@@ -1,0 +1,130 @@
+import json, os, sys, urllib.request, urllib.error
+from datetime import datetime, timedelta
+
+API_BASE = "https://superkollapi.wint.se/api"
+USERNAME = os.environ["WINT_USERNAME"]
+API_KEY = os.environ["WINT_API_KEY"]
+
+def api_request(path, method="GET", body=None, token=None):
+    url = f"{API_BASE}{path}"
+    data = json.dumps(body).encode() if body else None
+    req = urllib.request.Request(url, data=data, method=method)
+    req.add_header("Content-Type", "application/json")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    try:
+        resp = urllib.request.urlopen(req, timeout=30)
+        return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        print(f"  HTTP {e.code} for {path}: {e.read().decode()[:200]}")
+        return None
+    except Exception as e:
+        print(f"  Error for {path}: {e}")
+        return None
+
+# 1. Authenticate
+print("Authenticating with Wint API...")
+auth_resp = api_request("/Auth", method="POST", body={
+    "username": USERNAME,
+    "password": API_KEY
+})
+if not auth_resp:
+    print("::error::Failed to authenticate with Wint API")
+    sys.exit(1)
+
+token = auth_resp.get("token") or auth_resp.get("Token") or auth_resp.get("access_token")
+if not token:
+    if isinstance(auth_resp, str):
+        token = auth_resp
+    else:
+        for k, v in auth_resp.items():
+            if isinstance(v, str) and len(v) > 20:
+                token = v
+                break
+if not token:
+    print(f"::error::No token found in auth response: {json.dumps(auth_resp)[:300]}")
+    sys.exit(1)
+print(f"  Authenticated successfully (token: {token[:10]}...)")
+
+# 2. Get company info
+print("Fetching company info...")
+company = api_request("/Auth", token=token)
+
+# 3. Fetch invoices (current year)
+print("Fetching invoices...")
+year = datetime.now().year
+invoices = api_request(f"/Invoice?year={year}", token=token)
+if invoices is None:
+    invoices = api_request("/Invoice", token=token)
+
+# 4. Fetch receipts
+print("Fetching receipts...")
+receipts = api_request(f"/Receipt?year={year}", token=token)
+if receipts is None:
+    receipts = api_request("/Receipt", token=token)
+
+# 5. Fetch accounts
+print("Fetching accounts...")
+accounts = api_request("/Account", token=token)
+
+# 6. Fetch transactions
+print("Fetching transactions...")
+transactions = api_request(f"/Transaction?year={year}", token=token)
+if transactions is None:
+    transactions = api_request("/Transaction", token=token)
+
+# 7. Fetch vouchers
+print("Fetching vouchers...")
+vouchers = api_request(f"/Voucher?year={year}", token=token)
+if vouchers is None:
+    vouchers = api_request("/Voucher", token=token)
+
+# 8. Fetch employees
+print("Fetching employees...")
+employees = api_request("/Employees", token=token)
+
+# 9. Fetch customers
+print("Fetching customers...")
+customers = api_request("/Customer", token=token)
+
+# 10. Fetch salary deviations
+print("Fetching salary data...")
+salary_months = api_request("/SalaryDeviation/months", token=token)
+
+# Build combined output
+wint_data = {
+    "fetchedAt": datetime.now().isoformat(),
+    "company": company,
+    "invoices": invoices,
+    "receipts": receipts,
+    "accounts": accounts,
+    "transactions": transactions,
+    "vouchers": vouchers,
+    "employees": employees,
+    "customers": customers,
+    "salaryMonths": salary_months,
+}
+
+# Write to file
+output_path = "warroom/data/wint.json"
+with open(output_path, "w") as f:
+    json.dump(wint_data, f, indent=2, default=str)
+
+# Print summary
+for key, val in wint_data.items():
+    if key == "fetchedAt":
+        continue
+    if isinstance(val, list):
+        print(f"  {key}: {len(val)} items")
+    elif isinstance(val, dict):
+        items = val.get("items") or val.get("results") or val.get("data")
+        if isinstance(items, list):
+            print(f"  {key}: {len(items)} items")
+        else:
+            print(f"  {key}: dict with {len(val)} keys")
+    elif val is None:
+        print(f"  {key}: (no data)")
+    else:
+        print(f"  {key}: {type(val).__name__}")
+
+print(f"\nWrote Wint data to {output_path}")
