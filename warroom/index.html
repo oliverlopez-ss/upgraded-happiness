@@ -597,9 +597,9 @@
       // Try live Google Sheet via JSONP first, then local CSV
       try {
         text = await fetchSheetJsonp();
-        console.log("[Finanser] Live data från Google Sheet");
+        console.log("[Finanser] ✅ Live data från Google Sheet, rader:", text.split("\n").length);
       } catch(e) {
-        console.log("[Finanser] Google Sheet misslyckades, använder lokal CSV:", e.message);
+        console.warn("[Finanser] ⚠ Google Sheet JSONP misslyckades:", e.message, "- använder lokal CSV");
         try {
           var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
           if (!resp.ok) throw new Error("data/finanser.csv saknas");
