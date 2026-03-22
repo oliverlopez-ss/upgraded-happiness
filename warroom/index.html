@@ -425,6 +425,14 @@
 
     <div class="divider"></div>
 
+    <!-- Wint/Superkoll data section -->
+    <div id="wintSection" style="display:none">
+      <div class="section-label">Wint / Superkoll &ndash; Fakturor &amp; Kvitton</div>
+      <div class="stats" style="margin-bottom:16px" id="wintStats"></div>
+      <div class="detail-grid" id="wintDetail"></div>
+      <div class="divider"></div>
+    </div>
+
     <div class="pipeline-header">
       <div>
         <div class="section-label" style="margin-bottom:4px">Pipeline (HubSpot)</div>
@@ -455,7 +463,7 @@
   <script>
     // ── GitHub config ──
     var GH_REPO = "oliverlopez-ss/upgraded-happiness";
-    var GH_WORKFLOWS = ["fetch-google-sheet.yml", "fetch-hubspot.yml"];
+    var GH_WORKFLOWS = ["fetch-google-sheet.yml", "fetch-hubspot.yml", "fetch-wint.yml"];
 
     function getGhToken() { return localStorage.getItem("gh_pat") || ""; }
 
@@ -512,6 +520,8 @@
     var monthlyData = MONTH_NAMES ? MONTH_NAMES.map(function(n) { return { name: n, revenue: 0, expenses: 0, liquidity: 0, hasData: false, revenueItems: [], expenseItems: [] }; }) : [];
     var cashPosition = 0;
     var sheetDataLoaded = false;
+    var wintDataLoaded = false;
+    var wintData = null;
 
     // Period state: {type:"month", index:2} or {type:"quarter", index:0} or {type:"year"}
     var currentPeriod = { type: "month", index: new Date().getMonth() };
@@ -685,6 +695,85 @@
 
       sheetDataLoaded = true;
       console.log("[Finanser] Monthly data:", monthlyData);
+    }
+
+    // ── Wint/Superkoll data ──
+    async function fetchWintData() {
+      var resp = await fetch("data/wint.json?" + Date.now());
+      if (!resp.ok) throw new Error("Ingen wint.json hittad.");
+      wintData = await resp.json();
+      wintDataLoaded = true;
+      console.log("[Wint] Data loaded:", wintData.fetchedAt);
+
+      // Process invoices into monthly revenue data
+      var invoiceList = extractItems(wintData.invoices);
+      var receiptList = extractItems(wintData.receipts);
+      var voucherList = extractItems(wintData.vouchers);
+      var transactionList = extractItems(wintData.transactions);
+
+      // Aggregate invoices by month as revenue
+      invoiceList.forEach(function(inv) {
+        var date = inv.invoiceDate || inv.InvoiceDate || inv.date || inv.Date;
+        var amount = parseFloat(inv.totalAmount || inv.TotalAmount || inv.amount || inv.Amount || 0);
+        if (!date || !amount) return;
+        var mi = new Date(date).getMonth();
+        if (mi >= 0 && mi < 12) {
+          if (!monthlyData[mi].wintRevenue) monthlyData[mi].wintRevenue = 0;
+          monthlyData[mi].wintRevenue += Math.abs(amount);
+          monthlyData[mi].wintRevenueItems = monthlyData[mi].wintRevenueItems || [];
+          monthlyData[mi].wintRevenueItems.push({
+            name: inv.customerName || inv.CustomerName || inv.description || "Faktura #" + (inv.invoiceNumber || inv.id),
+            amount: Math.abs(amount),
+            status: inv.status || inv.Status || "",
+            date: date
+          });
+        }
+      });
+
+      // Aggregate receipts by month as expenses
+      receiptList.forEach(function(rec) {
+        var date = rec.receiptDate || rec.ReceiptDate || rec.date || rec.Date;
+        var amount = parseFloat(rec.totalAmount || rec.TotalAmount || rec.amount || rec.Amount || 0);
+        if (!date || !amount) return;
+        var mi = new Date(date).getMonth();
+        if (mi >= 0 && mi < 12) {
+          if (!monthlyData[mi].wintExpenses) monthlyData[mi].wintExpenses = 0;
+          monthlyData[mi].wintExpenses += Math.abs(amount);
+          monthlyData[mi].wintExpenseItems = monthlyData[mi].wintExpenseItems || [];
+          monthlyData[mi].wintExpenseItems.push({
+            name: rec.supplierName || rec.SupplierName || rec.description || "Kvitto #" + (rec.id),
+            amount: Math.abs(amount),
+            status: rec.status || rec.Status || "",
+            date: date
+          });
+        }
+      });
+
+      // Try to get account balance as cash position
+      var accountList = extractItems(wintData.accounts);
+      if (accountList.length > 0) {
+        // Look for a main bank account (typically 1920, 1930, etc.)
+        var bankAccount = accountList.find(function(a) {
+          var num = parseInt(a.accountNumber || a.AccountNumber || a.number || 0);
+          return num >= 1900 && num <= 1999;
+        });
+        if (bankAccount) {
+          var balance = parseFloat(bankAccount.balance || bankAccount.Balance || 0);
+          if (balance !== 0) {
+            cashPosition = balance;
+            console.log("[Wint] Cash position from account:", cashPosition);
+          }
+        }
+      }
+    }
+
+    function extractItems(data) {
+      if (!data) return [];
+      if (Array.isArray(data)) return data;
+      if (data.items && Array.isArray(data.items)) return data.items;
+      if (data.results && Array.isArray(data.results)) return data.results;
+      if (data.data && Array.isArray(data.data)) return data.data;
+      return [];
     }
 
     // ── Period helpers ──
@@ -1465,6 +1554,75 @@
         '<div class="runway-stat">Kassa m\u00e5nadsslut: <span class="rv ' + (m && m.liquidity >= 0 ? 'ok' : 'warn') + '">' + fmt(m ? m.liquidity : startCash + netFlow) + '</span></div>';
     }
 
+    // ── Render Wint data ──
+    function renderWint() {
+      var section = document.getElementById("wintSection");
+      if (!wintDataLoaded || !wintData) { section.style.display = "none"; return; }
+      section.style.display = "block";
+
+      var invoiceList = extractItems(wintData.invoices);
+      var receiptList = extractItems(wintData.receipts);
+      var customerList = extractItems(wintData.customers);
+      var employeeList = extractItems(wintData.employees);
+
+      // Summary stats
+      var totalInvoiced = invoiceList.reduce(function(s, inv) {
+        return s + Math.abs(parseFloat(inv.totalAmount || inv.TotalAmount || inv.amount || inv.Amount || 0));
+      }, 0);
+      var totalReceipts = receiptList.reduce(function(s, rec) {
+        return s + Math.abs(parseFloat(rec.totalAmount || rec.TotalAmount || rec.amount || rec.Amount || 0));
+      }, 0);
+
+      document.getElementById("wintStats").innerHTML =
+        '<div class="stat-card accent-top"><div class="label">Fakturor (Wint)</div><div class="value">' + invoiceList.length + '</div><div class="sub">Totalt ' + fmt(totalInvoiced) + '</div></div>' +
+        '<div class="stat-card accent-top"><div class="label">Kvitton (Wint)</div><div class="value">' + receiptList.length + '</div><div class="sub">Totalt ' + fmt(totalReceipts) + '</div></div>' +
+        '<div class="stat-card accent-top"><div class="label">Kunder</div><div class="value">' + customerList.length + '</div><div class="sub">I Wint</div></div>' +
+        '<div class="stat-card accent-top"><div class="label">Anst\u00e4llda</div><div class="value">' + employeeList.length + '</div><div class="sub">I Wint</div></div>';
+
+      // Show recent invoices and receipts
+      var recentInv = invoiceList.slice().sort(function(a, b) {
+        var da = a.invoiceDate || a.InvoiceDate || a.date || "";
+        var db = b.invoiceDate || b.InvoiceDate || b.date || "";
+        return db.localeCompare(da);
+      }).slice(0, 8);
+
+      var recentRec = receiptList.slice().sort(function(a, b) {
+        var da = a.receiptDate || a.ReceiptDate || a.date || "";
+        var db = b.receiptDate || b.ReceiptDate || b.date || "";
+        return db.localeCompare(da);
+      }).slice(0, 8);
+
+      var invHtml = '<div class="detail-block"><div class="detail-block-header rev">Senaste fakturor (Wint)</div>';
+      recentInv.forEach(function(inv) {
+        var name = inv.customerName || inv.CustomerName || inv.description || "Faktura";
+        var amount = Math.abs(parseFloat(inv.totalAmount || inv.TotalAmount || inv.amount || 0));
+        var status = inv.status || inv.Status || "";
+        var date = inv.invoiceDate || inv.InvoiceDate || inv.date || "";
+        invHtml += '<div class="detail-item"><span class="item-name">' + name +
+          (status ? ' <span style="opacity:0.5;font-size:10px">(' + status + ')</span>' : '') +
+          (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
+          '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
+      });
+      if (recentInv.length === 0) invHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4">Inga fakturor</span><span></span></div>';
+      invHtml += '</div>';
+
+      var recHtml = '<div class="detail-block"><div class="detail-block-header exp">Senaste kvitton (Wint)</div>';
+      recentRec.forEach(function(rec) {
+        var name = rec.supplierName || rec.SupplierName || rec.description || "Kvitto";
+        var amount = Math.abs(parseFloat(rec.totalAmount || rec.TotalAmount || rec.amount || 0));
+        var status = rec.status || rec.Status || "";
+        var date = rec.receiptDate || rec.ReceiptDate || rec.date || "";
+        recHtml += '<div class="detail-item"><span class="item-name">' + name +
+          (status ? ' <span style="opacity:0.5;font-size:10px">(' + status + ')</span>' : '') +
+          (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
+          '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
+      });
+      if (recentRec.length === 0) recHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4">Inga kvitton</span><span></span></div>';
+      recHtml += '</div>';
+
+      document.getElementById("wintDetail").innerHTML = invHtml + recHtml;
+    }
+
     function renderAll() {
       renderPeriodTabs();
       renderStats();
@@ -1473,16 +1631,24 @@
       renderRunway();
       updateScenario();
       renderCashflowTiming();
+      renderWint();
       renderDeals();
       updateBadge();
     }
 
     function updateBadge() {
       var badge = document.getElementById("dataSourceBadge");
-      if (sheetDataLoaded && isLiveData) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 Sheet + HubSpot"; }
-      else if (sheetDataLoaded) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 Google Sheet"; }
-      else if (isLiveData) { badge.className = "data-source-badge live"; badge.textContent = "Live \u00b7 HubSpot"; }
-      else { badge.className = "data-source-badge fallback"; badge.textContent = "Demo-data"; }
+      var sources = [];
+      if (sheetDataLoaded) sources.push("Sheet");
+      if (isLiveData) sources.push("HubSpot");
+      if (wintDataLoaded) sources.push("Wint");
+      if (sources.length > 0) {
+        badge.className = "data-source-badge live";
+        badge.textContent = "Live \u00b7 " + sources.join(" + ");
+      } else {
+        badge.className = "data-source-badge fallback";
+        badge.textContent = "Demo-data";
+      }
     }
 
     // ── Refresh ──
@@ -1521,6 +1687,11 @@
         else { deals = DEMO_DEALS.slice(); isLiveData = false; }
       } catch(e) {
         deals = DEMO_DEALS.slice(); isLiveData = false;
+      }
+
+      try { await fetchWintData(); } catch(e) {
+        wintDataLoaded = false;
+        console.log("[Wint] " + e.message);
       }
 
       renderAll();
