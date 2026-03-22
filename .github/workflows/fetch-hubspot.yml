@@ -9,7 +9,36 @@ permissions:
   contents: write
 
 jobs:
-  fetch:
+  fetch-wint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Wint data via Superkoll API
+        env:
+          WINT_USERNAME: ${{ secrets.WINT_USERNAME }}
+          WINT_API_KEY: ${{ secrets.WINT_API_KEY }}
+        run: |
+          if [ -z "$WINT_USERNAME" ] || [ -z "$WINT_API_KEY" ]; then
+            echo "::warning::WINT_USERNAME and/or WINT_API_KEY secrets are not set - skipping"
+            exit 0
+          fi
+          mkdir -p warroom/data
+          python3 .github/scripts/fetch_wint.py
+
+      - name: Commit and push Wint data
+        env:
+          WINT_USERNAME: ${{ secrets.WINT_USERNAME }}
+        run: |
+          if [ -z "$WINT_USERNAME" ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add warroom/data/wint.json
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "Update Wint/Superkoll data"
+          git push
+
+  fetch-hubspot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -126,6 +155,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main || true
           git add warroom/data/deals.json
           git diff --staged --quiet && echo "No changes" && exit 0
           git commit -m "Update HubSpot deals data"
