@@ -127,12 +127,10 @@ for ep in supplier_endpoints:
         break
 
 # Supplier invoices - match Wint UI filter:
-#   Status: "Att godkänna" (State=0) + "Att slutgodkänna" (State=2)
-#   Betalstatus: "Obetald" + "Förfallen" (IsPaid=False)
-SUPPLIER_ACTIVE_STATES = {0, 2}
-
+#   Status: "Att godkänna" only (State=0)
+#   State=2 (Att slutgodkänna) are already processed/in payment
 def is_supplier_unpaid(inv):
-    if inv.get("State") not in SUPPLIER_ACTIVE_STATES:
+    if inv.get("State") != 0:  # Only "Att godkänna"
         return False
     if inv.get("IsPaid"):
         return False
@@ -140,7 +138,7 @@ def is_supplier_unpaid(inv):
     return amount > 0
 
 unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
-print(f"  Raw: {len(raw_supplier)}, unpaid (State 0/2, IsPaid=False): {len(unpaid_supplier)}")
+print(f"  Raw: {len(raw_supplier)}, unpaid (State=0 'Att godkänna'): {len(unpaid_supplier)}")
 for inv in unpaid_supplier[:5]:
     name = inv.get('SupplierName') or '?'
     amt = inv.get('LeftToPay') or inv.get('Amount') or 0
