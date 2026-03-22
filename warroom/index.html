@@ -670,7 +670,9 @@
       });
 
       // Separate expense items: skip manual "Moms" row, identify VAT-exempt items
+      // VAT-exempt: salary/tax items + foreign currency items (reverse charge, net VAT = 0)
       var VAT_EXEMPT_PATTERNS = ["lön", "löner", "löne", "skatt", "sociala", "moms"];
+      var FOREIGN_CURRENCY_PATTERNS = ["hubxpert", "hubspot commission"];
       expenseItems.forEach(function(item) {
         var nameLower = item.name.toLowerCase();
         // Skip manual Moms row - will be auto-calculated
@@ -688,13 +690,22 @@
       // Outgoing VAT = revenue / 5, Incoming VAT = VAT-liable expenses / 5
       // Net VAT for month X is paid in month X+2
       MONTH_NAMES.forEach(function(_, mi) {
-        var outgoingVAT = monthlyData[mi].revenue / 5;
+        // Exclude foreign revenue (e.g. HubSpot Commission) from outgoing VAT
+        var foreignRevenue = 0;
+        revenueItems.forEach(function(item) {
+          var nameLower = item.name.toLowerCase();
+          if (FOREIGN_CURRENCY_PATTERNS.some(function(p) { return nameLower.indexOf(p) >= 0; })) {
+            foreignRevenue += (item.amounts[mi] || 0);
+          }
+        });
+        var outgoingVAT = (monthlyData[mi].revenue - foreignRevenue) / 5;
         var incomingVAT = 0;
         expenseItems.forEach(function(item) {
           var nameLower = item.name.toLowerCase();
           if (nameLower === "moms") return;
           var isExempt = VAT_EXEMPT_PATTERNS.some(function(p) { return nameLower.indexOf(p) >= 0; });
-          if (!isExempt) {
+          var isForeign = FOREIGN_CURRENCY_PATTERNS.some(function(p) { return nameLower.indexOf(p) >= 0; });
+          if (!isExempt && !isForeign) {
             incomingVAT += (item.amounts[mi] || 0) / 5;
           }
         });
