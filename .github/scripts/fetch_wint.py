@@ -64,9 +64,11 @@ def is_unpaid_and_sent(invoice):
     status = invoice.get("Status", 0)
     left_to_pay = invoice.get("LeftToPay") or 0
     payment_state = invoice.get("PaymentState", 0)
+    # Wint Status: 0=Ej skickad, 1=Skickad, 4=Betald
     # PaymentState: 0=Obetald, 1=Delvis betald, 2=Betald
-    # We want: sent to customer AND not fully paid
-    # Must have money left to pay
+    # We want: sent (Status >= 1) AND has outstanding balance
+    if status == 0:  # Ej skickad (draft)
+        return False
     if left_to_pay <= 0:
         return False
     if payment_state == 2:  # Fully paid
@@ -103,9 +105,32 @@ for inv in unpaid_invoices[:5]:
 
 # --- Supplier invoices (Leverantörsfakturor) ---
 print(f"\nFetching supplier invoices...")
-raw_supplier = fetch_recent_pages("/SupplierInvoice", "DueDate")
+# Try different endpoint names
+supplier_endpoints = [
+    "/IncomingInvoice",
+    "/SupplierInvoice",
+    "/Supplier/Invoice",
+    "/DocumentDraft",
+]
+raw_supplier = []
+for ep in supplier_endpoints:
+    print(f"  Trying {ep}...")
+    result = fetch_recent_pages(ep, "DueDate")
+    if result:
+        print(f"  {ep} returned {len(result)} items!")
+        raw_supplier = result
+        break
+    # If fetch_recent_pages returned empty, try a simple GET to check if endpoint exists
+    test = api_get(f"{ep}?page=0")
+    if test is not None:
+        print(f"  {ep} exists but returned 0 items")
+        break
+
 unpaid_supplier = [i for i in raw_supplier if is_unpaid_and_sent(i)]
 print(f"  Raw: {len(raw_supplier)}, unpaid & sent: {len(unpaid_supplier)}")
+if unpaid_supplier:
+    for inv in unpaid_supplier[:3]:
+        print(f"    -> {inv.get('SupplierName') or inv.get('CustomerName')}: {inv.get('LeftToPay', 0):,.0f} kr, Due={inv.get('DueDate','')[:10]}")
 
 # --- Receipts (Kvitton) - submitted but not paid out ---
 print(f"\nFetching receipts...")
