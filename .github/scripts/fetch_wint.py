@@ -141,10 +141,25 @@ def is_supplier_unpaid(inv):
 
 unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
 print(f"  Raw: {len(raw_supplier)}, unpaid (State 0/2, IsPaid=False): {len(unpaid_supplier)}")
-for inv in unpaid_supplier[:8]:
+
+# Debug: show ALL amount-related fields for first 3 invoices + any Skatteverket
+debug_invs = unpaid_supplier[:3]
+for inv in unpaid_supplier:
+    if "Skatte" in (inv.get("SupplierName") or ""):
+        debug_invs.append(inv)
+for inv in debug_invs:
+    name = inv.get('SupplierName') or '?'
+    print(f"  === {name} (State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}) ===")
+    for k in sorted(inv.keys()):
+        v = inv[k]
+        if v is not None and v != "" and v != False and v != 0 and v != []:
+            print(f"    {k}: {v}")
+
+# Summary of all unpaid
+for inv in unpaid_supplier:
     name = inv.get('SupplierName') or '?'
     amt = inv.get('LeftToPay') or inv.get('Amount') or 0
-    print(f"    -> {name}: {amt:,.0f} kr, State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}")
+    print(f"    -> {name}: {amt:,.0f}, State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}")
 
 # --- Receipts (Kvitton) - submitted but not paid out ---
 print(f"\nFetching receipts...")
