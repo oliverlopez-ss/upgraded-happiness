@@ -128,20 +128,31 @@ for ep in supplier_endpoints:
 
 # Supplier invoices use State (not Status/PaymentState):
 #   State 0=Ny, 2=Attesterad, 4=Betald, 7=Bokförd, 8=Makulerad
-# "Bokförd" means booked in accounting, NOT necessarily paid.
-# Only exclude State=8 (Makulerad/cancelled). Use LeftToPay as primary filter.
+# Wint zeroes LeftToPay when invoice is attested/booked for payment,
+# even though actual payment hasn't occurred yet.
+# Use IsPaid as primary filter, LeftToPay OR Amount for the amount.
 def is_supplier_unpaid(inv):
-    if inv.get("State") == 8:  # Makulerad
+    if inv.get("State") == 8:  # Makulerad/cancelled
         return False
+    if inv.get("IsPaid"):
+        return False
+    # Has outstanding balance OR has amount and not marked paid
     left = inv.get("LeftToPay") or 0
-    return left > 0
+    if left > 0:
+        return True
+    amount = inv.get("Amount") or 0
+    return amount > 0
 
 unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
-print(f"  Raw: {len(raw_supplier)}, unpaid (active & LeftToPay>0): {len(unpaid_supplier)}")
-for inv in unpaid_supplier[:5]:
+print(f"  Raw: {len(raw_supplier)}, unpaid (IsPaid=False): {len(unpaid_supplier)}")
+# Log state distribution of unpaid
+from collections import Counter as C2
+sup_states = C2(i.get("State") for i in unpaid_supplier)
+print(f"  Unpaid by state: {dict(sorted(sup_states.items()))}")
+for inv in unpaid_supplier[:8]:
     name = inv.get('SupplierName') or '?'
     amt = inv.get('LeftToPay') or inv.get('Amount') or 0
-    print(f"    -> {name}: {amt:,.0f} kr, State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}")
+    print(f"    -> {name}: {amt:,.0f} kr, State={inv.get('State')}, IsPaid={inv.get('IsPaid')}, Due={inv.get('DueDate','')[:10]}")
 
 # --- Receipts (Kvitton) - submitted but not paid out ---
 print(f"\nFetching receipts...")
@@ -194,7 +205,7 @@ print(f"  Unpaid customer invoices: {len(unpaid_invoices)}")
 total_receivable = sum(i.get("LeftToPay", 0) for i in unpaid_invoices)
 print(f"  Total receivable: {total_receivable:,.0f} kr")
 print(f"  Unpaid supplier invoices: {len(unpaid_supplier)}")
-total_payable = sum(i.get("LeftToPay", 0) for i in unpaid_supplier)
+total_payable = sum((i.get("LeftToPay") or i.get("Amount") or 0) for i in unpaid_supplier)
 print(f"  Total payable: {total_payable:,.0f} kr")
 print(f"  Pending receipts: {len(pending_receipts)}")
 total_pending = sum(r.get("Amount", 0) for r in pending_receipts)
