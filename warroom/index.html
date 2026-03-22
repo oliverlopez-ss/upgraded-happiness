@@ -580,7 +580,7 @@
         var script = document.createElement("script");
         script.id = callbackName;
         script.src = "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
-          "/gviz/tq?tqx=responseHandler:" + callbackName;
+          "/gviz/tq?headers=0&tqx=responseHandler:" + callbackName;
         script.onerror = function() {
           clearTimeout(timeout);
           delete window[callbackName];
