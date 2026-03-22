@@ -505,6 +505,7 @@
     // ── Data model ──
     var SHEET_CSV_LOCAL = "data/finanser.csv";
     var SHEET_CSV_FALLBACK = "import-finanser.csv";
+    var SHEET_CSV_LIVE = "https://docs.google.com/spreadsheets/d/1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc/gviz/tq?tqx=out:csv";
     var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
     var MONTH_SHORT = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
 
@@ -549,14 +550,21 @@
     // ── Fetch and parse sheet ──
     async function fetchSheetData() {
       var text;
+      // Try live Google Sheet first, then local CSV, then fallback
       try {
-        var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
-        if (!resp.ok) throw new Error("data/finanser.csv saknas");
-        text = await resp.text();
+        var liveResp = await fetch(SHEET_CSV_LIVE);
+        if (!liveResp.ok) throw new Error("Google Sheet ej tillgängligt");
+        text = await liveResp.text();
       } catch(e) {
-        var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
-        if (!fallbackResp.ok) throw new Error("Ingen finansdata tillg\u00e4nglig.");
-        text = await fallbackResp.text();
+        try {
+          var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
+          if (!resp.ok) throw new Error("data/finanser.csv saknas");
+          text = await resp.text();
+        } catch(e2) {
+          var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
+          if (!fallbackResp.ok) throw new Error("Ingen finansdata tillgänglig.");
+          text = await fallbackResp.text();
+        }
       }
       var rows = parseCSV(text);
 
