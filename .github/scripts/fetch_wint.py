@@ -126,11 +126,47 @@ for ep in supplier_endpoints:
         print(f"  {ep} exists but returned 0 items")
         break
 
-unpaid_supplier = [i for i in raw_supplier if is_unpaid_and_sent(i)]
-print(f"  Raw: {len(raw_supplier)}, unpaid & sent: {len(unpaid_supplier)}")
-if unpaid_supplier:
-    for inv in unpaid_supplier[:3]:
-        print(f"    -> {inv.get('SupplierName') or inv.get('CustomerName')}: {inv.get('LeftToPay', 0):,.0f} kr, Due={inv.get('DueDate','')[:10]}")
+# Log supplier invoice fields to understand structure
+if raw_supplier:
+    sample = raw_supplier[0]
+    print(f"  Sample keys: {sorted(sample.keys())}")
+    print(f"  Sample: Status={sample.get('Status')}, State={sample.get('State')}, "
+          f"PaymentState={sample.get('PaymentState')}, LeftToPay={sample.get('LeftToPay')}, "
+          f"Amount={sample.get('Amount')}, TotalAmount={sample.get('TotalAmount')}, "
+          f"RemainingAmount={sample.get('RemainingAmount')}, "
+          f"SupplierName={sample.get('SupplierName')}, "
+          f"DueDate={sample.get('DueDate')}, Paid={sample.get('Paid')}, "
+          f"IsPaid={sample.get('IsPaid')}, Attested={sample.get('Attested')}")
+    # Status distribution
+    from collections import Counter as C2
+    sup_dist = C2((i.get("Status"), i.get("State"), i.get("PaymentState")) for i in raw_supplier)
+    print(f"  (Status, State, PaymentState) distribution:")
+    for (s, st, ps), count in sorted(sup_dist.items(), key=lambda x: -x[1]):
+        print(f"    Status={s}, State={st}, PS={ps}: {count}")
+
+# For supplier invoices, also check for unpaid using alternative fields
+def is_supplier_unpaid(inv):
+    # Try multiple field names for "left to pay"
+    left = inv.get("LeftToPay") or inv.get("RemainingAmount") or 0
+    if left > 0:
+        return True
+    # Check if explicitly marked as not paid
+    if inv.get("IsPaid") == False or inv.get("Paid") == False:
+        amount = inv.get("TotalAmount") or inv.get("Amount") or 0
+        return amount > 0
+    # Check PaymentState
+    ps = inv.get("PaymentState", -1)
+    if ps == 0:  # Obetald
+        amount = inv.get("TotalAmount") or inv.get("Amount") or 0
+        return amount > 0
+    return False
+
+unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
+print(f"  Unpaid supplier invoices: {len(unpaid_supplier)}")
+for inv in unpaid_supplier[:5]:
+    name = inv.get('SupplierName') or inv.get('CustomerName') or inv.get('Name') or '?'
+    amt = inv.get('LeftToPay') or inv.get('RemainingAmount') or inv.get('TotalAmount') or inv.get('Amount') or 0
+    print(f"    -> {name}: {amt:,.0f} kr, Due={inv.get('DueDate','')[:10]}")
 
 # --- Receipts (Kvitton) - submitted but not paid out ---
 print(f"\nFetching receipts...")
