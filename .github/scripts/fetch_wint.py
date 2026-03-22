@@ -7,7 +7,12 @@ API_KEY = os.environ["WINT_API_KEY"]
 
 BASIC_CREDS = base64.b64encode(f"{USERNAME}:{API_KEY}".encode()).decode()
 YEAR = datetime.now().year
-YEAR_START = f"{YEAR}-01-01"
+
+# Invoice Status codes (from Wint UI):
+# 1=Ej skickad, 3=Skickad, ?=Påminnelse, 5=Förfallen, 4=Betald, ?=Makulerad, ?=Hos inkasso
+# We want: Skickad, Påminnelse, Förfallen (i.e. sent but not yet paid)
+# PaymentState: 0=Obetald, 1=Delvis betald, 2=Betald
+WANTED_INVOICE_STATUSES = {3, 5}  # Skickad + Förfallen (will also check LeftToPay)
 
 def api_get(path, timeout=60):
     url = f"{API_BASE}{path}"
@@ -25,8 +30,7 @@ def api_get(path, timeout=60):
         return None
 
 def fetch_recent_pages(path, date_field, timeout=90, max_pages=50):
-    """Fetch pages from the END (newest) working backwards until we pass YEAR_START."""
-    # First get total to find last page
+    """Fetch pages from the END (newest) working backwards."""
     result = api_get(f"{path}{'&' if '?' in path else '?'}page=0", timeout=timeout)
     if not result or not isinstance(result, dict):
         return []
@@ -39,6 +43,7 @@ def fetch_recent_pages(path, date_field, timeout=90, max_pages=50):
 
     all_items = []
     sep = "&" if "?" in path else "?"
+    year_start = f"{YEAR}-01-01"
     for page in range(last_page, max(last_page - max_pages, -1), -1):
         page_result = api_get(f"{path}{sep}page={page}", timeout=timeout)
         if not page_result or not isinstance(page_result, dict):
@@ -47,30 +52,25 @@ def fetch_recent_pages(path, date_field, timeout=90, max_pages=50):
         if not items:
             break
         all_items.extend(items)
-        # Check if we've gone past current year
         oldest_date = min((i.get(date_field) or "9999" for i in items))
         print(f"  Page {page}: {len(items)} items, oldest: {oldest_date[:10]}")
-        if oldest_date < YEAR_START:
+        if oldest_date < year_start:
             break
 
     return all_items
 
-def fetch_all_pages(path, timeout=90, max_pages=50):
-    """Fetch all pages from a paginated endpoint."""
-    all_items = []
-    sep = "&" if "?" in path else "?"
-    for page in range(max_pages):
-        result = api_get(f"{path}{sep}page={page}", timeout=timeout)
-        if not result or not isinstance(result, dict):
-            break
-        items = result.get("Items", [])
-        if not items:
-            break
-        all_items.extend(items)
-        total = result.get("TotalItems", 0)
-        if len(all_items) >= total:
-            break
-    return all_items
+def is_unpaid_and_sent(invoice):
+    """Invoice is sent (not draft) and has outstanding balance."""
+    status = invoice.get("Status", 0)
+    left_to_pay = invoice.get("LeftToPay") or 0
+    payment_state = invoice.get("PaymentState", 0)
+    # Include: Skickad(3), Förfallen(5), or any status with LeftToPay > 0
+    # Exclude: Ej skickad(1), Betald(4), Makulerad
+    if status in (1, 4):  # Draft or fully paid
+        return False
+    if left_to_pay <= 0 and payment_state == 2:  # Paid
+        return False
+    return left_to_pay > 0
 
 # Verify auth
 print("Verifying Wint API credentials...")
@@ -84,36 +84,44 @@ print("  Authenticated successfully")
 print("Fetching company info...")
 company = api_get("/Auth")
 
-# Fetch invoices from the END (newest first) until we pass current year
-print(f"Fetching recent invoices (from end, looking for {YEAR})...")
+# --- Customer invoices (Kundfakturor) ---
+print(f"\nFetching customer invoices...")
 raw_invoices = fetch_recent_pages("/Invoice", "DueDate")
-# Filter to current year
-current_year_invoices = [i for i in raw_invoices
-    if (i.get("DueDate") or "").startswith(str(YEAR))]
-# Unpaid: LeftToPay > 0 regardless of year
-unpaid_invoices = [i for i in raw_invoices
-    if (i.get("LeftToPay") or 0) > 0]
-print(f"  Raw: {len(raw_invoices)}, {YEAR}: {len(current_year_invoices)}, unpaid: {len(unpaid_invoices)}")
+unpaid_invoices = [i for i in raw_invoices if is_unpaid_and_sent(i)]
+print(f"  Raw: {len(raw_invoices)}, unpaid & sent: {len(unpaid_invoices)}")
+# Log status distribution
+status_counts = {}
+for i in raw_invoices:
+    s = i.get("Status", "?")
+    status_counts[s] = status_counts.get(s, 0) + 1
+print(f"  Status distribution: {status_counts}")
 
-# Fetch receipts from the END (newest first)
-print(f"Fetching recent receipts (from end, looking for {YEAR})...")
+# --- Supplier invoices (Leverantörsfakturor) ---
+print(f"\nFetching supplier invoices...")
+raw_supplier = fetch_recent_pages("/SupplierInvoice", "DueDate")
+unpaid_supplier = [i for i in raw_supplier if is_unpaid_and_sent(i)]
+print(f"  Raw: {len(raw_supplier)}, unpaid & sent: {len(unpaid_supplier)}")
+
+# --- Receipts (Kvitton) - submitted but not paid out ---
+print(f"\nFetching receipts...")
 raw_receipts = fetch_recent_pages("/Receipt", "DateTime")
-current_year_receipts = [r for r in raw_receipts
-    if (r.get("DateTime") or r.get("PaymentDate") or "").startswith(str(YEAR))]
-print(f"  Raw: {len(raw_receipts)}, {YEAR}: {len(current_year_receipts)}")
+# PaymentState 0 = not paid out, State 1 = submitted
+# Filter: current year, submitted, not paid out
+pending_receipts = []
+for r in raw_receipts:
+    date = r.get("DateTime") or r.get("PaymentDate") or ""
+    if not date.startswith(str(YEAR)):
+        continue
+    payment_state = r.get("PaymentState", 0)
+    if payment_state == 0:  # Not paid out
+        pending_receipts.append(r)
+print(f"  Raw: {len(raw_receipts)}, {YEAR} pending payout: {len(pending_receipts)}")
 
-# Fetch accounts (for cash position)
-print("Fetching accounts...")
+# --- Accounts (for cash position) ---
+print("\nFetching accounts...")
 accounts = api_get("/Account")
 
-# Fetch active customers only
-print("Fetching customers...")
-all_customers = fetch_all_pages("/Customer")
-active_customers = [c for c in all_customers
-    if not c.get("Inactive", False) and (c.get("NumOfInvoices") or 0) > 0]
-print(f"  Total: {len(all_customers)}, active with invoices: {len(active_customers)}")
-
-# Fetch employees
+# --- Employees ---
 print("Fetching employees...")
 employees = api_get("/Employees")
 
@@ -123,16 +131,15 @@ wint_data = {
     "year": YEAR,
     "company": company,
     "invoices": {
-        "all": current_year_invoices,
         "unpaid": unpaid_invoices,
     },
+    "supplierInvoices": {
+        "unpaid": unpaid_supplier,
+    },
     "receipts": {
-        "items": current_year_receipts,
+        "pending": pending_receipts,
     },
     "accounts": accounts,
-    "customers": {
-        "active": active_customers,
-    },
     "employees": employees,
 }
 
@@ -141,11 +148,16 @@ with open(output_path, "w") as f:
     json.dump(wint_data, f, indent=2, default=str)
 
 # Summary
-print(f"\nSummary for {YEAR}:")
-print(f"  Invoices ({YEAR}): {len(current_year_invoices)}")
-print(f"  Unpaid invoices (all time): {len(unpaid_invoices)}")
-print(f"  Receipts ({YEAR}): {len(current_year_receipts)}")
-print(f"  Active customers: {len(active_customers)}")
+print(f"\nSummary:")
+print(f"  Unpaid customer invoices: {len(unpaid_invoices)}")
+total_receivable = sum(i.get("LeftToPay", 0) for i in unpaid_invoices)
+print(f"  Total receivable: {total_receivable:,.0f} kr")
+print(f"  Unpaid supplier invoices: {len(unpaid_supplier)}")
+total_payable = sum(i.get("LeftToPay", 0) for i in unpaid_supplier)
+print(f"  Total payable: {total_payable:,.0f} kr")
+print(f"  Pending receipts: {len(pending_receipts)}")
+total_pending = sum(r.get("Amount", 0) for r in pending_receipts)
+print(f"  Total pending payout: {total_pending:,.0f} kr")
 emp_items = employees.get("Items", []) if employees else []
 print(f"  Employees: {len(emp_items)}")
 print(f"\nWrote Wint data to {output_path}")

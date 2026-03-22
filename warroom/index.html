@@ -427,7 +427,7 @@
 
     <!-- Wint/Superkoll data section -->
     <div id="wintSection" style="display:none">
-      <div class="section-label">Wint / Superkoll &ndash; Ekonomi 2026</div>
+      <div class="section-label">Wint / Superkoll &ndash; Likviditetsp&aring;verkan</div>
       <div class="stats" style="margin-bottom:16px" id="wintStats"></div>
       <div class="detail-grid" id="wintDetail"></div>
       <div class="divider"></div>
@@ -1566,74 +1566,95 @@
       if (!wintDataLoaded || !wintData) { section.style.display = "none"; return; }
       section.style.display = "block";
 
-      var invoiceList = (wintData.invoices && wintData.invoices.all) || extractItems(wintData.invoices);
       var unpaidInvoices = (wintData.invoices && wintData.invoices.unpaid) || [];
-      var receiptList = (wintData.receipts && wintData.receipts.items) || extractItems(wintData.receipts);
-      var customerList = (wintData.customers && wintData.customers.active) || extractItems(wintData.customers);
-      var employeeList = extractItems(wintData.employees);
+      var unpaidSupplier = (wintData.supplierInvoices && wintData.supplierInvoices.unpaid) || [];
+      var pendingReceipts = (wintData.receipts && wintData.receipts.pending) || extractItems(wintData.receipts);
 
       // Summary stats
-      var totalInvoiced = invoiceList.reduce(function(s, inv) {
-        return s + Math.abs(parseFloat(inv.TotalAmount || inv.totalAmount || 0));
-      }, 0);
-      var totalUnpaid = unpaidInvoices.reduce(function(s, inv) {
+      var totalReceivable = unpaidInvoices.reduce(function(s, inv) {
         return s + Math.abs(parseFloat(inv.LeftToPay || inv.TotalAmount || 0));
       }, 0);
-      var totalReceipts = receiptList.reduce(function(s, rec) {
+      var totalPayable = unpaidSupplier.reduce(function(s, inv) {
+        return s + Math.abs(parseFloat(inv.LeftToPay || inv.TotalAmount || 0));
+      }, 0);
+      var totalPendingReceipts = pendingReceipts.reduce(function(s, rec) {
         return s + Math.abs(parseFloat(rec.Amount || rec.TotalAmountSummarySEK || 0));
       }, 0);
-      var yr = wintData.year || new Date().getFullYear();
 
       document.getElementById("wintStats").innerHTML =
-        '<div class="stat-card accent-top"><div class="label">Fakturor ' + yr + '</div><div class="value">' + invoiceList.length + '</div><div class="sub">Totalt ' + fmt(totalInvoiced) + '</div></div>' +
-        '<div class="stat-card accent-top" style="border-top-color:#E76F51"><div class="label">Obetalda fakturor</div><div class="value">' + unpaidInvoices.length + '</div><div class="sub">' + fmt(totalUnpaid) + ' kvar</div></div>' +
-        '<div class="stat-card accent-top"><div class="label">Kvitton ' + yr + '</div><div class="value">' + receiptList.length + '</div><div class="sub">Totalt ' + fmt(totalReceipts) + '</div></div>' +
-        '<div class="stat-card accent-top"><div class="label">Aktiva kunder</div><div class="value">' + customerList.length + '</div><div class="sub">I Wint</div></div>';
+        '<div class="stat-card accent-top"><div class="label">Kundfakturor (att f\u00e5)</div><div class="value">' + unpaidInvoices.length + '</div><div class="sub">' + fmt(totalReceivable) + '</div></div>' +
+        '<div class="stat-card accent-top" style="border-top-color:#E76F51"><div class="label">Leverant\u00f6rsfakturor (att betala)</div><div class="value">' + unpaidSupplier.length + '</div><div class="sub">' + fmt(totalPayable) + '</div></div>' +
+        '<div class="stat-card accent-top" style="border-top-color:#E9C46A"><div class="label">Kvitton (ej utbetalda)</div><div class="value">' + pendingReceipts.length + '</div><div class="sub">' + fmt(totalPendingReceipts) + '</div></div>' +
+        '<div class="stat-card accent-top"><div class="label">Netto likviditetsp\u00e5verkan</div><div class="value">' + fmt(totalReceivable - totalPayable - totalPendingReceipts) + '</div><div class="sub">Fordringar \u2212 skulder</div></div>';
 
-      // Show unpaid invoices (most urgent first by due date)
+      // Show unpaid customer invoices (most urgent first)
       var showInv = unpaidInvoices.slice().sort(function(a, b) {
         var da = a.DueDate || "";
         var db = b.DueDate || "";
-        return da.localeCompare(db); // oldest due date first (most urgent)
+        return da.localeCompare(db);
       }).slice(0, 10);
 
-      // Show recent receipts (newest first)
-      var recentRec = receiptList.slice().sort(function(a, b) {
+      // Show unpaid supplier invoices (most urgent first)
+      var showSupplier = unpaidSupplier.slice().sort(function(a, b) {
+        var da = a.DueDate || "";
+        var db = b.DueDate || "";
+        return da.localeCompare(db);
+      }).slice(0, 10);
+
+      // Show pending receipts (newest first)
+      var showReceipts = pendingReceipts.slice().sort(function(a, b) {
         var da = a.DateTime || a.PaymentDate || "";
         var db = b.DateTime || b.PaymentDate || "";
         return db.localeCompare(da);
       }).slice(0, 10);
 
-      var invHtml = '<div class="detail-block"><div class="detail-block-header rev">Obetalda fakturor</div>';
+      // Customer invoices
+      var invHtml = '<div class="detail-block"><div class="detail-block-header rev">Obetalda kundfakturor (fordringar)</div>';
       showInv.forEach(function(inv) {
         var name = inv.CustomerName || "Faktura";
         var leftToPay = parseFloat(inv.LeftToPay || inv.TotalAmount || 0);
-        var total = parseFloat(inv.TotalAmount || 0);
-        var amountText = leftToPay < total ? fmt(leftToPay) + ' av ' + fmt(total) : fmt(total);
         var date = inv.DueDate || "";
         var overdue = date && new Date(date) < new Date();
         invHtml += '<div class="detail-item"><span class="item-name">' + name +
-          (overdue ? ' <span style="color:#E76F51;font-size:10px;font-weight:600">FÖRFALLEN</span>' : '') +
-          (date ? ' <span style="opacity:0.3;font-size:10px">förfaller ' + fmtDate(date) + '</span>' : '') +
-          '</span><span class="item-amount">' + amountText + '</span></div>';
+          (overdue ? ' <span style="color:#E76F51;font-size:10px;font-weight:600">F\u00d6RFALLEN</span>' : '') +
+          (date ? ' <span style="opacity:0.3;font-size:10px">f\u00f6rfaller ' + fmtDate(date) + '</span>' : '') +
+          '</span><span class="item-amount">' + fmt(leftToPay) + '</span></div>';
       });
-      if (showInv.length === 0) invHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4;color:#2A9D8F">Inga obetalda fakturor!</span><span></span></div>';
+      if (showInv.length === 0) invHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4;color:#2A9D8F">Inga obetalda kundfakturor!</span><span></span></div>';
       invHtml += '</div>';
 
-      var recHtml = '<div class="detail-block"><div class="detail-block-header exp">Senaste kvitton ' + yr + '</div>';
-      recentRec.forEach(function(rec) {
-        var name = rec.SupplierName || rec.CategoryName || "Kvitto";
-        var amount = Math.abs(parseFloat(rec.Amount || rec.TotalAmountSummarySEK || 0));
-        var date = rec.DateTime || rec.PaymentDate || "";
-        recHtml += '<div class="detail-item"><span class="item-name">' + name +
-          (rec.CreatedByPersonName ? ' <span style="opacity:0.5;font-size:10px">(' + rec.CreatedByPersonName + ')</span>' : '') +
-          (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
-          '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
+      // Supplier invoices
+      var supHtml = '<div class="detail-block"><div class="detail-block-header exp">Obetalda leverant\u00f6rsfakturor (skulder)</div>';
+      showSupplier.forEach(function(inv) {
+        var name = inv.SupplierName || inv.CustomerName || "Leverant\u00f6rsfaktura";
+        var leftToPay = parseFloat(inv.LeftToPay || inv.TotalAmount || 0);
+        var date = inv.DueDate || "";
+        var overdue = date && new Date(date) < new Date();
+        supHtml += '<div class="detail-item"><span class="item-name">' + name +
+          (overdue ? ' <span style="color:#E76F51;font-size:10px;font-weight:600">F\u00d6RFALLEN</span>' : '') +
+          (date ? ' <span style="opacity:0.3;font-size:10px">f\u00f6rfaller ' + fmtDate(date) + '</span>' : '') +
+          '</span><span class="item-amount">' + fmt(leftToPay) + '</span></div>';
       });
-      if (recentRec.length === 0) recHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4">Inga kvitton ' + yr + '</span><span></span></div>';
-      recHtml += '</div>';
+      if (showSupplier.length === 0) supHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4;color:#2A9D8F">Inga obetalda leverant\u00f6rsfakturor!</span><span></span></div>';
+      supHtml += '</div>';
 
-      document.getElementById("wintDetail").innerHTML = invHtml + recHtml;
+      // Pending receipts
+      var recHtml = '';
+      if (pendingReceipts.length > 0) {
+        recHtml = '<div class="detail-block"><div class="detail-block-header" style="background:rgba(233,196,106,0.15);color:#E9C46A">Kvitton (inskickade, ej utbetalda)</div>';
+        showReceipts.forEach(function(rec) {
+          var name = rec.SupplierName || rec.CategoryName || "Kvitto";
+          var amount = Math.abs(parseFloat(rec.Amount || rec.TotalAmountSummarySEK || 0));
+          var date = rec.DateTime || rec.PaymentDate || "";
+          recHtml += '<div class="detail-item"><span class="item-name">' + name +
+            (rec.CreatedByPersonName ? ' <span style="opacity:0.5;font-size:10px">(' + rec.CreatedByPersonName + ')</span>' : '') +
+            (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
+            '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
+        });
+        recHtml += '</div>';
+      }
+
+      document.getElementById("wintDetail").innerHTML = invHtml + supHtml + recHtml;
     }
 
     function renderAll() {
