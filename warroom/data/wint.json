@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-03-22T20:48:04.923444",
+  "fetchedAt": "2026-03-22T20:54:48.012680",
   "year": 2026,
   "company": {
     "Id": 10965,
@@ -974,350 +974,6 @@
     ],
     "InvoiceDimensions": [
       {
-        "Name": "Aimo Share Park",
-        "Id": "0cc0ca7f-e6c9-4216-afdf-4d4cdd2ccaf9",
-        "ShortName": "ASP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Airsonett",
-        "Id": "195ce9c5-823c-41f0-a728-77def5c474f4",
-        "ShortName": "AR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Apendo",
-        "Id": "e5878881-b514-40f9-8e74-315d45e35dd0",
-        "ShortName": "AP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Awake",
-        "Id": "2f5d7f8f-c7dd-40e7-a204-d5e0aecbc262",
-        "ShortName": "AW",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Baseload Capital",
-        "Id": "7b0358cf-7c63-4643-b1ee-7fe776886de0",
-        "ShortName": "B C",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Bluewater",
-        "Id": "ff193537-16d6-4faa-80c6-0e6f5dba3127",
-        "ShortName": "BW",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Careon",
-        "Id": "00d739fa-95c6-4f6b-b1e1-4716c9674490",
-        "ShortName": "CR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Compare IT",
-        "Id": "417aa3c4-fc8f-4a63-a2e9-410a29a4e113",
-        "ShortName": "Comp IT",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "CoolPlanet",
-        "Id": "1d497cbb-4010-4189-9bad-0f2d784ae8d3",
-        "ShortName": "C.P",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Cristie Nordic",
-        "Id": "eae68bc4-4611-470d-8463-7a6e5192e110",
-        "ShortName": "CN",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Curity",
-        "Id": "3310c737-4b11-4930-ab42-7478d34fd848",
-        "ShortName": "Curity",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Devcode",
-        "Id": "809726af-14f2-4f59-9023-6ff079d09c12",
-        "ShortName": "DC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Diploma",
-        "Id": "c3d71eec-7e5a-40c0-9553-f1d9cda9b298",
-        "ShortName": "DIP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Econopack",
-        "Id": "5f4d2dc3-87af-4737-84c5-9fb1a408ad04",
-        "ShortName": "ECP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Efuel",
-        "Id": "d055a277-ee8b-4b72-8b4f-dccf86a7034d",
-        "ShortName": "Efuel",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Eurekossystems",
-        "Id": "608314f3-b94c-488d-9a7b-720d58580a03",
-        "ShortName": "EK",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Evoma",
-        "Id": "633caf71-d43a-40bd-a8d3-a9d9b2ccd9c7",
-        "ShortName": "EV",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "ExOpen",
-        "Id": "767d38a9-bc1e-49fa-b856-c3a04b34c361",
-        "ShortName": "EO",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Goava provision",
-        "Id": "b5673bed-4cfc-434e-91f6-978a83e16e80",
-        "ShortName": "GP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Haeger Carlsson",
-        "Id": "609d5a9a-e3be-4ba3-8178-ac35d84fe3ae",
-        "ShortName": "HC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "HelloFuture",
-        "Id": "6538f07f-cf3b-41c6-b220-077d1d2dc01f",
-        "ShortName": "HF",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Kuva Space",
-        "Id": "178a36cb-537b-49d7-bfa5-2a17c8030806",
-        "ShortName": "Kuva S",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Load Systems",
-        "Id": "1e66748f-64df-48a1-970f-96d571b030fc",
-        "ShortName": "LS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "L\u00f6n & HR Bolaget i Sverige AB",
-        "Id": "bae5fcc6-bf41-4c82-95c1-ccbde6e26faa",
-        "ShortName": "l\u00f6n & HR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Manpower Group",
-        "Id": "6f7e03ba-8702-4d6a-a265-7c54abc1c668",
-        "ShortName": "MP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Motus",
-        "Id": "d712a5a9-641e-4085-889d-b970cb2c8245",
-        "ShortName": "MS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "MSC",
-        "Id": "9c9c74b7-3af8-428f-ace1-7206ae176031",
-        "ShortName": "MSC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "OKQ8",
-        "Id": "15bfe59d-ba29-4558-a6a2-b857a999fc05",
-        "ShortName": "OK",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Pensure",
-        "Id": "d5fa304e-2e5a-47e3-bebe-0f6fa073e8fa",
-        "ShortName": "PS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Proresult",
-        "Id": "735ba966-6692-468f-bf7f-1f37fd6d1d33",
-        "ShortName": "pro",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "QCC",
-        "Id": "c8de38c8-8148-47cd-85b9-7f788a8d8ee0",
-        "ShortName": "QC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Re-board Technology",
-        "Id": "d104ae70-a09c-4114-baec-b4bef41139be",
-        "ShortName": "Reboard",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Screenforce Finland",
-        "Id": "806cd0f0-4bfc-4d76-9965-ad939b359ab6",
-        "ShortName": "SF",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Skellefte\u00e5 Science",
-        "Id": "169eef65-07b3-432e-92b3-ca35dde1f00f",
-        "ShortName": "SS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Structsales Admin",
-        "Id": "f93eeecf-1c19-4823-bf76-ec5f8ad475f3",
-        "ShortName": "ssadm",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Structsales Marknadsf\u00f6ring",
-        "Id": "4b45555f-ba07-4e5d-86a6-985450eb797e",
-        "ShortName": "ssmktng",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Sun Maskin",
-        "Id": "0ce563c5-710c-4101-967a-cd1301ee3a88",
-        "ShortName": "SM",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "SweGreen",
-        "Id": "337cf3ed-ed28-4c83-bcb5-fb9f8cdb81b0",
-        "ShortName": "SG",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Talent Solutions",
-        "Id": "11256af3-a4c5-479a-af18-47d02f2d83ff",
-        "ShortName": "TS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "TreCe",
-        "Id": "3be96f82-c933-4a78-9d1c-3d97beeac177",
-        "ShortName": "TreCe",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Visbook",
-        "Id": "26795466-e409-41ae-92c8-1a3aaebc7d16",
-        "ShortName": "VS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Webbshop",
-        "Id": "077100f1-8c0c-43f2-9f0e-57b1ef9dc99a",
-        "ShortName": "WEBBSHOP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Workz",
-        "Id": "d183f802-7b3b-42f1-9f15-7895e0c84afd",
-        "ShortName": "WZ",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
         "Name": "136 MP/EXP support",
         "Id": "4bb93a32-49c7-4bef-859e-b3af8b690207",
         "ShortName": "136 support",
@@ -1698,6 +1354,350 @@
         "Id": "88956ef2-b6d6-4ff2-9714-4784e7b30c90",
         "ShortName": "VF",
         "TypeId": "20e188a9-c6d6-45d9-b98d-7867f017f639",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Aimo Share Park",
+        "Id": "0cc0ca7f-e6c9-4216-afdf-4d4cdd2ccaf9",
+        "ShortName": "ASP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Airsonett",
+        "Id": "195ce9c5-823c-41f0-a728-77def5c474f4",
+        "ShortName": "AR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Apendo",
+        "Id": "e5878881-b514-40f9-8e74-315d45e35dd0",
+        "ShortName": "AP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Awake",
+        "Id": "2f5d7f8f-c7dd-40e7-a204-d5e0aecbc262",
+        "ShortName": "AW",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Baseload Capital",
+        "Id": "7b0358cf-7c63-4643-b1ee-7fe776886de0",
+        "ShortName": "B C",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Bluewater",
+        "Id": "ff193537-16d6-4faa-80c6-0e6f5dba3127",
+        "ShortName": "BW",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Careon",
+        "Id": "00d739fa-95c6-4f6b-b1e1-4716c9674490",
+        "ShortName": "CR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Compare IT",
+        "Id": "417aa3c4-fc8f-4a63-a2e9-410a29a4e113",
+        "ShortName": "Comp IT",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "CoolPlanet",
+        "Id": "1d497cbb-4010-4189-9bad-0f2d784ae8d3",
+        "ShortName": "C.P",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Cristie Nordic",
+        "Id": "eae68bc4-4611-470d-8463-7a6e5192e110",
+        "ShortName": "CN",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Curity",
+        "Id": "3310c737-4b11-4930-ab42-7478d34fd848",
+        "ShortName": "Curity",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Devcode",
+        "Id": "809726af-14f2-4f59-9023-6ff079d09c12",
+        "ShortName": "DC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Diploma",
+        "Id": "c3d71eec-7e5a-40c0-9553-f1d9cda9b298",
+        "ShortName": "DIP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Econopack",
+        "Id": "5f4d2dc3-87af-4737-84c5-9fb1a408ad04",
+        "ShortName": "ECP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Efuel",
+        "Id": "d055a277-ee8b-4b72-8b4f-dccf86a7034d",
+        "ShortName": "Efuel",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Eurekossystems",
+        "Id": "608314f3-b94c-488d-9a7b-720d58580a03",
+        "ShortName": "EK",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Evoma",
+        "Id": "633caf71-d43a-40bd-a8d3-a9d9b2ccd9c7",
+        "ShortName": "EV",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "ExOpen",
+        "Id": "767d38a9-bc1e-49fa-b856-c3a04b34c361",
+        "ShortName": "EO",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Goava provision",
+        "Id": "b5673bed-4cfc-434e-91f6-978a83e16e80",
+        "ShortName": "GP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Haeger Carlsson",
+        "Id": "609d5a9a-e3be-4ba3-8178-ac35d84fe3ae",
+        "ShortName": "HC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "HelloFuture",
+        "Id": "6538f07f-cf3b-41c6-b220-077d1d2dc01f",
+        "ShortName": "HF",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Kuva Space",
+        "Id": "178a36cb-537b-49d7-bfa5-2a17c8030806",
+        "ShortName": "Kuva S",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Load Systems",
+        "Id": "1e66748f-64df-48a1-970f-96d571b030fc",
+        "ShortName": "LS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "L\u00f6n & HR Bolaget i Sverige AB",
+        "Id": "bae5fcc6-bf41-4c82-95c1-ccbde6e26faa",
+        "ShortName": "l\u00f6n & HR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Manpower Group",
+        "Id": "6f7e03ba-8702-4d6a-a265-7c54abc1c668",
+        "ShortName": "MP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Motus",
+        "Id": "d712a5a9-641e-4085-889d-b970cb2c8245",
+        "ShortName": "MS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "MSC",
+        "Id": "9c9c74b7-3af8-428f-ace1-7206ae176031",
+        "ShortName": "MSC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "OKQ8",
+        "Id": "15bfe59d-ba29-4558-a6a2-b857a999fc05",
+        "ShortName": "OK",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Pensure",
+        "Id": "d5fa304e-2e5a-47e3-bebe-0f6fa073e8fa",
+        "ShortName": "PS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Proresult",
+        "Id": "735ba966-6692-468f-bf7f-1f37fd6d1d33",
+        "ShortName": "pro",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "QCC",
+        "Id": "c8de38c8-8148-47cd-85b9-7f788a8d8ee0",
+        "ShortName": "QC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Re-board Technology",
+        "Id": "d104ae70-a09c-4114-baec-b4bef41139be",
+        "ShortName": "Reboard",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Screenforce Finland",
+        "Id": "806cd0f0-4bfc-4d76-9965-ad939b359ab6",
+        "ShortName": "SF",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Skellefte\u00e5 Science",
+        "Id": "169eef65-07b3-432e-92b3-ca35dde1f00f",
+        "ShortName": "SS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Structsales Admin",
+        "Id": "f93eeecf-1c19-4823-bf76-ec5f8ad475f3",
+        "ShortName": "ssadm",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Structsales Marknadsf\u00f6ring",
+        "Id": "4b45555f-ba07-4e5d-86a6-985450eb797e",
+        "ShortName": "ssmktng",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Sun Maskin",
+        "Id": "0ce563c5-710c-4101-967a-cd1301ee3a88",
+        "ShortName": "SM",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "SweGreen",
+        "Id": "337cf3ed-ed28-4c83-bcb5-fb9f8cdb81b0",
+        "ShortName": "SG",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Talent Solutions",
+        "Id": "11256af3-a4c5-479a-af18-47d02f2d83ff",
+        "ShortName": "TS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "TreCe",
+        "Id": "3be96f82-c933-4a78-9d1c-3d97beeac177",
+        "ShortName": "TreCe",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Visbook",
+        "Id": "26795466-e409-41ae-92c8-1a3aaebc7d16",
+        "ShortName": "VS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Webbshop",
+        "Id": "077100f1-8c0c-43f2-9f0e-57b1ef9dc99a",
+        "ShortName": "WEBBSHOP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Workz",
+        "Id": "d183f802-7b3b-42f1-9f15-7895e0c84afd",
+        "ShortName": "WZ",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
         "TypeName": null,
         "Type": 0
       }
@@ -2614,350 +2614,6 @@
     ],
     "CashReconciliationDimensions": [
       {
-        "Name": "Aimo Share Park",
-        "Id": "0cc0ca7f-e6c9-4216-afdf-4d4cdd2ccaf9",
-        "ShortName": "ASP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Airsonett",
-        "Id": "195ce9c5-823c-41f0-a728-77def5c474f4",
-        "ShortName": "AR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Apendo",
-        "Id": "e5878881-b514-40f9-8e74-315d45e35dd0",
-        "ShortName": "AP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Awake",
-        "Id": "2f5d7f8f-c7dd-40e7-a204-d5e0aecbc262",
-        "ShortName": "AW",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Baseload Capital",
-        "Id": "7b0358cf-7c63-4643-b1ee-7fe776886de0",
-        "ShortName": "B C",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Bluewater",
-        "Id": "ff193537-16d6-4faa-80c6-0e6f5dba3127",
-        "ShortName": "BW",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Careon",
-        "Id": "00d739fa-95c6-4f6b-b1e1-4716c9674490",
-        "ShortName": "CR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Compare IT",
-        "Id": "417aa3c4-fc8f-4a63-a2e9-410a29a4e113",
-        "ShortName": "Comp IT",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "CoolPlanet",
-        "Id": "1d497cbb-4010-4189-9bad-0f2d784ae8d3",
-        "ShortName": "C.P",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Cristie Nordic",
-        "Id": "eae68bc4-4611-470d-8463-7a6e5192e110",
-        "ShortName": "CN",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Curity",
-        "Id": "3310c737-4b11-4930-ab42-7478d34fd848",
-        "ShortName": "Curity",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Devcode",
-        "Id": "809726af-14f2-4f59-9023-6ff079d09c12",
-        "ShortName": "DC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Diploma",
-        "Id": "c3d71eec-7e5a-40c0-9553-f1d9cda9b298",
-        "ShortName": "DIP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Econopack",
-        "Id": "5f4d2dc3-87af-4737-84c5-9fb1a408ad04",
-        "ShortName": "ECP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Efuel",
-        "Id": "d055a277-ee8b-4b72-8b4f-dccf86a7034d",
-        "ShortName": "Efuel",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Eurekossystems",
-        "Id": "608314f3-b94c-488d-9a7b-720d58580a03",
-        "ShortName": "EK",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Evoma",
-        "Id": "633caf71-d43a-40bd-a8d3-a9d9b2ccd9c7",
-        "ShortName": "EV",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "ExOpen",
-        "Id": "767d38a9-bc1e-49fa-b856-c3a04b34c361",
-        "ShortName": "EO",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Goava provision",
-        "Id": "b5673bed-4cfc-434e-91f6-978a83e16e80",
-        "ShortName": "GP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Haeger Carlsson",
-        "Id": "609d5a9a-e3be-4ba3-8178-ac35d84fe3ae",
-        "ShortName": "HC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "HelloFuture",
-        "Id": "6538f07f-cf3b-41c6-b220-077d1d2dc01f",
-        "ShortName": "HF",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Kuva Space",
-        "Id": "178a36cb-537b-49d7-bfa5-2a17c8030806",
-        "ShortName": "Kuva S",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Load Systems",
-        "Id": "1e66748f-64df-48a1-970f-96d571b030fc",
-        "ShortName": "LS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "L\u00f6n & HR Bolaget i Sverige AB",
-        "Id": "bae5fcc6-bf41-4c82-95c1-ccbde6e26faa",
-        "ShortName": "l\u00f6n & HR",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Manpower Group",
-        "Id": "6f7e03ba-8702-4d6a-a265-7c54abc1c668",
-        "ShortName": "MP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Motus",
-        "Id": "d712a5a9-641e-4085-889d-b970cb2c8245",
-        "ShortName": "MS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "MSC",
-        "Id": "9c9c74b7-3af8-428f-ace1-7206ae176031",
-        "ShortName": "MSC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "OKQ8",
-        "Id": "15bfe59d-ba29-4558-a6a2-b857a999fc05",
-        "ShortName": "OK",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Pensure",
-        "Id": "d5fa304e-2e5a-47e3-bebe-0f6fa073e8fa",
-        "ShortName": "PS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Proresult",
-        "Id": "735ba966-6692-468f-bf7f-1f37fd6d1d33",
-        "ShortName": "pro",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "QCC",
-        "Id": "c8de38c8-8148-47cd-85b9-7f788a8d8ee0",
-        "ShortName": "QC",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Re-board Technology",
-        "Id": "d104ae70-a09c-4114-baec-b4bef41139be",
-        "ShortName": "Reboard",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Screenforce Finland",
-        "Id": "806cd0f0-4bfc-4d76-9965-ad939b359ab6",
-        "ShortName": "SF",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Skellefte\u00e5 Science",
-        "Id": "169eef65-07b3-432e-92b3-ca35dde1f00f",
-        "ShortName": "SS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Structsales Admin",
-        "Id": "f93eeecf-1c19-4823-bf76-ec5f8ad475f3",
-        "ShortName": "ssadm",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Structsales Marknadsf\u00f6ring",
-        "Id": "4b45555f-ba07-4e5d-86a6-985450eb797e",
-        "ShortName": "ssmktng",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Sun Maskin",
-        "Id": "0ce563c5-710c-4101-967a-cd1301ee3a88",
-        "ShortName": "SM",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "SweGreen",
-        "Id": "337cf3ed-ed28-4c83-bcb5-fb9f8cdb81b0",
-        "ShortName": "SG",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Talent Solutions",
-        "Id": "11256af3-a4c5-479a-af18-47d02f2d83ff",
-        "ShortName": "TS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "TreCe",
-        "Id": "3be96f82-c933-4a78-9d1c-3d97beeac177",
-        "ShortName": "TreCe",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Visbook",
-        "Id": "26795466-e409-41ae-92c8-1a3aaebc7d16",
-        "ShortName": "VS",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Webbshop",
-        "Id": "077100f1-8c0c-43f2-9f0e-57b1ef9dc99a",
-        "ShortName": "WEBBSHOP",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
-        "Name": "Workz",
-        "Id": "d183f802-7b3b-42f1-9f15-7895e0c84afd",
-        "ShortName": "WZ",
-        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
-        "TypeName": null,
-        "Type": 0
-      },
-      {
         "Name": "136 MP/EXP support",
         "Id": "4bb93a32-49c7-4bef-859e-b3af8b690207",
         "ShortName": "136 support",
@@ -3338,6 +2994,350 @@
         "Id": "88956ef2-b6d6-4ff2-9714-4784e7b30c90",
         "ShortName": "VF",
         "TypeId": "20e188a9-c6d6-45d9-b98d-7867f017f639",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Aimo Share Park",
+        "Id": "0cc0ca7f-e6c9-4216-afdf-4d4cdd2ccaf9",
+        "ShortName": "ASP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Airsonett",
+        "Id": "195ce9c5-823c-41f0-a728-77def5c474f4",
+        "ShortName": "AR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Apendo",
+        "Id": "e5878881-b514-40f9-8e74-315d45e35dd0",
+        "ShortName": "AP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Awake",
+        "Id": "2f5d7f8f-c7dd-40e7-a204-d5e0aecbc262",
+        "ShortName": "AW",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Baseload Capital",
+        "Id": "7b0358cf-7c63-4643-b1ee-7fe776886de0",
+        "ShortName": "B C",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Bluewater",
+        "Id": "ff193537-16d6-4faa-80c6-0e6f5dba3127",
+        "ShortName": "BW",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Careon",
+        "Id": "00d739fa-95c6-4f6b-b1e1-4716c9674490",
+        "ShortName": "CR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Compare IT",
+        "Id": "417aa3c4-fc8f-4a63-a2e9-410a29a4e113",
+        "ShortName": "Comp IT",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "CoolPlanet",
+        "Id": "1d497cbb-4010-4189-9bad-0f2d784ae8d3",
+        "ShortName": "C.P",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Cristie Nordic",
+        "Id": "eae68bc4-4611-470d-8463-7a6e5192e110",
+        "ShortName": "CN",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Curity",
+        "Id": "3310c737-4b11-4930-ab42-7478d34fd848",
+        "ShortName": "Curity",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Devcode",
+        "Id": "809726af-14f2-4f59-9023-6ff079d09c12",
+        "ShortName": "DC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Diploma",
+        "Id": "c3d71eec-7e5a-40c0-9553-f1d9cda9b298",
+        "ShortName": "DIP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Econopack",
+        "Id": "5f4d2dc3-87af-4737-84c5-9fb1a408ad04",
+        "ShortName": "ECP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Efuel",
+        "Id": "d055a277-ee8b-4b72-8b4f-dccf86a7034d",
+        "ShortName": "Efuel",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Eurekossystems",
+        "Id": "608314f3-b94c-488d-9a7b-720d58580a03",
+        "ShortName": "EK",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Evoma",
+        "Id": "633caf71-d43a-40bd-a8d3-a9d9b2ccd9c7",
+        "ShortName": "EV",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "ExOpen",
+        "Id": "767d38a9-bc1e-49fa-b856-c3a04b34c361",
+        "ShortName": "EO",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Goava provision",
+        "Id": "b5673bed-4cfc-434e-91f6-978a83e16e80",
+        "ShortName": "GP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Haeger Carlsson",
+        "Id": "609d5a9a-e3be-4ba3-8178-ac35d84fe3ae",
+        "ShortName": "HC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "HelloFuture",
+        "Id": "6538f07f-cf3b-41c6-b220-077d1d2dc01f",
+        "ShortName": "HF",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Kuva Space",
+        "Id": "178a36cb-537b-49d7-bfa5-2a17c8030806",
+        "ShortName": "Kuva S",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Load Systems",
+        "Id": "1e66748f-64df-48a1-970f-96d571b030fc",
+        "ShortName": "LS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "L\u00f6n & HR Bolaget i Sverige AB",
+        "Id": "bae5fcc6-bf41-4c82-95c1-ccbde6e26faa",
+        "ShortName": "l\u00f6n & HR",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Manpower Group",
+        "Id": "6f7e03ba-8702-4d6a-a265-7c54abc1c668",
+        "ShortName": "MP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Motus",
+        "Id": "d712a5a9-641e-4085-889d-b970cb2c8245",
+        "ShortName": "MS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "MSC",
+        "Id": "9c9c74b7-3af8-428f-ace1-7206ae176031",
+        "ShortName": "MSC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "OKQ8",
+        "Id": "15bfe59d-ba29-4558-a6a2-b857a999fc05",
+        "ShortName": "OK",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Pensure",
+        "Id": "d5fa304e-2e5a-47e3-bebe-0f6fa073e8fa",
+        "ShortName": "PS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Proresult",
+        "Id": "735ba966-6692-468f-bf7f-1f37fd6d1d33",
+        "ShortName": "pro",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "QCC",
+        "Id": "c8de38c8-8148-47cd-85b9-7f788a8d8ee0",
+        "ShortName": "QC",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Re-board Technology",
+        "Id": "d104ae70-a09c-4114-baec-b4bef41139be",
+        "ShortName": "Reboard",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Screenforce Finland",
+        "Id": "806cd0f0-4bfc-4d76-9965-ad939b359ab6",
+        "ShortName": "SF",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Skellefte\u00e5 Science",
+        "Id": "169eef65-07b3-432e-92b3-ca35dde1f00f",
+        "ShortName": "SS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Structsales Admin",
+        "Id": "f93eeecf-1c19-4823-bf76-ec5f8ad475f3",
+        "ShortName": "ssadm",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Structsales Marknadsf\u00f6ring",
+        "Id": "4b45555f-ba07-4e5d-86a6-985450eb797e",
+        "ShortName": "ssmktng",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Sun Maskin",
+        "Id": "0ce563c5-710c-4101-967a-cd1301ee3a88",
+        "ShortName": "SM",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "SweGreen",
+        "Id": "337cf3ed-ed28-4c83-bcb5-fb9f8cdb81b0",
+        "ShortName": "SG",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Talent Solutions",
+        "Id": "11256af3-a4c5-479a-af18-47d02f2d83ff",
+        "ShortName": "TS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "TreCe",
+        "Id": "3be96f82-c933-4a78-9d1c-3d97beeac177",
+        "ShortName": "TreCe",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Visbook",
+        "Id": "26795466-e409-41ae-92c8-1a3aaebc7d16",
+        "ShortName": "VS",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Webbshop",
+        "Id": "077100f1-8c0c-43f2-9f0e-57b1ef9dc99a",
+        "ShortName": "WEBBSHOP",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
+        "TypeName": null,
+        "Type": 0
+      },
+      {
+        "Name": "Workz",
+        "Id": "d183f802-7b3b-42f1-9f15-7895e0c84afd",
+        "ShortName": "WZ",
+        "TypeId": "d19cf1db-c417-41e8-aee0-4ef687f7c48c",
         "TypeName": null,
         "Type": 0
       }
@@ -4174,157 +4174,6 @@
         "AutomaticReminderMailFromType": 2,
         "AutomaticReminderMailToType": 0,
         "AutomaticReminderMailToAddresses": "finance@visit.com",
-        "AutomaticReminderMailSubject": "P\u00e5minnelse {fakturanummer}",
-        "AutomaticReminderMailMessage": "Det verkar som att ni \u00e4nnu inte betalt faktura {fakturanummer}? En p\u00e5minnelse bifogas som PDF.",
-        "InvoiceSource": 0,
-        "OriginOcrNumber": null,
-        "SelfInvoiceId": null
-      },
-      {
-        "Id": 2244835,
-        "Status": 0,
-        "SerialNumber": 2716,
-        "Ocr": 20251096527168,
-        "OcrText": "20251096527168",
-        "RoundValue": true,
-        "Credit": false,
-        "Payments": [],
-        "PaymentTerms": 15,
-        "LastUpdated": "2025-11-28T13:27:53.037",
-        "Warnings": null,
-        "PaymentReminderTitleTemplate": "P\u00e5minnelse {fakturanummer}",
-        "PaymentReminderMessageTemplate": "Det verkar som att ni \u00e4nnu inte betalt faktura {fakturanummer}? En p\u00e5minnelse bifogas som PDF.",
-        "PaymentReminderTemplate": "Fakturan \u00e4r \u00e4nnu inte betald. Vi emotser betalning omg\u00e5ende.",
-        "ReminderDueDate": null,
-        "OwnerName": "Oliver Lopez",
-        "CanSendLastVersionToPagero": true,
-        "HasNoInvalidEuVatProductTypes": true,
-        "IsEUCustomer": false,
-        "InvoiceWarnings": null,
-        "InvoicePaymentBgNumber": "660-8939",
-        "InvoicePaymentMethod": 0,
-        "PaymentState": 0,
-        "Attachments": null,
-        "CustomerName": "Re-board Technology AB",
-        "CustomerOrgNo": "556936-3343",
-        "TotalAmount": 315000.0,
-        "TotalReminderCost": 0.0,
-        "TotalTax": 63000.0,
-        "FromRecurring": false,
-        "RecurringId": null,
-        "RecurringInvoiceVersion": null,
-        "PaymentDate": null,
-        "LeftToPay": 315000.0,
-        "CreditStatus": 0,
-        "ReminderInvoicesCount": 0,
-        "Rot": false,
-        "Rut": false,
-        "HouseWorkApplicationIsFiled": false,
-        "FromQuotation": false,
-        "TotalAmountSummary": null,
-        "RecurringFrequency": null,
-        "RecurringSendType": null,
-        "RecurringState": null,
-        "InvoiceSendInfo": {
-          "InvoiceSendMethod": 0,
-          "MailOptions": {
-            "Subject": "Faktura {fakturanummer}",
-            "Message": "Tack f\u00f6r att ni har valt att jobba med oss p\u00e5 Structsales!\n\nH\u00e4r kommer era betalningsuppgifter. Fakturan bifogas som PDF.",
-            "To": {
-              "Type": 0,
-              "Address": "invoice@reboard.se"
-            },
-            "From": {
-              "Type": 2,
-              "Name": null,
-              "Address": "fakturering@wint.se"
-            },
-            "Version": null
-          }
-        },
-        "CreditInvoiceIds": [],
-        "RemainingCostAfterCredit": 315000.0,
-        "PDFCount": 0,
-        "IsTimeReportingInvoice": false,
-        "IsReceiptRepaymentInvoice": false,
-        "OwnerId": 8358,
-        "CustomerId": 717513,
-        "CustomerReference": {
-          "ReferenceId": 286038,
-          "ReferenceName": "Ali Khalili"
-        },
-        "ContactPerson": "Oliver Lopez",
-        "Notes": "",
-        "Dimensions": [],
-        "DeliveryDate": "2026-09-01T00:00:00",
-        "PostingDate": "2026-09-01T00:00:00",
-        "DueDate": "2026-09-16T00:00:00",
-        "ShowReferencePersonInAddress": false,
-        "ShowShippingAddress": false,
-        "ShowCurrencyCode": true,
-        "Language": "sv",
-        "Currency": "SEK",
-        "CreditedInvoiceId": null,
-        "ReminderCost": 0.0,
-        "PenaltyInterest": {
-          "Type": 0,
-          "Rate": 0.0
-        },
-        "ReminderNotes": null,
-        "PaymentOptionId": 867,
-        "Rows": [
-          {
-            "Id": 4447867,
-            "ArticleId": -1,
-            "Quantity": 1.0,
-            "Description": "Growth as a Service H2",
-            "OverriddenDescription": "Growth as a Service H2",
-            "Unit": {
-              "Id": 12776,
-              "Name": "st"
-            },
-            "UnitPrice": 252000.0,
-            "OverriddenUnitPrice": null,
-            "OrderIndex": 0,
-            "Rot": false,
-            "Rut": false,
-            "Vat": 25.0,
-            "OverriddenVat": null,
-            "EuVatProductType": 0,
-            "Periodisation": false,
-            "PeriodisationStartYear": null,
-            "PeriodisationStartMonth": null,
-            "PeriodisationEndYear": null,
-            "PeriodisationEndMonth": null,
-            "Dimensions": [],
-            "HouseWorkHours": null,
-            "MaterialCost": null,
-            "HouseWorkTypeId": null,
-            "HouseWorkTypeName": null
-          }
-        ],
-        "ExternalInvoiceReferences": [],
-        "Template": 1,
-        "InvoiceHouseWorkType": 0,
-        "InvoiceRotPercentageType": 0,
-        "CustomerPersonNumber": null,
-        "HouseWorkOtherCosts": null,
-        "InvoiceRotPropertyType": 0,
-        "PropertyDesignation": null,
-        "TenantsOwnerAssociationOrgNumber": null,
-        "ApartmentNumber": null,
-        "QuotationSerialNumber": null,
-        "IsAutomaticRemindersEnabled": false,
-        "AutomaticReminderPeriod": 10,
-        "AutomaticReminderDelay": 1,
-        "AutomaticReminderAmountLimit": null,
-        "AutomaticReminderCountLimit": null,
-        "AutomaticReminderFeeDeprecationLimit": null,
-        "AutomaticReminderNotes": "Fakturan \u00e4r \u00e4nnu inte betald. Vi emotser betalning omg\u00e5ende.",
-        "AutomaticReminderSendMethod": 0,
-        "AutomaticReminderMailFromType": 2,
-        "AutomaticReminderMailToType": 0,
-        "AutomaticReminderMailToAddresses": "invoice@reboard.se",
         "AutomaticReminderMailSubject": "P\u00e5minnelse {fakturanummer}",
         "AutomaticReminderMailMessage": "Det verkar som att ni \u00e4nnu inte betalt faktura {fakturanummer}? En p\u00e5minnelse bifogas som PDF.",
         "InvoiceSource": 0,
