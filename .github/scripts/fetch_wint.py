@@ -5,13 +5,14 @@ API_BASE = "https://superkollapi.wint.se/api"
 USERNAME = os.environ["WINT_USERNAME"]
 API_KEY = os.environ["WINT_API_KEY"]
 
-def api_request(path, method="GET", body=None, token=None):
+def api_request(path, method="GET", body=None, token=None, auth_header=None):
     url = f"{API_BASE}{path}"
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(url, data=data, method=method)
     req.add_header("Content-Type", "application/json")
     if token:
-        req.add_header("Authorization", f"Bearer {token}")
+        header_value = auth_header or f"Bearer {token}"
+        req.add_header("Authorization", header_value)
     try:
         resp = urllib.request.urlopen(req, timeout=30)
         return json.loads(resp.read())
@@ -32,6 +33,9 @@ if not auth_resp:
     print("::error::Failed to authenticate with Wint API")
     sys.exit(1)
 
+print(f"  Auth response keys: {list(auth_resp.keys()) if isinstance(auth_resp, dict) else type(auth_resp).__name__}")
+print(f"  Auth response (truncated): {json.dumps(auth_resp, default=str)[:500]}")
+
 token = auth_resp.get("token") or auth_resp.get("Token") or auth_resp.get("access_token")
 if not token:
     if isinstance(auth_resp, str):
@@ -44,52 +48,92 @@ if not token:
 if not token:
     print(f"::error::No token found in auth response: {json.dumps(auth_resp)[:300]}")
     sys.exit(1)
-print(f"  Authenticated successfully (token: {token[:10]}...)")
+print(f"  Token: {token[:10]}...")
 
-# 2. Get company info
+# 2. Try different auth methods to find the working one
+print("Testing auth methods...")
+test_path = "/Account"
+auth_methods = [
+    ("Bearer", f"Bearer {token}"),
+    ("Token", f"Token {token}"),
+    ("Plain", token),
+    ("Basic", f"Basic {token}"),
+]
+working_auth = None
+for name, header_value in auth_methods:
+    print(f"  Trying {name}: Authorization: {header_value[:30]}...")
+    result = api_request(test_path, token=token, auth_header=header_value)
+    if result is not None:
+        print(f"  {name} works!")
+        working_auth = header_value
+        break
+
+if not working_auth:
+    # Also try as query parameter
+    print("  Trying token as query parameter...")
+    result = api_request(f"{test_path}?token={token}", token=None)
+    if result is not None:
+        print("  Query parameter works!")
+        # We'll handle this differently below
+        working_auth = "query"
+
+if not working_auth:
+    print("::error::No auth method worked. Check API documentation.")
+    sys.exit(1)
+
+print(f"  Using auth method: {working_auth[:30]}...")
+
+def fetch(path):
+    """Fetch using the discovered working auth method."""
+    if working_auth == "query":
+        sep = "&" if "?" in path else "?"
+        return api_request(f"{path}{sep}token={token}", token=None)
+    return api_request(path, token=token, auth_header=working_auth)
+
+# 3. Get company info
 print("Fetching company info...")
-company = api_request("/Auth", token=token)
+company = fetch("/Auth")
 
-# 3. Fetch invoices (current year)
+# 4. Fetch invoices (current year)
 print("Fetching invoices...")
 year = datetime.now().year
-invoices = api_request(f"/Invoice?year={year}", token=token)
+invoices = fetch(f"/Invoice?year={year}")
 if invoices is None:
-    invoices = api_request("/Invoice", token=token)
+    invoices = fetch("/Invoice")
 
-# 4. Fetch receipts
+# 5. Fetch receipts
 print("Fetching receipts...")
-receipts = api_request(f"/Receipt?year={year}", token=token)
+receipts = fetch(f"/Receipt?year={year}")
 if receipts is None:
-    receipts = api_request("/Receipt", token=token)
+    receipts = fetch("/Receipt")
 
-# 5. Fetch accounts
+# 6. Fetch accounts
 print("Fetching accounts...")
-accounts = api_request("/Account", token=token)
+accounts = fetch("/Account")
 
-# 6. Fetch transactions
+# 7. Fetch transactions
 print("Fetching transactions...")
-transactions = api_request(f"/Transaction?year={year}", token=token)
+transactions = fetch(f"/Transaction?year={year}")
 if transactions is None:
-    transactions = api_request("/Transaction", token=token)
+    transactions = fetch("/Transaction")
 
-# 7. Fetch vouchers
+# 8. Fetch vouchers
 print("Fetching vouchers...")
-vouchers = api_request(f"/Voucher?year={year}", token=token)
+vouchers = fetch(f"/Voucher?year={year}")
 if vouchers is None:
-    vouchers = api_request("/Voucher", token=token)
+    vouchers = fetch("/Voucher")
 
-# 8. Fetch employees
+# 9. Fetch employees
 print("Fetching employees...")
-employees = api_request("/Employees", token=token)
+employees = fetch("/Employees")
 
-# 9. Fetch customers
+# 10. Fetch customers
 print("Fetching customers...")
-customers = api_request("/Customer", token=token)
+customers = fetch("/Customer")
 
-# 10. Fetch salary deviations
+# 11. Fetch salary deviations
 print("Fetching salary data...")
-salary_months = api_request("/SalaryDeviation/months", token=token)
+salary_months = fetch("/SalaryDeviation/months")
 
 # Build combined output
 wint_data = {
