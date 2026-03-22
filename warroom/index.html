@@ -1594,12 +1594,12 @@
         return da.localeCompare(db);
       }).slice(0, 10);
 
-      // Show unpaid supplier invoices (most urgent first)
+      // Show all unpaid supplier invoices (most urgent first)
       var showSupplier = unpaidSupplier.slice().sort(function(a, b) {
         var da = a.DueDate || "";
         var db = b.DueDate || "";
         return da.localeCompare(db);
-      }).slice(0, 10);
+      });
 
       // Show pending receipts (newest first)
       var showReceipts = pendingReceipts.slice().sort(function(a, b) {
@@ -1628,12 +1628,14 @@
       showSupplier.forEach(function(inv) {
         var name = inv.SupplierName || inv.CustomerName || "Leverant\u00f6rsfaktura";
         var leftToPay = parseFloat(inv.LeftToPay || inv.Amount || inv.TotalAmount || 0);
+        var currency = inv.Currency || "SEK";
+        var amountStr = currency !== "SEK" ? leftToPay.toLocaleString("sv-SE") + " " + currency : fmt(leftToPay);
         var date = inv.DueDate || "";
         var overdue = date && new Date(date) < new Date();
         supHtml += '<div class="detail-item"><span class="item-name">' + name +
           (overdue ? ' <span style="color:#E76F51;font-size:10px;font-weight:600">F\u00d6RFALLEN</span>' : '') +
           (date ? ' <span style="opacity:0.3;font-size:10px">f\u00f6rfaller ' + fmtDate(date) + '</span>' : '') +
-          '</span><span class="item-amount">' + fmt(leftToPay) + '</span></div>';
+          '</span><span class="item-amount">' + amountStr + '</span></div>';
       });
       if (showSupplier.length === 0) supHtml += '<div class="detail-item"><span class="item-name" style="opacity:0.4;color:#2A9D8F">Inga obetalda leverant\u00f6rsfakturor!</span><span></span></div>';
       supHtml += '</div>';
