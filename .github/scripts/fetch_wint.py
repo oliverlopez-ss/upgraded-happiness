@@ -23,50 +23,77 @@ def api_request(path, method="GET", body=None, token=None, auth_header=None):
         print(f"  Error for {path}: {e}")
         return None
 
-# 1. Authenticate
+# 1. Authenticate - try different body formats
 print("Authenticating with Wint API...")
-auth_resp = api_request("/Auth", method="POST", body={
-    "username": USERNAME,
-    "password": API_KEY
-})
-if not auth_resp:
-    print("::error::Failed to authenticate with Wint API")
+NULL_GUID = "00000000-0000-0000-0000-000000000000"
+
+auth_bodies = [
+    ("username/password", {"username": USERNAME, "password": API_KEY}),
+    ("Username/Password", {"Username": USERNAME, "Password": API_KEY}),
+    ("username/apiKey", {"username": USERNAME, "apiKey": API_KEY}),
+    ("Username/ApiKey", {"Username": USERNAME, "ApiKey": API_KEY}),
+    ("user/key", {"user": USERNAME, "key": API_KEY}),
+    ("clientId/clientSecret", {"clientId": USERNAME, "clientSecret": API_KEY}),
+]
+
+auth_resp = None
+token = None
+for name, body in auth_bodies:
+    print(f"  Trying auth body: {name}...")
+    resp = api_request("/Auth", method="POST", body=body)
+    if resp and isinstance(resp, dict):
+        key = resp.get("Key") or resp.get("key") or resp.get("token") or resp.get("Token")
+        if key and key != NULL_GUID:
+            print(f"  {name} worked! Token: {key[:10]}...")
+            auth_resp = resp
+            token = key
+            break
+        else:
+            print(f"  Got null token with {name}")
+    elif resp is None:
+        print(f"  Request failed with {name}")
+
+if not token:
+    # Also try Basic auth directly (no /Auth endpoint)
+    print("  Trying Basic auth directly on /Account...")
+    import base64
+    basic_creds = base64.b64encode(f"{USERNAME}:{API_KEY}".encode()).decode()
+    result = api_request("/Account", token="x", auth_header=f"Basic {basic_creds}")
+    if result is not None:
+        print("  Basic auth works directly (no token needed)!")
+        token = "basic"
+        auth_resp = {"method": "basic", "credentials": basic_creds}
+
+if not token:
+    print(f"::error::No auth method worked. Username={USERNAME}, API key length={len(API_KEY)}")
+    print(f"::error::Make sure WINT_USERNAME=10965 and WINT_API_KEY contains the UUID from Wint")
     sys.exit(1)
 
-print(f"  Auth response keys: {list(auth_resp.keys()) if isinstance(auth_resp, dict) else type(auth_resp).__name__}")
-print(f"  Auth response (truncated): {json.dumps(auth_resp, default=str)[:500]}")
-
-token = auth_resp.get("token") or auth_resp.get("Token") or auth_resp.get("access_token")
-if not token:
-    if isinstance(auth_resp, str):
-        token = auth_resp
-    else:
-        for k, v in auth_resp.items():
-            if isinstance(v, str) and len(v) > 20:
-                token = v
-                break
-if not token:
-    print(f"::error::No token found in auth response: {json.dumps(auth_resp)[:300]}")
-    sys.exit(1)
-print(f"  Token: {token[:10]}...")
+print(f"  Auth response: {json.dumps(auth_resp, default=str)[:500]}")
 
 # 2. Try different auth methods to find the working one
-print("Testing auth methods...")
+print("Testing auth header methods...")
 test_path = "/Account"
-auth_methods = [
-    ("Bearer", f"Bearer {token}"),
-    ("Token", f"Token {token}"),
-    ("Plain", token),
-    ("Basic", f"Basic {token}"),
-]
-working_auth = None
-for name, header_value in auth_methods:
-    print(f"  Trying {name}: Authorization: {header_value[:30]}...")
-    result = api_request(test_path, token=token, auth_header=header_value)
-    if result is not None:
-        print(f"  {name} works!")
-        working_auth = header_value
-        break
+
+if token == "basic":
+    import base64
+    basic_creds = base64.b64encode(f"{USERNAME}:{API_KEY}".encode()).decode()
+    working_auth = f"Basic {basic_creds}"
+    print(f"  Using Basic auth directly")
+else:
+    auth_methods = [
+        ("Bearer", f"Bearer {token}"),
+        ("Token", f"Token {token}"),
+        ("Plain", token),
+    ]
+    working_auth = None
+    for name, header_value in auth_methods:
+        print(f"  Trying {name}...")
+        result = api_request(test_path, token=token, auth_header=header_value)
+        if result is not None:
+            print(f"  {name} works!")
+            working_auth = header_value
+            break
 
 if not working_auth:
     # Also try as query parameter
