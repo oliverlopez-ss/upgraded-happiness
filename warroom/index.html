@@ -562,10 +562,16 @@
           var script = document.getElementById(callbackName);
           if (script) script.remove();
           try {
+            if (response.status === "error") {
+              reject(new Error("gviz error: " + JSON.stringify(response.errors)));
+              return;
+            }
             var table = response.table;
+            console.log("[JSONP] cols:", table.cols.map(function(c){return c.label;}));
+            console.log("[JSONP] antal rader:", table.rows.length);
             var csvLines = [];
             table.rows.forEach(function(row) {
-              var cells = row.c.map(function(cell) {
+              var cells = (row.c || []).map(function(cell) {
                 if (!cell || cell.v === null || cell.v === undefined) return "";
                 var val = cell.v;
                 if (typeof val === "string" && val.indexOf(",") >= 0) return '"' + val + '"';
@@ -573,8 +579,10 @@
               });
               csvLines.push(cells.join(","));
             });
-            resolve(csvLines.join("\n"));
-          } catch(e) { reject(e); }
+            var csv = csvLines.join("\n");
+            console.log("[JSONP] Första 3 rader:\n" + csvLines.slice(0,3).join("\n"));
+            resolve(csv);
+          } catch(e) { console.error("[JSONP] parse-fel:", e); reject(e); }
         };
 
         var script = document.createElement("script");
