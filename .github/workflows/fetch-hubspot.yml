@@ -36,7 +36,8 @@ jobs:
           git add warroom/data/wint.json
           git diff --staged --quiet && echo "No changes" && exit 0
           git commit -m "Update Wint/Superkoll data"
-          git pull --rebase origin main || true
+          git fetch origin main
+          git rebase origin/main || (git rebase --abort && git pull --no-rebase origin main -X theirs)
           git push
 
   fetch-hubspot:
