@@ -126,33 +126,25 @@ for ep in supplier_endpoints:
         print(f"  {ep} exists but returned 0 items")
         break
 
-# Supplier invoices use State (not Status/PaymentState):
-#   State 0=Ny, 2=Attesterad, 4=Betald, 7=Bokförd, 8=Makulerad
-# Wint zeroes LeftToPay when invoice is attested/booked for payment,
-# even though actual payment hasn't occurred yet.
-# Use IsPaid as primary filter, LeftToPay OR Amount for the amount.
+# Supplier invoices - match Wint UI filter:
+#   Status: "Att godkänna" (State=0) + "Att slutgodkänna" (State=2)
+#   Betalstatus: "Obetald" + "Förfallen" (IsPaid=False)
+SUPPLIER_ACTIVE_STATES = {0, 2}
+
 def is_supplier_unpaid(inv):
-    if inv.get("State") == 8:  # Makulerad/cancelled
+    if inv.get("State") not in SUPPLIER_ACTIVE_STATES:
         return False
     if inv.get("IsPaid"):
         return False
-    # Has outstanding balance OR has amount and not marked paid
-    left = inv.get("LeftToPay") or 0
-    if left > 0:
-        return True
-    amount = inv.get("Amount") or 0
+    amount = inv.get("LeftToPay") or inv.get("Amount") or 0
     return amount > 0
 
 unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
-print(f"  Raw: {len(raw_supplier)}, unpaid (IsPaid=False): {len(unpaid_supplier)}")
-# Log state distribution of unpaid
-from collections import Counter as C2
-sup_states = C2(i.get("State") for i in unpaid_supplier)
-print(f"  Unpaid by state: {dict(sorted(sup_states.items()))}")
+print(f"  Raw: {len(raw_supplier)}, unpaid (State 0/2, IsPaid=False): {len(unpaid_supplier)}")
 for inv in unpaid_supplier[:8]:
     name = inv.get('SupplierName') or '?'
     amt = inv.get('LeftToPay') or inv.get('Amount') or 0
-    print(f"    -> {name}: {amt:,.0f} kr, State={inv.get('State')}, IsPaid={inv.get('IsPaid')}, Due={inv.get('DueDate','')[:10]}")
+    print(f"    -> {name}: {amt:,.0f} kr, State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}")
 
 # --- Receipts (Kvitton) - submitted but not paid out ---
 print(f"\nFetching receipts...")
