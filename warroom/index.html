@@ -669,13 +669,45 @@
         });
       });
 
+      // Separate expense items: skip manual "Moms" row, identify VAT-exempt items
+      var VAT_EXEMPT_PATTERNS = ["lön", "löner", "löne", "skatt", "sociala", "moms"];
       expenseItems.forEach(function(item) {
+        var nameLower = item.name.toLowerCase();
+        // Skip manual Moms row - will be auto-calculated
+        if (nameLower === "moms") return;
         MONTH_NAMES.forEach(function(_, mi) {
           var val = item.amounts[mi] || 0;
           if (val !== 0) {
             monthlyData[mi].expenseItems.push({ name: item.name, amount: val });
           }
         });
+      });
+
+      // Auto-calculate VAT (moms) per month
+      // Amounts in finanser.csv are INCLUDING 25% VAT
+      // Outgoing VAT = revenue / 5, Incoming VAT = VAT-liable expenses / 5
+      // Net VAT for month X is paid in month X+2
+      MONTH_NAMES.forEach(function(_, mi) {
+        var outgoingVAT = monthlyData[mi].revenue / 5;
+        var incomingVAT = 0;
+        expenseItems.forEach(function(item) {
+          var nameLower = item.name.toLowerCase();
+          if (nameLower === "moms") return;
+          var isExempt = VAT_EXEMPT_PATTERNS.some(function(p) { return nameLower.indexOf(p) >= 0; });
+          if (!isExempt) {
+            incomingVAT += (item.amounts[mi] || 0) / 5;
+          }
+        });
+        var netVAT = Math.round(outgoingVAT - incomingVAT);
+        if (netVAT !== 0) {
+          // VAT is paid 2 months later
+          var payMonth = mi + 2;
+          if (payMonth < 12) {
+            monthlyData[payMonth].expenseItems.push({ name: "Moms (beräknad)", amount: netVAT });
+            monthlyData[payMonth].expenses += netVAT;
+            monthlyData[payMonth].hasData = true;
+          }
+        }
       });
 
       // Cash position
@@ -689,9 +721,16 @@
           }
         }
         cashPosition = pv;
-      } else if (likviditetRow >= 0) {
-        cashPosition = monthlyData[new Date().getMonth()].liquidity;
       }
+
+      // Recalculate cumulative liquidity from cash position
+      var cumulative = cashPosition;
+      MONTH_NAMES.forEach(function(_, mi) {
+        if (monthlyData[mi].hasData) {
+          cumulative += monthlyData[mi].revenue - monthlyData[mi].expenses;
+          monthlyData[mi].liquidity = cumulative;
+        }
+      });
 
       sheetDataLoaded = true;
       console.log("[Finanser] Monthly data:", monthlyData);
