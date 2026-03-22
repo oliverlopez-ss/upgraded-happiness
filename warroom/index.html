@@ -505,7 +505,12 @@
     // ── Data model ──
     var SHEET_CSV_LOCAL = "data/finanser.csv";
     var SHEET_CSV_FALLBACK = "import-finanser.csv";
-    var SHEET_CSV_LIVE = "https://docs.google.com/spreadsheets/d/1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc/gviz/tq?tqx=out:csv";
+    var SHEET_ID = "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc";
+    var SHEET_CSV_LIVE_URLS = [
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/pub?output=csv&gid=0",
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=out:csv",
+      "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/export?format=csv"
+    ];
     var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "Maj", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"];
     var MONTH_SHORT = ["JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"];
 
@@ -550,12 +555,15 @@
     // ── Fetch and parse sheet ──
     async function fetchSheetData() {
       var text;
-      // Try live Google Sheet first, then local CSV, then fallback
-      try {
-        var liveResp = await fetch(SHEET_CSV_LIVE);
-        if (!liveResp.ok) throw new Error("Google Sheet ej tillgängligt");
-        text = await liveResp.text();
-      } catch(e) {
+      // Try live Google Sheet first (multiple URL formats), then local CSV
+      var liveOk = false;
+      for (var ui = 0; ui < SHEET_CSV_LIVE_URLS.length && !liveOk; ui++) {
+        try {
+          var liveResp = await fetch(SHEET_CSV_LIVE_URLS[ui]);
+          if (liveResp.ok) { text = await liveResp.text(); liveOk = true; }
+        } catch(e) { /* try next URL */ }
+      }
+      if (!liveOk) {
         try {
           var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
           if (!resp.ok) throw new Error("data/finanser.csv saknas");
