@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SalesMaster - B2B Säljspelet</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="screen-start" class="screen active">
+        <div class="container">
+            <h1 class="title">SalesMaster</h1>
+            <p class="subtitle">B2B Säljspelet</p>
+            <p class="description">Ställs inför realistiska säljscenarion. Gör rätt val, skriv övertygande svar och stäng affärerna!</p>
+            <div class="start-buttons">
+                <input type="text" id="player-name" placeholder="Ditt namn..." maxlength="20">
+                <button class="btn btn-primary" onclick="game.start()">Starta Spelet</button>
+                <button class="btn btn-secondary" onclick="game.showLeaderboard()">Leaderboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="screen-game" class="screen">
+        <div class="game-header">
+            <div class="header-left">
+                <span id="scenario-label" class="scenario-label">Scenario 1/5</span>
+                <span id="step-label" class="step-label">Steg 1</span>
+            </div>
+            <div class="header-right">
+                <span class="score-label">Poäng: <strong id="current-score">0</strong></span>
+            </div>
+        </div>
+        <div class="game-container">
+            <div id="scenario-context" class="scenario-context"></div>
+            <div id="dialogue-area" class="dialogue-area"></div>
+            <div id="interaction-area" class="interaction-area"></div>
+        </div>
+    </div>
+
+    <!-- Feedback Screen -->
+    <div id="screen-feedback" class="screen">
+        <div class="container feedback-container">
+            <div id="feedback-icon" class="feedback-icon"></div>
+            <h2 id="feedback-title"></h2>
+            <p id="feedback-text"></p>
+            <div id="feedback-points" class="feedback-points"></div>
+            <div id="feedback-tip" class="feedback-tip"></div>
+            <button class="btn btn-primary" onclick="game.nextStep()">Fortsätt</button>
+        </div>
+    </div>
+
+    <!-- Scenario Complete Screen -->
+    <div id="screen-scenario-complete" class="screen">
+        <div class="container">
+            <h2>Scenario Avklarat!</h2>
+            <div id="scenario-summary" class="scenario-summary"></div>
+            <button class="btn btn-primary" onclick="game.nextScenario()">Nästa Scenario</button>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="screen-gameover" class="screen">
+        <div class="container">
+            <h1>Spelet Avklarat!</h1>
+            <div id="final-summary" class="final-summary"></div>
+            <div class="start-buttons">
+                <button class="btn btn-primary" onclick="game.showLeaderboard()">Se Leaderboard</button>
+                <button class="btn btn-secondary" onclick="game.restart()">Spela Igen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Screen -->
+    <div id="screen-leaderboard" class="screen">
+        <div class="container">
+            <h1>Leaderboard</h1>
+            <div id="leaderboard-list" class="leaderboard-list"></div>
+            <button class="btn btn-secondary" onclick="game.showStart()">Tillbaka</button>
+        </div>
+    </div>
+
+    <script src="scenarios.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
