@@ -1575,7 +1575,7 @@
         return s + Math.abs(parseFloat(inv.LeftToPay || inv.TotalAmount || 0));
       }, 0);
       var totalPayable = unpaidSupplier.reduce(function(s, inv) {
-        return s + Math.abs(parseFloat(inv.LeftToPay || inv.TotalAmount || 0));
+        return s + Math.abs(parseFloat(inv.LeftToPay || inv.Amount || inv.TotalAmount || 0));
       }, 0);
       var totalPendingReceipts = pendingReceipts.reduce(function(s, rec) {
         return s + Math.abs(parseFloat(rec.Amount || rec.TotalAmountSummarySEK || 0));
@@ -1627,7 +1627,7 @@
       var supHtml = '<div class="detail-block"><div class="detail-block-header exp">Obetalda leverant\u00f6rsfakturor (skulder)</div>';
       showSupplier.forEach(function(inv) {
         var name = inv.SupplierName || inv.CustomerName || "Leverant\u00f6rsfaktura";
-        var leftToPay = parseFloat(inv.LeftToPay || inv.TotalAmount || 0);
+        var leftToPay = parseFloat(inv.LeftToPay || inv.Amount || inv.TotalAmount || 0);
         var date = inv.DueDate || "";
         var overdue = date && new Date(date) < new Date();
         supHtml += '<div class="detail-item"><span class="item-name">' + name +
