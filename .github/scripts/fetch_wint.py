@@ -137,8 +137,18 @@ def is_supplier_unpaid(inv):
     amount = inv.get("LeftToPay") or inv.get("Amount") or 0
     return amount > 0
 
-unpaid_supplier = [i for i in raw_supplier if is_supplier_unpaid(i)]
-print(f"  Raw: {len(raw_supplier)}, unpaid (State=0 'Att godkänna'): {len(unpaid_supplier)}")
+# Deduplicate by Id (pages can overlap)
+seen_ids = set()
+unpaid_supplier = []
+for i in raw_supplier:
+    if not is_supplier_unpaid(i):
+        continue
+    inv_id = i.get("Id")
+    if inv_id in seen_ids:
+        continue
+    seen_ids.add(inv_id)
+    unpaid_supplier.append(i)
+print(f"  Raw: {len(raw_supplier)}, unpaid (State=0 'Att godkänna', unique): {len(unpaid_supplier)}")
 for inv in unpaid_supplier[:5]:
     name = inv.get('SupplierName') or '?'
     amt = inv.get('LeftToPay') or inv.get('Amount') or 0
