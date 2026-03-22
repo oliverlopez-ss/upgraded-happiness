@@ -64,13 +64,14 @@ def is_unpaid_and_sent(invoice):
     status = invoice.get("Status", 0)
     left_to_pay = invoice.get("LeftToPay") or 0
     payment_state = invoice.get("PaymentState", 0)
-    # Include: Skickad(3), Förfallen(5), or any status with LeftToPay > 0
-    # Exclude: Ej skickad(1), Betald(4), Makulerad
-    if status in (1, 4):  # Draft or fully paid
+    # PaymentState: 0=Obetald, 1=Delvis betald, 2=Betald
+    # We want: sent to customer AND not fully paid
+    # Must have money left to pay
+    if left_to_pay <= 0:
         return False
-    if left_to_pay <= 0 and payment_state == 2:  # Paid
+    if payment_state == 2:  # Fully paid
         return False
-    return left_to_pay > 0
+    return True
 
 # Verify auth
 print("Verifying Wint API credentials...")
@@ -88,13 +89,17 @@ company = api_get("/Auth")
 print(f"\nFetching customer invoices...")
 raw_invoices = fetch_recent_pages("/Invoice", "DueDate")
 unpaid_invoices = [i for i in raw_invoices if is_unpaid_and_sent(i)]
-print(f"  Raw: {len(raw_invoices)}, unpaid & sent: {len(unpaid_invoices)}")
-# Log status distribution
-status_counts = {}
-for i in raw_invoices:
-    s = i.get("Status", "?")
-    status_counts[s] = status_counts.get(s, 0) + 1
-print(f"  Status distribution: {status_counts}")
+print(f"  Raw: {len(raw_invoices)}, unpaid (LeftToPay>0): {len(unpaid_invoices)}")
+# Log status + payment state distribution for debugging
+from collections import Counter
+status_dist = Counter((i.get("Status"), i.get("PaymentState")) for i in raw_invoices)
+print(f"  (Status, PaymentState) distribution:")
+for (s, ps), count in sorted(status_dist.items()):
+    ltp = sum(i.get("LeftToPay", 0) for i in raw_invoices if i.get("Status") == s and i.get("PaymentState") == ps)
+    print(f"    Status={s}, PaymentState={ps}: {count} invoices, LeftToPay total={ltp:,.0f}")
+# Show sample of unpaid
+for inv in unpaid_invoices[:5]:
+    print(f"    -> {inv.get('CustomerName')}: {inv.get('LeftToPay'):,.0f} kr, Status={inv.get('Status')}, PS={inv.get('PaymentState')}, Due={inv.get('DueDate','')[:10]}")
 
 # --- Supplier invoices (Leverantörsfakturor) ---
 print(f"\nFetching supplier invoices...")
