@@ -547,79 +547,17 @@
       return -1;
     }
 
-    // ── Fetch live from Google Sheet via JSONP (bypasses CORS) ──
-    function fetchSheetJsonp() {
-      return new Promise(function(resolve, reject) {
-        var callbackName = "_sheetCb_" + Date.now();
-        var timeout = setTimeout(function() {
-          delete window[callbackName];
-          reject(new Error("Google Sheet timeout"));
-        }, 10000);
-
-        window[callbackName] = function(response) {
-          clearTimeout(timeout);
-          delete window[callbackName];
-          var script = document.getElementById(callbackName);
-          if (script) script.remove();
-          try {
-            if (response.status === "error") {
-              reject(new Error("gviz error: " + JSON.stringify(response.errors)));
-              return;
-            }
-            var table = response.table;
-            var csvLines = [];
-
-            // Prepend column labels (contains MAR/APR/etc that gviz puts in cols)
-            var colHeaders = table.cols.map(function(c) { return c.label || ""; });
-            csvLines.push(colHeaders.join(","));
-
-            table.rows.forEach(function(row) {
-              var cells = (row.c || []).map(function(cell) {
-                if (!cell || cell.v === null || cell.v === undefined) return "";
-                var val = cell.v;
-                if (typeof val === "string" && val.indexOf(",") >= 0) return '"' + val + '"';
-                return String(val);
-              });
-              csvLines.push(cells.join(","));
-            });
-            var csv = csvLines.join("\n");
-            console.log("[JSONP] " + csvLines.length + " rader, första 4:\n" + csvLines.slice(0,4).join("\n"));
-            resolve(csv);
-          } catch(e) { console.error("[JSONP] parse-fel:", e); reject(e); }
-        };
-
-        var script = document.createElement("script");
-        script.id = callbackName;
-        script.src = "https://docs.google.com/spreadsheets/d/" + SHEET_ID +
-          "/gviz/tq?headers=0&tqx=responseHandler:" + callbackName;
-        script.onerror = function() {
-          clearTimeout(timeout);
-          delete window[callbackName];
-          script.remove();
-          reject(new Error("Google Sheet ej tillgängligt"));
-        };
-        document.body.appendChild(script);
-      });
-    }
-
     // ── Fetch and parse sheet ──
     async function fetchSheetData() {
       var text;
-      // Try live Google Sheet via JSONP first, then local CSV
       try {
-        text = await fetchSheetJsonp();
-        console.log("[Finanser] ✅ Live data från Google Sheet, rader:", text.split("\n").length);
+        var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
+        if (!resp.ok) throw new Error("saknas");
+        text = await resp.text();
       } catch(e) {
-        console.warn("[Finanser] ⚠ Google Sheet JSONP misslyckades:", e.message, "- använder lokal CSV");
-        try {
-          var resp = await fetch(SHEET_CSV_LOCAL + "?" + Date.now());
-          if (!resp.ok) throw new Error("data/finanser.csv saknas");
-          text = await resp.text();
-        } catch(e2) {
-          var fallbackResp = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
-          if (!fallbackResp.ok) throw new Error("Ingen finansdata tillgänglig.");
-          text = await fallbackResp.text();
-        }
+        var fb = await fetch(SHEET_CSV_FALLBACK + "?" + Date.now());
+        if (!fb.ok) throw new Error("Ingen finansdata tillgänglig.");
+        text = await fb.text();
       }
       var rows = parseCSV(text);
 
