@@ -2,7 +2,7 @@ name: Fetch HubSpot Deals
 
 on:
   schedule:
-    - cron: '0 */2 * * *'  # Var 2:a timme
+    - cron: '*/15 * * * *'  # Var 15:e minut
   workflow_dispatch:        # Manuell körning
 
 permissions:
