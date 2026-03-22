@@ -713,18 +713,20 @@
 
       // Aggregate invoices by month as revenue
       invoiceList.forEach(function(inv) {
-        var date = inv.invoiceDate || inv.InvoiceDate || inv.date || inv.Date;
-        var amount = parseFloat(inv.totalAmount || inv.TotalAmount || inv.amount || inv.Amount || 0);
+        var date = inv.DueDate || inv.PostingDate || inv.DeliveryDate || inv.invoiceDate;
+        var amount = parseFloat(inv.TotalAmount || inv.totalAmount || inv.amount || 0);
         if (!date || !amount) return;
-        var mi = new Date(date).getMonth();
+        var d = new Date(date);
+        if (d.getFullYear() !== new Date().getFullYear()) return;
+        var mi = d.getMonth();
         if (mi >= 0 && mi < 12) {
           if (!monthlyData[mi].wintRevenue) monthlyData[mi].wintRevenue = 0;
           monthlyData[mi].wintRevenue += Math.abs(amount);
           monthlyData[mi].wintRevenueItems = monthlyData[mi].wintRevenueItems || [];
           monthlyData[mi].wintRevenueItems.push({
-            name: inv.customerName || inv.CustomerName || inv.description || "Faktura #" + (inv.invoiceNumber || inv.id),
+            name: inv.CustomerName || inv.customerName || "Faktura #" + (inv.SerialNumber || inv.Id),
             amount: Math.abs(amount),
-            status: inv.status || inv.Status || "",
+            status: inv.Status,
             date: date
           });
         }
@@ -732,18 +734,20 @@
 
       // Aggregate receipts by month as expenses
       receiptList.forEach(function(rec) {
-        var date = rec.receiptDate || rec.ReceiptDate || rec.date || rec.Date;
-        var amount = parseFloat(rec.totalAmount || rec.TotalAmount || rec.amount || rec.Amount || 0);
+        var date = rec.DateTime || rec.PaymentDate || rec.receiptDate;
+        var amount = parseFloat(rec.Amount || rec.TotalAmountSummarySEK || rec.totalAmount || 0);
         if (!date || !amount) return;
-        var mi = new Date(date).getMonth();
+        var d = new Date(date);
+        if (d.getFullYear() !== new Date().getFullYear()) return;
+        var mi = d.getMonth();
         if (mi >= 0 && mi < 12) {
           if (!monthlyData[mi].wintExpenses) monthlyData[mi].wintExpenses = 0;
           monthlyData[mi].wintExpenses += Math.abs(amount);
           monthlyData[mi].wintExpenseItems = monthlyData[mi].wintExpenseItems || [];
           monthlyData[mi].wintExpenseItems.push({
-            name: rec.supplierName || rec.SupplierName || rec.description || "Kvitto #" + (rec.id),
+            name: rec.SupplierName || rec.CategoryName || rec.supplierName || "Kvitto #" + rec.Id,
             amount: Math.abs(amount),
-            status: rec.status || rec.Status || "",
+            status: rec.State,
             date: date
           });
         }
@@ -754,11 +758,11 @@
       if (accountList.length > 0) {
         // Look for a main bank account (typically 1920, 1930, etc.)
         var bankAccount = accountList.find(function(a) {
-          var num = parseInt(a.accountNumber || a.AccountNumber || a.number || 0);
+          var num = parseInt(a.Number || a.accountNumber || 0);
           return num >= 1900 && num <= 1999;
         });
         if (bankAccount) {
-          var balance = parseFloat(bankAccount.balance || bankAccount.Balance || 0);
+          var balance = parseFloat(bankAccount.Ib || bankAccount.balance || 0);
           if (balance !== 0) {
             cashPosition = balance;
             console.log("[Wint] Cash position from account:", cashPosition);
@@ -770,6 +774,7 @@
     function extractItems(data) {
       if (!data) return [];
       if (Array.isArray(data)) return data;
+      if (data.Items && Array.isArray(data.Items)) return data.Items;
       if (data.items && Array.isArray(data.items)) return data.items;
       if (data.results && Array.isArray(data.results)) return data.results;
       if (data.data && Array.isArray(data.data)) return data.data;
@@ -1581,25 +1586,26 @@
 
       // Show recent invoices and receipts
       var recentInv = invoiceList.slice().sort(function(a, b) {
-        var da = a.invoiceDate || a.InvoiceDate || a.date || "";
-        var db = b.invoiceDate || b.InvoiceDate || b.date || "";
+        var da = a.DueDate || a.PostingDate || a.invoiceDate || "";
+        var db = b.DueDate || b.PostingDate || b.invoiceDate || "";
         return db.localeCompare(da);
       }).slice(0, 8);
 
       var recentRec = receiptList.slice().sort(function(a, b) {
-        var da = a.receiptDate || a.ReceiptDate || a.date || "";
-        var db = b.receiptDate || b.ReceiptDate || b.date || "";
+        var da = a.DateTime || a.PaymentDate || a.receiptDate || "";
+        var db = b.DateTime || b.PaymentDate || b.receiptDate || "";
         return db.localeCompare(da);
       }).slice(0, 8);
 
       var invHtml = '<div class="detail-block"><div class="detail-block-header rev">Senaste fakturor (Wint)</div>';
       recentInv.forEach(function(inv) {
-        var name = inv.customerName || inv.CustomerName || inv.description || "Faktura";
-        var amount = Math.abs(parseFloat(inv.totalAmount || inv.TotalAmount || inv.amount || 0));
-        var status = inv.status || inv.Status || "";
-        var date = inv.invoiceDate || inv.InvoiceDate || inv.date || "";
+        var name = inv.CustomerName || inv.customerName || inv.description || "Faktura";
+        var amount = Math.abs(parseFloat(inv.TotalAmount || inv.totalAmount || inv.amount || 0));
+        var statusCode = inv.Status;
+        var statusText = statusCode === 4 ? "Betald" : statusCode === 3 ? "Skickad" : statusCode === 2 ? "Godkänd" : statusCode === 1 ? "Utkast" : (statusCode || "");
+        var date = inv.DueDate || inv.PostingDate || inv.invoiceDate || "";
         invHtml += '<div class="detail-item"><span class="item-name">' + name +
-          (status ? ' <span style="opacity:0.5;font-size:10px">(' + status + ')</span>' : '') +
+          (statusText ? ' <span style="opacity:0.5;font-size:10px">(' + statusText + ')</span>' : '') +
           (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
           '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
       });
@@ -1608,12 +1614,12 @@
 
       var recHtml = '<div class="detail-block"><div class="detail-block-header exp">Senaste kvitton (Wint)</div>';
       recentRec.forEach(function(rec) {
-        var name = rec.supplierName || rec.SupplierName || rec.description || "Kvitto";
-        var amount = Math.abs(parseFloat(rec.totalAmount || rec.TotalAmount || rec.amount || 0));
-        var status = rec.status || rec.Status || "";
-        var date = rec.receiptDate || rec.ReceiptDate || rec.date || "";
+        var name = rec.SupplierName || rec.supplierName || rec.CategoryName || rec.description || "Kvitto";
+        var amount = Math.abs(parseFloat(rec.Amount || rec.TotalAmountSummarySEK || rec.totalAmount || 0));
+        var status = "";
+        var date = rec.DateTime || rec.PaymentDate || rec.receiptDate || "";
         recHtml += '<div class="detail-item"><span class="item-name">' + name +
-          (status ? ' <span style="opacity:0.5;font-size:10px">(' + status + ')</span>' : '') +
+          (rec.CreatedByPersonName ? ' <span style="opacity:0.5;font-size:10px">(' + rec.CreatedByPersonName + ')</span>' : '') +
           (date ? ' <span style="opacity:0.3;font-size:10px">' + fmtDate(date) + '</span>' : '') +
           '</span><span class="item-amount">' + fmt(amount) + '</span></div>';
       });
