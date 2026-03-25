@@ -26,16 +26,23 @@ jobs:
           mkdir -p warroom/data
           python3 .github/scripts/fetch_wint.py
 
-      - name: Commit and push Wint data
+      - name: Build unified financial model
+        env:
+          WINT_USERNAME: ${{ secrets.WINT_USERNAME }}
+        run: |
+          if [ -z "$WINT_USERNAME" ]; then exit 0; fi
+          python3 .github/scripts/build_model.py
+
+      - name: Commit and push Wint data + model
         env:
           WINT_USERNAME: ${{ secrets.WINT_USERNAME }}
         run: |
           if [ -z "$WINT_USERNAME" ]; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add warroom/data/wint.json
+          git add warroom/data/wint.json warroom/data/model.json
           git diff --staged --quiet && echo "No changes" && exit 0
-          git commit -m "Update Wint/Superkoll data"
+          git commit -m "Update Wint data + financial model"
           git fetch origin main
           git rebase origin/main || (git rebase --abort && git pull --no-rebase origin main -X theirs)
           git push

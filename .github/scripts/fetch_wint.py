@@ -1,5 +1,6 @@
 import json, os, sys, urllib.request, urllib.error, base64
 from datetime import datetime
+from collections import Counter
 
 API_BASE = "https://superkollapi.wint.se/api"
 USERNAME = os.environ["WINT_USERNAME"]
@@ -9,10 +10,8 @@ BASIC_CREDS = base64.b64encode(f"{USERNAME}:{API_KEY}".encode()).decode()
 YEAR = datetime.now().year
 
 # Invoice Status codes (from Wint UI):
-# 1=Ej skickad, 3=Skickad, ?=Påminnelse, 5=Förfallen, 4=Betald, ?=Makulerad, ?=Hos inkasso
-# We want: Skickad, Påminnelse, Förfallen (i.e. sent but not yet paid)
+# 0=Ej skickad (draft), 3=Skickad, 5=Förfallen, 4=Betald
 # PaymentState: 0=Obetald, 1=Delvis betald, 2=Betald
-WANTED_INVOICE_STATUSES = {3, 5}  # Skickad + Förfallen (will also check LeftToPay)
 
 def api_get(path, timeout=60):
     url = f"{API_BASE}{path}"
@@ -27,6 +26,22 @@ def api_get(path, timeout=60):
         return None
     except Exception as e:
         print(f"  Error for {path}: {e}")
+        return None
+
+def api_post(path, body, timeout=60):
+    url = f"{API_BASE}{path}"
+    data = json.dumps(body).encode()
+    req = urllib.request.Request(url, data=data, method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("Authorization", f"Basic {BASIC_CREDS}")
+    try:
+        resp = urllib.request.urlopen(req, timeout=timeout)
+        return json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        print(f"  HTTP {e.code} for POST {path}: {e.read().decode()[:200]}")
+        return None
+    except Exception as e:
+        print(f"  Error for POST {path}: {e}")
         return None
 
 def fetch_recent_pages(path, date_field, timeout=90, max_pages=50):
@@ -64,18 +79,26 @@ def is_unpaid_and_sent(invoice):
     status = invoice.get("Status", 0)
     left_to_pay = invoice.get("LeftToPay") or 0
     payment_state = invoice.get("PaymentState", 0)
-    # Wint Status: 0=Ej skickad, 1=Skickad, 4=Betald
-    # PaymentState: 0=Obetald, 1=Delvis betald, 2=Betald
-    # We want: sent (Status >= 1) AND has outstanding balance
-    if status == 0:  # Ej skickad (draft)
+    if status == 0:
         return False
     if left_to_pay <= 0:
         return False
-    if payment_state == 2:  # Fully paid
+    if payment_state == 2:
         return False
     return True
 
-# Verify auth
+def classify_invoice(invoice):
+    """Classify an invoice: 'paid', 'unpaid', or 'draft'."""
+    status = invoice.get("Status", 0)
+    if status == 0:
+        return "draft"
+    payment_state = invoice.get("PaymentState", 0)
+    left_to_pay = invoice.get("LeftToPay") or 0
+    if payment_state == 2 or left_to_pay <= 0:
+        return "paid"
+    return "unpaid"
+
+# ── Verify auth ──
 print("Verifying Wint API credentials...")
 test = api_get("/Account")
 if test is None:
@@ -83,29 +106,48 @@ if test is None:
     sys.exit(1)
 print("  Authenticated successfully")
 
-# Fetch company info
+# ── Fetch company info ──
 print("Fetching company info...")
 company = api_get("/Auth")
 
-# --- Customer invoices (Kundfakturor) ---
-print(f"\nFetching customer invoices...")
+# ── Customer invoices (ALL - both paid and unpaid) ──
+print(f"\nFetching ALL customer invoices for {YEAR}...")
 raw_invoices = fetch_recent_pages("/Invoice", "DueDate")
-unpaid_invoices = [i for i in raw_invoices if is_unpaid_and_sent(i)]
-print(f"  Raw: {len(raw_invoices)}, unpaid (LeftToPay>0): {len(unpaid_invoices)}")
-# Log status + payment state distribution for debugging
-from collections import Counter
+# Deduplicate by Id
+seen_inv_ids = set()
+deduped_invoices = []
+for inv in raw_invoices:
+    inv_id = inv.get("Id")
+    if inv_id not in seen_inv_ids:
+        seen_inv_ids.add(inv_id)
+        deduped_invoices.append(inv)
+raw_invoices = deduped_invoices
+
+# Classify all invoices
+paid_invoices = []
+unpaid_invoices = []
+for inv in raw_invoices:
+    cls = classify_invoice(inv)
+    if cls == "paid":
+        paid_invoices.append(inv)
+    elif cls == "unpaid":
+        unpaid_invoices.append(inv)
+
+print(f"  Total unique: {len(raw_invoices)}, paid: {len(paid_invoices)}, unpaid: {len(unpaid_invoices)}")
 status_dist = Counter((i.get("Status"), i.get("PaymentState")) for i in raw_invoices)
 print(f"  (Status, PaymentState) distribution:")
 for (s, ps), count in sorted(status_dist.items()):
     ltp = sum(i.get("LeftToPay", 0) for i in raw_invoices if i.get("Status") == s and i.get("PaymentState") == ps)
-    print(f"    Status={s}, PaymentState={ps}: {count} invoices, LeftToPay total={ltp:,.0f}")
-# Show sample of unpaid
-for inv in unpaid_invoices[:5]:
-    print(f"    -> {inv.get('CustomerName')}: {inv.get('LeftToPay'):,.0f} kr, Status={inv.get('Status')}, PS={inv.get('PaymentState')}, Due={inv.get('DueDate','')[:10]}")
+    total_amt = sum(i.get("TotalAmount", 0) for i in raw_invoices if i.get("Status") == s and i.get("PaymentState") == ps)
+    print(f"    Status={s}, PaymentState={ps}: {count} invoices, TotalAmount={total_amt:,.0f}, LeftToPay={ltp:,.0f}")
 
-# --- Supplier invoices (Leverantörsfakturor) ---
+for inv in unpaid_invoices[:5]:
+    print(f"    -> UNPAID: {inv.get('CustomerName')}: {inv.get('LeftToPay'):,.0f} kr, Due={inv.get('DueDate','')[:10]}")
+for inv in paid_invoices[:5]:
+    print(f"    -> PAID: {inv.get('CustomerName')}: {inv.get('TotalAmount'):,.0f} kr, Due={inv.get('DueDate','')[:10]}")
+
+# ── Supplier invoices (Leverantörsfakturor) ──
 print(f"\nFetching supplier invoices...")
-# Try different endpoint names
 supplier_endpoints = [
     "/IncomingInvoice",
     "/SupplierInvoice",
@@ -120,79 +162,106 @@ for ep in supplier_endpoints:
         print(f"  {ep} returned {len(result)} items!")
         raw_supplier = result
         break
-    # If fetch_recent_pages returned empty, try a simple GET to check if endpoint exists
     test = api_get(f"{ep}?page=0")
     if test is not None:
         print(f"  {ep} exists but returned 0 items")
         break
 
-# Supplier invoices - match Wint UI filter:
-#   Status: "Att godkänna" only (State=0)
-#   State=2 (Att slutgodkänna) are already processed/in payment
 def is_supplier_unpaid(inv):
-    if inv.get("State") != 0:  # Only "Att godkänna"
+    if inv.get("State") != 0:
         return False
     if inv.get("IsPaid"):
         return False
     amount = inv.get("LeftToPay") or inv.get("Amount") or 0
     return amount > 0
 
-# Deduplicate by Id (pages can overlap)
 seen_ids = set()
 unpaid_supplier = []
+all_supplier = []
 for i in raw_supplier:
-    if not is_supplier_unpaid(i):
-        continue
     inv_id = i.get("Id")
     if inv_id in seen_ids:
         continue
     seen_ids.add(inv_id)
-    unpaid_supplier.append(i)
-print(f"  Raw: {len(raw_supplier)}, unpaid (State=0 'Att godkänna', unique): {len(unpaid_supplier)}")
-for inv in unpaid_supplier[:5]:
-    name = inv.get('SupplierName') or '?'
-    amt = inv.get('LeftToPay') or inv.get('Amount') or 0
-    cur = inv.get('Currency', 'SEK')
-    print(f"    -> {name}: {amt:,.0f} {cur}, State={inv.get('State')}, Due={inv.get('DueDate','')[:10]}")
+    all_supplier.append(i)
+    if is_supplier_unpaid(i):
+        unpaid_supplier.append(i)
+print(f"  Raw: {len(raw_supplier)}, unique: {len(all_supplier)}, unpaid: {len(unpaid_supplier)}")
 
-# --- Receipts (Kvitton) - submitted but not paid out ---
+# ── Receipts (Kvitton) ──
 print(f"\nFetching receipts...")
 raw_receipts = fetch_recent_pages("/Receipt", "DateTime")
-# PaymentState 0 = not paid out, State 1 = submitted
-# Filter: current year, submitted, not paid out
 pending_receipts = []
+all_receipts_year = []
 for r in raw_receipts:
     date = r.get("DateTime") or r.get("PaymentDate") or ""
     if not date.startswith(str(YEAR)):
         continue
-    payment_state = r.get("PaymentState", 0)
-    if payment_state == 0:  # Not paid out
+    all_receipts_year.append(r)
+    if r.get("PaymentState", 0) == 0:
         pending_receipts.append(r)
-print(f"  Raw: {len(raw_receipts)}, {YEAR} pending payout: {len(pending_receipts)}")
+print(f"  Raw: {len(raw_receipts)}, {YEAR} total: {len(all_receipts_year)}, pending payout: {len(pending_receipts)}")
 
-# --- Accounts (for cash position) ---
+# ── Accounts (for cash position) ──
 print("\nFetching accounts...")
 accounts = api_get("/Account")
 
-# --- Employees ---
+# ── Bank account balances (key accounts: 1930=Företagskonto, 1920=PlusGiro, etc.) ──
+print("Fetching bank account balances...")
+bank_accounts = {}
+for acc_num in ["1930", "1920", "1910", "1940"]:
+    balance = api_get(f"/Account/AccountBalance/{acc_num}")
+    if balance is not None:
+        bank_accounts[acc_num] = balance
+        print(f"  Account {acc_num}: {json.dumps(balance)[:100]}")
+
+# ── Monthly Result Report (actual P&L from WINT bookkeeping) ──
+print(f"\nFetching monthly result report for {YEAR}...")
+monthly_result = api_post("/FinancialReports/MonthlyResultReport", {
+    "Year": YEAR,
+})
+if monthly_result:
+    print(f"  Got monthly result report ({len(json.dumps(monthly_result))} bytes)")
+else:
+    print("  WARNING: Could not fetch monthly result report")
+
+# ── Balance Report (for current financial position) ──
+print(f"Fetching balance report...")
+balance_report = api_post("/FinancialReports/BalanceReport", {
+    "Year": YEAR,
+    "Month": datetime.now().month,
+})
+if balance_report:
+    print(f"  Got balance report ({len(json.dumps(balance_report))} bytes)")
+else:
+    print("  WARNING: Could not fetch balance report")
+
+# ── Employees ──
 print("Fetching employees...")
 employees = api_get("/Employees")
 
-# Build output
+# ── Build output ──
 wint_data = {
     "fetchedAt": datetime.now().isoformat(),
     "year": YEAR,
     "company": company,
     "invoices": {
+        "all": raw_invoices,
+        "paid": paid_invoices,
         "unpaid": unpaid_invoices,
     },
     "supplierInvoices": {
+        "all": all_supplier,
         "unpaid": unpaid_supplier,
     },
     "receipts": {
+        "all": all_receipts_year,
         "pending": pending_receipts,
     },
     "accounts": accounts,
+    "bankAccounts": bank_accounts,
+    "monthlyResultReport": monthly_result,
+    "balanceReport": balance_report,
     "employees": employees,
 }
 
@@ -200,17 +269,21 @@ output_path = "warroom/data/wint.json"
 with open(output_path, "w") as f:
     json.dump(wint_data, f, indent=2, default=str)
 
-# Summary
+# ── Summary ──
 print(f"\nSummary:")
-print(f"  Unpaid customer invoices: {len(unpaid_invoices)}")
+print(f"  All customer invoices: {len(raw_invoices)} (paid: {len(paid_invoices)}, unpaid: {len(unpaid_invoices)})")
 total_receivable = sum(i.get("LeftToPay", 0) for i in unpaid_invoices)
-print(f"  Total receivable: {total_receivable:,.0f} kr")
-print(f"  Unpaid supplier invoices: {len(unpaid_supplier)}")
+total_realized = sum(i.get("TotalAmount", 0) for i in paid_invoices)
+print(f"  Total realized revenue (paid): {total_realized:,.0f} kr")
+print(f"  Total receivable (unpaid): {total_receivable:,.0f} kr")
+print(f"  Supplier invoices: {len(all_supplier)} (unpaid: {len(unpaid_supplier)})")
 total_payable = sum((i.get("LeftToPay") or i.get("Amount") or 0) for i in unpaid_supplier)
 print(f"  Total payable: {total_payable:,.0f} kr")
-print(f"  Pending receipts: {len(pending_receipts)}")
+print(f"  Receipts: {len(all_receipts_year)} (pending: {len(pending_receipts)})")
 total_pending = sum(r.get("Amount", 0) for r in pending_receipts)
 print(f"  Total pending payout: {total_pending:,.0f} kr")
+print(f"  Monthly result report: {'YES' if monthly_result else 'NO'}")
+print(f"  Balance report: {'YES' if balance_report else 'NO'}")
 emp_items = employees.get("Items", []) if employees else []
 print(f"  Employees: {len(emp_items)}")
 print(f"\nWrote Wint data to {output_path}")

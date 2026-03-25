@@ -511,6 +511,7 @@
     }
 
     // ── Data model ──
+    var MODEL_JSON_PATH = "data/model.json";
     var SHEET_CSV_LOCAL = "data/finanser.csv";
     var SHEET_CSV_FALLBACK = "import-finanser.csv";
     var SHEET_ID = "1aKlolK8ycwarTnl8ik6gd4ji1t7dFVlcwnF7NnBx9xc";
@@ -520,8 +521,10 @@
     var monthlyData = MONTH_NAMES ? MONTH_NAMES.map(function(n) { return { name: n, revenue: 0, expenses: 0, liquidity: 0, hasData: false, revenueItems: [], expenseItems: [] }; }) : [];
     var cashPosition = 0;
     var sheetDataLoaded = false;
+    var modelDataLoaded = false;
     var wintDataLoaded = false;
     var wintData = null;
+    var modelData = null;
 
     // Period state: {type:"month", index:2} or {type:"quarter", index:0} or {type:"year"}
     var currentPeriod = { type: "month", index: new Date().getMonth() };
@@ -557,7 +560,51 @@
       return -1;
     }
 
-    // ── Fetch and parse sheet ──
+    // ── Fetch unified model (WINT actuals + CSV forecasts) ──
+    async function fetchModelData() {
+      var resp = await fetch(MODEL_JSON_PATH + "?" + Date.now());
+      if (!resp.ok) return false;
+      modelData = await resp.json();
+      console.log("[Model] Loaded:", modelData.generatedAt, "WINT months:", modelData.summary.monthsWithWintData, "Forecast months:", modelData.summary.monthsWithForecast);
+
+      // Populate monthlyData from model
+      monthlyData = MONTH_NAMES.map(function(name, idx) {
+        var m = modelData.months[idx];
+        if (!m) return { name: name, revenue: 0, expenses: 0, liquidity: 0, hasData: false, revenueItems: [], expenseItems: [], source: "none" };
+
+        var revenueItems = (m.revenueItems || []).map(function(item) {
+          return { name: item.name, amount: item.amount || 0, source: item.source || m.source };
+        });
+        var expenseItems = (m.expenseItems || []).map(function(item) {
+          return { name: item.name, amount: item.amount || 0, source: item.source || m.source };
+        });
+
+        return {
+          name: name,
+          revenue: m.revenue || 0,
+          expenses: m.expenses || 0,
+          liquidity: m.liquidity || 0,
+          hasData: m.hasData || false,
+          revenueItems: revenueItems,
+          expenseItems: expenseItems,
+          source: m.source || "none",
+          netto: m.netto || 0,
+          // Preserve invoice details for drill-down
+          invoiceDetails: m.invoiceDetails || null,
+        };
+      });
+
+      // Cash position from model
+      if (modelData.cashPosition && modelData.cashPosition.amount !== 0) {
+        cashPosition = modelData.cashPosition.amount;
+      }
+
+      modelDataLoaded = true;
+      sheetDataLoaded = true; // Treat as sheet loaded for compatibility
+      return true;
+    }
+
+    // ── Fetch and parse sheet (fallback if model.json not available) ──
     async function fetchSheetData() {
       var text;
       try {
@@ -1018,7 +1065,7 @@
       var runway = avgBurn > 0 ? Math.abs(cashPosition) / avgBurn : 0;
       var endLiq = getPeriodEndLiquidity();
       var periodLbl = getPeriodLabel();
-      var src = sheetDataLoaded ? "Google Sheet" : "Ej kopplad";
+      var src = modelDataLoaded ? "Wint + Prognos" : (sheetDataLoaded ? "Google Sheet" : "Ej kopplad");
       var dataSub = numMonths > 1 ? (monthsWithData + " av " + numMonths + " m\u00e5n med data") : src;
 
       // Trend calculations
@@ -1130,12 +1177,18 @@
         if (m.revenue === 0 && m.expenses === 0) { revH = 2; expH = 2; }
         var netto = m.revenue - m.expenses;
 
+        var sourceTag = '';
+        if (m.source && m.source.indexOf('wint') >= 0) {
+          sourceTag = '<div style="font-size:7px;color:#2A9D8F;letter-spacing:0.5px;margin-top:1px">WINT</div>';
+        } else if (m.source === 'forecast') {
+          sourceTag = '<div style="font-size:7px;color:rgba(255,255,255,0.25);letter-spacing:0.5px;margin-top:1px">PROG</div>';
+        }
         html += '<div class="month-col ' + (inPeriod ? 'in-period' : 'out-period') + '">' +
           '<div class="bar-wrap"><div style="display:flex;gap:2px;align-items:flex-end;width:100%;justify-content:center;height:100%">' +
             '<div class="bar bar-rev" style="height:' + revH + 'px"></div>' +
             '<div class="bar bar-exp" style="height:' + expH + 'px"></div>' +
           '</div></div>' +
-          '<div class="month-label' + (isCurrent ? ' current' : '') + '">' + m.name + '</div></div>';
+          '<div class="month-label' + (isCurrent ? ' current' : '') + '">' + m.name + '</div>' + sourceTag + '</div>';
 
         var noData = m.revenue === 0 && m.expenses === 0;
         var nettoClass = netto >= 0 ? 'netto-pos' : 'netto-neg';
@@ -1725,9 +1778,15 @@
     function updateBadge() {
       var badge = document.getElementById("dataSourceBadge");
       var sources = [];
-      if (sheetDataLoaded) sources.push("Sheet");
+      if (modelDataLoaded) {
+        var wintMonths = modelData.summary.monthsWithWintData || 0;
+        if (wintMonths > 0) sources.push("Wint (" + wintMonths + " mån)");
+        if (modelData.summary.monthsWithForecast > 0) sources.push("Prognos");
+      } else if (sheetDataLoaded) {
+        sources.push("Sheet");
+      }
       if (isLiveData) sources.push("HubSpot");
-      if (wintDataLoaded) sources.push("Wint");
+      if (wintDataLoaded && !modelDataLoaded) sources.push("Wint");
       if (sources.length > 0) {
         badge.className = "data-source-badge live";
         badge.textContent = "Live \u00b7 " + sources.join(" + ");
@@ -1760,11 +1819,19 @@
 
       btn.innerHTML = "&#10227; H\u00e4mtar data...";
 
-      try { await fetchSheetData(); } catch(e) {
-        sheetDataLoaded = false;
-        var box = document.getElementById("errorBox");
-        box.textContent = "\u26a0 " + e.message;
-        box.style.display = "block";
+      // Try model.json first (WINT actuals + CSV forecasts merged)
+      // Fall back to CSV-only if model.json is not available
+      var modelLoaded = false;
+      try { modelLoaded = await fetchModelData(); } catch(e) {
+        console.log("[Model] Not available, falling back to CSV:", e.message);
+      }
+      if (!modelLoaded) {
+        try { await fetchSheetData(); } catch(e) {
+          sheetDataLoaded = false;
+          var box = document.getElementById("errorBox");
+          box.textContent = "\u26a0 " + e.message;
+          box.style.display = "block";
+        }
       }
 
       try {

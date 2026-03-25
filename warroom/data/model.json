@@ -1,0 +1,842 @@
+{
+  "generatedAt": "2026-03-25T17:26:46.483902",
+  "year": 2026,
+  "currentMonth": 3,
+  "cashPosition": {
+    "amount": 0,
+    "source": "csv",
+    "bankAccounts": {},
+    "csvStartingBalance": -414000.0
+  },
+  "months": [
+    {
+      "month": "JAN",
+      "monthIndex": 0,
+      "monthNumber": 1,
+      "revenue": 0,
+      "expenses": 0,
+      "netto": 0,
+      "source": "none",
+      "revenueItems": [],
+      "expenseItems": [],
+      "hasData": false,
+      "liquidity": -740828.0
+    },
+    {
+      "month": "FEB",
+      "monthIndex": 1,
+      "monthNumber": 2,
+      "revenue": 0,
+      "expenses": 0,
+      "netto": 0,
+      "source": "none",
+      "revenueItems": [],
+      "expenseItems": [],
+      "hasData": false,
+      "liquidity": -740828.0
+    },
+    {
+      "month": "MAR",
+      "monthIndex": 2,
+      "monthNumber": 3,
+      "revenue": 636250.0,
+      "expenses": 309422.0,
+      "netto": 326828.0,
+      "source": "csv-fallback",
+      "revenueItems": [
+        {
+          "name": "Bluewater",
+          "amount": 448750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Cristie",
+          "amount": 112500.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Efuel",
+          "amount": 47500.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Humly",
+          "amount": 12500.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 4113.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "L\u00f6ner (Birna)",
+          "amount": 16300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Sociala + skatt (Birna)",
+          "amount": 9200.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Simplex Consulting",
+          "amount": 26311.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -414000.0
+    },
+    {
+      "month": "APR",
+      "monthIndex": 3,
+      "monthNumber": 4,
+      "revenue": 401250.0,
+      "expenses": 302248.0,
+      "netto": 99002.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Bluewater",
+          "amount": 160000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Efuel",
+          "amount": 82500.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Visit Group",
+          "amount": 143750.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 80000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -314998.0
+    },
+    {
+      "month": "MAJ",
+      "monthIndex": 4,
+      "monthNumber": 5,
+      "revenue": 362500.0,
+      "expenses": 242248.0,
+      "netto": 120252.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "HubSpot Commission",
+          "amount": 300000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Efuel",
+          "amount": 47500.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -194746.0
+    },
+    {
+      "month": "JUN",
+      "monthIndex": 5,
+      "monthNumber": 6,
+      "revenue": 175000.0,
+      "expenses": 242248.0,
+      "netto": -67248.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Cristie",
+          "amount": 112500.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Efuel",
+          "amount": 47500.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -261994.0
+    },
+    {
+      "month": "JUL",
+      "monthIndex": 6,
+      "monthNumber": 7,
+      "revenue": 15000.0,
+      "expenses": 242248.0,
+      "netto": -227248.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -489242.0
+    },
+    {
+      "month": "AUG",
+      "monthIndex": 7,
+      "monthNumber": 8,
+      "revenue": 315000.0,
+      "expenses": 242248.0,
+      "netto": 72752.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "HubSpot Commission",
+          "amount": 300000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -416490.0
+    },
+    {
+      "month": "SEP",
+      "monthIndex": 8,
+      "monthNumber": 9,
+      "revenue": 15000.0,
+      "expenses": 242248.0,
+      "netto": -227248.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -643738.0
+    },
+    {
+      "month": "OKT",
+      "monthIndex": 9,
+      "monthNumber": 10,
+      "revenue": 15000.0,
+      "expenses": 242248.0,
+      "netto": -227248.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -870986.0
+    },
+    {
+      "month": "NOV",
+      "monthIndex": 10,
+      "monthNumber": 11,
+      "revenue": 315000.0,
+      "expenses": 242248.0,
+      "netto": 72752.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "HubSpot Commission",
+          "amount": 300000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -798234.0
+    },
+    {
+      "month": "DEC",
+      "monthIndex": 11,
+      "monthNumber": 12,
+      "revenue": 15000.0,
+      "expenses": 242248.0,
+      "netto": -227248.0,
+      "source": "forecast",
+      "revenueItems": [
+        {
+          "name": "Manpower",
+          "amount": 15000.0,
+          "source": "forecast"
+        }
+      ],
+      "expenseItems": [
+        {
+          "name": "Delage Landen Finans (datorer)",
+          "amount": 4300.0,
+          "source": "forecast"
+        },
+        {
+          "name": "WINT",
+          "amount": 3750.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Licens HubSpot",
+          "amount": 11000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (l\u00f6n)",
+          "amount": 35000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Oliver Lopez (skatt+sociala)",
+          "amount": 26000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Leadlabs",
+          "amount": 100000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "S\u00f6der Content",
+          "amount": 40000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "HubXperts",
+          "amount": 20000.0,
+          "source": "forecast"
+        },
+        {
+          "name": "IKANO (Leasing)",
+          "amount": 1298.0,
+          "source": "forecast"
+        },
+        {
+          "name": "Office 365",
+          "amount": 900.0,
+          "source": "forecast"
+        }
+      ],
+      "hasData": true,
+      "liquidity": -1025482.0
+    }
+  ],
+  "summary": {
+    "totalActualRevenue": 0,
+    "totalForecastRevenue": 1628750.0,
+    "totalActualExpenses": 0,
+    "totalForecastExpenses": 2240232.0,
+    "yearEndProjectedLiquidity": -1025482.0,
+    "monthsWithWintData": 0,
+    "monthsWithForecast": 9
+  },
+  "dataSources": {
+    "wint": {
+      "fetchedAt": "2026-03-22T22:27:58.572268",
+      "hasMonthlyReport": false,
+      "hasInvoiceData": true,
+      "totalInvoices": 0,
+      "paidInvoices": 0,
+      "unpaidInvoices": 6
+    },
+    "csv": {
+      "available": true,
+      "startingBalance": -414000.0
+    }
+  }
+}
