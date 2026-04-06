@@ -28,7 +28,7 @@
         "workspace": "/home/ubuntu/.openclaw/agents/scout",
         "agentDir": "/home/ubuntu/.openclaw/agents/scout/agent",
         "mcp": {
-          "servers": ["apollo", "hubspot", "slack"]
+          "servers": ["hubspot", "slack"]
         }
       },
       {
