@@ -1,0 +1,72 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "amazon-bedrock/global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+      },
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "subagents": {
+        "maxSpawnDepth": 2,
+        "maxChildrenPerAgent": 5,
+        "maxConcurrent": 8,
+        "runTimeoutSeconds": 900
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "subagents": {},
+        "mcp": {
+          "servers": []
+        }
+      },
+      {
+        "id": "scout",
+        "name": "Scout",
+        "workspace": "/home/ubuntu/.openclaw/agents/scout",
+        "agentDir": "/home/ubuntu/.openclaw/agents/scout/agent",
+        "mcp": {
+          "servers": ["hubspot", "slack"]
+        }
+      },
+      {
+        "id": "rex",
+        "name": "Rex",
+        "workspace": "/home/ubuntu/.openclaw/agents/rex",
+        "agentDir": "/home/ubuntu/.openclaw/agents/rex/agent",
+        "mcp": {
+          "servers": ["clickup", "slack"]
+        }
+      },
+      {
+        "id": "builder",
+        "name": "Builder",
+        "workspace": "/home/ubuntu/.openclaw/agents/builder",
+        "agentDir": "/home/ubuntu/.openclaw/agents/builder/agent",
+        "mcp": {
+          "servers": ["clickup", "m365"]
+        }
+      },
+      {
+        "id": "tasker",
+        "name": "Tasker",
+        "workspace": "/home/ubuntu/.openclaw/agents/tasker",
+        "agentDir": "/home/ubuntu/.openclaw/agents/tasker/agent",
+        "mcp": {
+          "servers": ["clickup"]
+        }
+      },
+      {
+        "id": "otto",
+        "name": "Otto",
+        "workspace": "/home/ubuntu/.openclaw/agents/otto",
+        "agentDir": "/home/ubuntu/.openclaw/agents/otto/agent",
+        "mcp": {
+          "servers": ["slack", "m365"]
+        }
+      }
+    ]
+  }
+}
