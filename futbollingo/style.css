@@ -1296,6 +1296,65 @@ body {
     font-style: italic;
 }
 
+/* Tactic Mode - Pitch */
+.tactic-container {
+    padding: 0 4px;
+}
+
+.tactic-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--green);
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.pitch-wrapper {
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 40px rgba(74, 222, 128, 0.05);
+}
+
+#pitch-svg {
+    width: 100%;
+    display: block;
+}
+
+.tactic-situation {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 10px 14px;
+    background: var(--bg-glass);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    margin-bottom: 14px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.tactic-question {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    text-align: center;
+    color: var(--text);
+}
+
+/* Player pulse animation */
+@keyframes playerPulse {
+    0%, 100% { r: 12; }
+    50% { r: 14; }
+}
+
+@keyframes arrowDash {
+    to { stroke-dashoffset: -20; }
+}
+
 @media (max-width: 440px) {
     .sentence-prompt {
         font-size: 18px;
@@ -1303,6 +1362,10 @@ body {
 
     .mode-btn span:not(.mode-icon) {
         font-size: 10px;
+    }
+
+    .tactic-question {
+        font-size: 16px;
     }
 }
 

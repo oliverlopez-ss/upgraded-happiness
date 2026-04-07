@@ -172,6 +172,10 @@
                     <span class="mode-icon">&#128172;</span>
                     <span>Meningar</span>
                 </button>
+                <button class="mode-btn" data-mode="tactics">
+                    <span class="mode-icon">&#9814;</span>
+                    <span>Taktik</span>
+                </button>
             </div>
 
             <button id="start-btn" class="primary-btn">
@@ -322,6 +326,32 @@
             </div>
         </div>
 
+        <!-- Tactic Screen -->
+        <div id="tactic-screen" class="screen">
+            <div class="top-bar">
+                <button class="icon-btn tactic-back-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="tactic-progress-fill" class="progress-fill"></div></div>
+                    <span id="tactic-progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display"><span class="streak-fire">&#128293;</span><span id="tactic-streak">0</span></div>
+            </div>
+            <div class="tactic-container">
+                <div class="tactic-title" id="tactic-title"></div>
+                <div class="pitch-wrapper">
+                    <svg id="pitch-svg" viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg"></svg>
+                </div>
+                <div class="tactic-situation" id="tactic-situation"></div>
+                <div class="tactic-question" id="tactic-question"></div>
+                <div class="quiz-options" id="tactic-options"></div>
+                <div class="quiz-feedback" id="tactic-feedback"></div>
+                <button class="primary-btn tactic-next-btn" id="tactic-next" style="display:none">
+                    <span>Nästa</span>
+                    <span class="btn-arrow">&#8594;</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Results Screen -->
         <div id="results-screen" class="screen">
             <div class="results-container">
@@ -353,6 +383,7 @@
     </div>
 
     <script src="data.js"></script>
+    <script src="tactics.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
-const CACHE_NAME = 'futbollingo-v1';
+const CACHE_NAME = 'futbollingo-v2';
 const ASSETS = [
     './',
     './index.html',
     './style.css',
     './app.js',
     './data.js',
+    './tactics.js',
     './manifest.json',
     './icon-192.svg',
     './icon-512.svg',

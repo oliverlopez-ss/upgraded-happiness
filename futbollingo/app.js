@@ -38,6 +38,7 @@ const state = {
     selectedMode: 'flashcard',
     currentWords: [],
     currentSentences: [],
+    currentTactics: [],
     currentIndex: 0,
     streak: 0,
     bestStreak: 0,
@@ -246,6 +247,9 @@ function startSession() {
     if (state.selectedMode === 'sentences') {
         state.currentSentences = selectSessionSentences(state.selectedCategory);
         startSentences();
+    } else if (state.selectedMode === 'tactics') {
+        state.currentTactics = shuffle([...TACTICAL_SCENARIOS]);
+        startTactics();
     } else {
         state.currentWords = selectSessionWords(state.selectedCategory);
         switch (state.selectedMode) {
@@ -715,9 +719,354 @@ function handleSentenceAnswer(btn, selected, correct, sentence) {
     updateProgress('sentence-progress-fill', 'sentence-progress-text', 'sentence-streak');
 }
 
+// === Tactics Mode ===
+function renderPitch(svg, scenario) {
+    const ns = 'http://www.w3.org/2000/svg';
+    svg.innerHTML = '';
+
+    // Pitch dimensions in viewBox: 500 x 320
+    const W = 500, H = 320;
+
+    // Defs for gradients and markers
+    const defs = document.createElementNS(ns, 'defs');
+
+    // Pitch gradient (vertical stripes)
+    const stripeCount = 10;
+    for (let i = 0; i < stripeCount; i++) {
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('x', i * (W / stripeCount));
+        rect.setAttribute('y', 0);
+        rect.setAttribute('width', W / stripeCount);
+        rect.setAttribute('height', H);
+        rect.setAttribute('fill', i % 2 === 0 ? '#1a472a' : '#1e5232');
+        svg.appendChild(rect);
+    }
+
+    // Arrow markers
+    const markerPass = document.createElementNS(ns, 'marker');
+    markerPass.setAttribute('id', 'arrowPass');
+    markerPass.setAttribute('markerWidth', '8');
+    markerPass.setAttribute('markerHeight', '8');
+    markerPass.setAttribute('refX', '7');
+    markerPass.setAttribute('refY', '4');
+    markerPass.setAttribute('orient', 'auto');
+    const arrowPath = document.createElementNS(ns, 'path');
+    arrowPath.setAttribute('d', 'M0,1 L7,4 L0,7 Z');
+    arrowPath.setAttribute('fill', '#fbbf24');
+    markerPass.appendChild(arrowPath);
+    defs.appendChild(markerPass);
+
+    const markerRun = document.createElementNS(ns, 'marker');
+    markerRun.setAttribute('id', 'arrowRun');
+    markerRun.setAttribute('markerWidth', '8');
+    markerRun.setAttribute('markerHeight', '8');
+    markerRun.setAttribute('refX', '7');
+    markerRun.setAttribute('refY', '4');
+    markerRun.setAttribute('orient', 'auto');
+    const arrowPath2 = document.createElementNS(ns, 'path');
+    arrowPath2.setAttribute('d', 'M0,1 L7,4 L0,7 Z');
+    arrowPath2.setAttribute('fill', '#38bdf8');
+    markerRun.appendChild(arrowPath2);
+    defs.appendChild(markerRun);
+
+    const markerPress = document.createElementNS(ns, 'marker');
+    markerPress.setAttribute('id', 'arrowPress');
+    markerPress.setAttribute('markerWidth', '8');
+    markerPress.setAttribute('markerHeight', '8');
+    markerPress.setAttribute('refX', '7');
+    markerPress.setAttribute('refY', '4');
+    markerPress.setAttribute('orient', 'auto');
+    const arrowPath3 = document.createElementNS(ns, 'path');
+    arrowPath3.setAttribute('d', 'M0,1 L7,4 L0,7 Z');
+    arrowPath3.setAttribute('fill', '#f87171');
+    markerPress.appendChild(arrowPath3);
+    defs.appendChild(markerPress);
+
+    svg.appendChild(defs);
+
+    // Pitch lines
+    const lines = document.createElementNS(ns, 'g');
+    lines.setAttribute('stroke', 'rgba(255,255,255,0.35)');
+    lines.setAttribute('stroke-width', '1.5');
+    lines.setAttribute('fill', 'none');
+
+    // Outer border
+    const border = document.createElementNS(ns, 'rect');
+    border.setAttribute('x', '10'); border.setAttribute('y', '10');
+    border.setAttribute('width', W - 20); border.setAttribute('height', H - 20);
+    border.setAttribute('rx', '2');
+    lines.appendChild(border);
+
+    // Halfway line
+    const half = document.createElementNS(ns, 'line');
+    half.setAttribute('x1', W/2); half.setAttribute('y1', '10');
+    half.setAttribute('x2', W/2); half.setAttribute('y2', H - 10);
+    lines.appendChild(half);
+
+    // Center circle
+    const cc = document.createElementNS(ns, 'circle');
+    cc.setAttribute('cx', W/2); cc.setAttribute('cy', H/2); cc.setAttribute('r', '35');
+    lines.appendChild(cc);
+
+    // Center dot
+    const cd = document.createElementNS(ns, 'circle');
+    cd.setAttribute('cx', W/2); cd.setAttribute('cy', H/2); cd.setAttribute('r', '3');
+    cd.setAttribute('fill', 'rgba(255,255,255,0.35)');
+    lines.appendChild(cd);
+
+    // Left penalty area
+    const lpa = document.createElementNS(ns, 'rect');
+    lpa.setAttribute('x', '10'); lpa.setAttribute('y', H/2 - 65);
+    lpa.setAttribute('width', '65'); lpa.setAttribute('height', '130');
+    lines.appendChild(lpa);
+
+    // Left goal area
+    const lga = document.createElementNS(ns, 'rect');
+    lga.setAttribute('x', '10'); lga.setAttribute('y', H/2 - 30);
+    lga.setAttribute('width', '25'); lga.setAttribute('height', '60');
+    lines.appendChild(lga);
+
+    // Right penalty area
+    const rpa = document.createElementNS(ns, 'rect');
+    rpa.setAttribute('x', W - 75); rpa.setAttribute('y', H/2 - 65);
+    rpa.setAttribute('width', '65'); rpa.setAttribute('height', '130');
+    lines.appendChild(rpa);
+
+    // Right goal area
+    const rga = document.createElementNS(ns, 'rect');
+    rga.setAttribute('x', W - 35); rga.setAttribute('y', H/2 - 30);
+    rga.setAttribute('width', '25'); rga.setAttribute('height', '60');
+    lines.appendChild(rga);
+
+    // Left goal
+    const lg = document.createElementNS(ns, 'rect');
+    lg.setAttribute('x', '2'); lg.setAttribute('y', H/2 - 18);
+    lg.setAttribute('width', '8'); lg.setAttribute('height', '36');
+    lg.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+    lg.setAttribute('rx', '1');
+    lines.appendChild(lg);
+
+    // Right goal
+    const rg = document.createElementNS(ns, 'rect');
+    rg.setAttribute('x', W - 10); rg.setAttribute('y', H/2 - 18);
+    rg.setAttribute('width', '8'); rg.setAttribute('height', '36');
+    rg.setAttribute('stroke', 'rgba(255,255,255,0.5)');
+    rg.setAttribute('rx', '1');
+    lines.appendChild(rg);
+
+    svg.appendChild(lines);
+
+    // Arrows
+    scenario.arrows.forEach(a => {
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', a.fromX * W / 100);
+        line.setAttribute('y1', a.fromY * H / 100);
+        line.setAttribute('x2', a.toX * W / 100);
+        line.setAttribute('y2', a.toY * H / 100);
+        line.setAttribute('stroke-width', '2.5');
+        line.setAttribute('stroke-linecap', 'round');
+
+        if (a.type === 'pass') {
+            line.setAttribute('stroke', '#fbbf24');
+            line.setAttribute('marker-end', 'url(#arrowPass)');
+        } else if (a.type === 'run') {
+            line.setAttribute('stroke', '#38bdf8');
+            line.setAttribute('stroke-dasharray', '6,4');
+            line.setAttribute('marker-end', 'url(#arrowRun)');
+            line.style.animation = 'arrowDash 0.8s linear infinite';
+        } else if (a.type === 'press') {
+            line.setAttribute('stroke', '#f87171');
+            line.setAttribute('stroke-dasharray', '4,3');
+            line.setAttribute('marker-end', 'url(#arrowPress)');
+            line.style.animation = 'arrowDash 0.6s linear infinite';
+        }
+
+        svg.appendChild(line);
+    });
+
+    // Home players (bright green/cyan)
+    scenario.homePlayers.forEach(p => {
+        const g = document.createElementNS(ns, 'g');
+        const px = p.x * W / 100;
+        const py = p.y * H / 100;
+
+        // Glow
+        if (p.hasBall || p.highlight) {
+            const glow = document.createElementNS(ns, 'circle');
+            glow.setAttribute('cx', px); glow.setAttribute('cy', py);
+            glow.setAttribute('r', '16');
+            glow.setAttribute('fill', p.hasBall ? 'rgba(251, 191, 36, 0.3)' : 'rgba(74, 222, 128, 0.3)');
+            g.appendChild(glow);
+        }
+
+        // Circle
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', px); circle.setAttribute('cy', py);
+        circle.setAttribute('r', '12');
+        circle.setAttribute('fill', p.role === 'gk' ? '#06b6d4' : '#22c55e');
+        circle.setAttribute('stroke', '#fff');
+        circle.setAttribute('stroke-width', '1.5');
+        if (p.hasBall) {
+            circle.setAttribute('fill', '#eab308');
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '2');
+        }
+        g.appendChild(circle);
+
+        // Number
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('x', px); text.setAttribute('y', py + 1);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('fill', '#000');
+        text.setAttribute('font-size', '10');
+        text.setAttribute('font-weight', '800');
+        text.setAttribute('font-family', 'Inter, sans-serif');
+        text.textContent = p.num;
+        g.appendChild(text);
+
+        svg.appendChild(g);
+    });
+
+    // Away players (dark/red)
+    scenario.awayPlayers.forEach(p => {
+        const g = document.createElementNS(ns, 'g');
+        const px = p.x * W / 100;
+        const py = p.y * H / 100;
+
+        if (p.hasBall) {
+            const glow = document.createElementNS(ns, 'circle');
+            glow.setAttribute('cx', px); glow.setAttribute('cy', py);
+            glow.setAttribute('r', '16');
+            glow.setAttribute('fill', 'rgba(251, 191, 36, 0.3)');
+            g.appendChild(glow);
+        }
+        if (p.highlight) {
+            const glow = document.createElementNS(ns, 'circle');
+            glow.setAttribute('cx', px); glow.setAttribute('cy', py);
+            glow.setAttribute('r', '16');
+            glow.setAttribute('fill', 'rgba(248, 113, 113, 0.3)');
+            g.appendChild(glow);
+        }
+
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', px); circle.setAttribute('cy', py);
+        circle.setAttribute('r', '12');
+        circle.setAttribute('fill', p.role === 'gk' ? '#a855f7' : '#dc2626');
+        circle.setAttribute('stroke', 'rgba(255,255,255,0.6)');
+        circle.setAttribute('stroke-width', '1.5');
+        if (p.hasBall) {
+            circle.setAttribute('fill', '#eab308');
+            circle.setAttribute('stroke', '#fff');
+            circle.setAttribute('stroke-width', '2');
+        }
+        g.appendChild(circle);
+
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('x', px); text.setAttribute('y', py + 1);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('fill', '#fff');
+        text.setAttribute('font-size', '10');
+        text.setAttribute('font-weight', '800');
+        text.setAttribute('font-family', 'Inter, sans-serif');
+        text.textContent = p.num;
+        g.appendChild(text);
+
+        svg.appendChild(g);
+    });
+}
+
+function startTactics() {
+    showScreen('tactic-screen');
+    showTacticQuestion();
+
+    document.querySelector('.tactic-back-btn').onclick = () => goHome();
+}
+
+function showTacticQuestion() {
+    if (state.currentIndex >= state.currentTactics.length) {
+        showResults();
+        return;
+    }
+
+    const scenario = state.currentTactics[state.currentIndex];
+    const feedback = document.getElementById('tactic-feedback');
+    const nextBtn = document.getElementById('tactic-next');
+    feedback.className = 'quiz-feedback';
+    feedback.style.display = 'none';
+    nextBtn.style.display = 'none';
+
+    document.getElementById('tactic-title').textContent = scenario.title;
+    document.getElementById('tactic-situation').textContent = scenario.situation;
+    document.getElementById('tactic-question').textContent = scenario.question;
+
+    // Render pitch
+    const svg = document.getElementById('pitch-svg');
+    renderPitch(svg, scenario);
+
+    // Options
+    const optionsEl = document.getElementById('tactic-options');
+    optionsEl.innerHTML = '';
+
+    scenario.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.onclick = () => handleTacticAnswer(btn, idx, scenario);
+        optionsEl.appendChild(btn);
+    });
+
+    updateProgress('tactic-progress-fill', 'tactic-progress-text', 'tactic-streak');
+}
+
+function handleTacticAnswer(btn, selectedIdx, scenario) {
+    const options = document.querySelectorAll('#tactic-options .quiz-option');
+    options.forEach(o => o.classList.add('disabled'));
+
+    const feedback = document.getElementById('tactic-feedback');
+    const nextBtn = document.getElementById('tactic-next');
+    const isCorrect = selectedIdx === scenario.correctIndex;
+
+    if (isCorrect) {
+        btn.classList.add('correct');
+        feedback.className = 'quiz-feedback correct';
+        feedback.textContent = scenario.explanation;
+        state.sessionCorrect++;
+        state.streak++;
+        state.sessionResults.push({ word: { es: scenario.options[scenario.correctIndex], sv: scenario.title }, correct: true });
+        btn.classList.add('pop');
+        awardXP(XP_PER_SENTENCE + (state.streak >= 3 ? XP_PER_STREAK_BONUS : 0));
+    } else {
+        btn.classList.add('wrong');
+        feedback.className = 'quiz-feedback wrong';
+        feedback.textContent = `Rätt svar: ${scenario.options[scenario.correctIndex]}. ${scenario.explanation}`;
+        state.sessionWrong++;
+        state.streak = 0;
+        state.sessionResults.push({ word: { es: scenario.options[scenario.correctIndex], sv: scenario.title }, correct: false });
+        options.forEach((o, i) => {
+            if (i === scenario.correctIndex) o.classList.add('correct');
+        });
+        btn.classList.add('shake');
+    }
+
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    saveProgress();
+
+    nextBtn.style.display = 'block';
+    nextBtn.onclick = () => {
+        state.currentIndex++;
+        showTacticQuestion();
+    };
+
+    updateProgress('tactic-progress-fill', 'tactic-progress-text', 'tactic-streak');
+}
+
 // === Progress ===
 function updateProgress(fillId, textId, streakId) {
-    const items = state.selectedMode === 'sentences' ? state.currentSentences : state.currentWords;
+    const items = state.selectedMode === 'tactics' ? state.currentTactics
+        : state.selectedMode === 'sentences' ? state.currentSentences
+        : state.currentWords;
     const total = items.length;
     const current = state.currentIndex;
     const pct = total > 0 ? (current / total) * 100 : 0;
