@@ -1,4 +1,4 @@
-const CACHE_NAME = 'futbollingo-v2';
+const CACHE_NAME = 'futbollingo-v3';
 const ASSETS = [
     './',
     './index.html',
