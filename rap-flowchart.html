@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Revenue Architecture Program (RAP) 2026</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      width: 100%;
+      max-width: 960px;
+    }
+
+    /* ── Arrow connector ── */
+    .arrow-down {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      width: 100%;
+    }
+    .arrow-down .shaft {
+      width: 2px;
+      height: 28px;
+      background: #576CBC;
+    }
+    .arrow-down .head {
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 12px solid #576CBC;
+    }
+
+    /* ── HEADER ── */
+    .header-card {
+      background: #0B2447;
+      border: 2px solid #19376D;
+      border-radius: 8px;
+      color: #fff;
+      text-align: center;
+      padding: 20px 32px;
+      width: 100%;
+      box-shadow: 0 4px 18px rgba(11,36,71,0.25);
+    }
+    .header-card .title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+    }
+    .header-card .subtitle {
+      font-size: 13px;
+      font-weight: 400;
+      opacity: 0.82;
+      margin-top: 6px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── ENGINE SECTION ── */
+    .section-wrapper {
+      width: 100%;
+      border: 2px solid #576CBC;
+      border-radius: 10px;
+      background: #fff;
+      overflow: visible;
+    }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      border-radius: 8px 8px 0 0;
+      background: #576CBC;
+      color: #fff;
+    }
+    .section-body {
+      padding: 20px 16px 20px;
+    }
+
+    /* Engine phases row */
+    .phases-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      width: 100%;
+    }
+    .phase-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* Arrow between phases */
+    .phase-arrow {
+      display: flex;
+      align-items: center;
+      align-self: flex-start;
+      padding-top: 22px; /* align with center of phase box */
+    }
+    .phase-arrow .h-shaft {
+      width: 18px;
+      height: 2px;
+      background: #576CBC;
+    }
+    .phase-arrow .h-head {
+      width: 0;
+      height: 0;
+      border-top: 7px solid transparent;
+      border-bottom: 7px solid transparent;
+      border-left: 10px solid #576CBC;
+    }
+
+    .phase-box {
+      background: #19376D;
+      border: 2px solid #576CBC;
+      border-radius: 6px;
+      color: #fff;
+      text-align: center;
+      padding: 14px 10px;
+      width: 100%;
+      font-weight: 700;
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(25,55,109,0.18);
+    }
+    .phase-box .phase-num {
+      font-size: 11px;
+      font-weight: 800;
+      opacity: 0.75;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .phase-box .phase-name {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .phase-box .phase-q {
+      font-size: 11px;
+      font-weight: 400;
+      opacity: 0.8;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* Vertical connector from phase to detail */
+    .phase-connector {
+      width: 2px;
+      height: 14px;
+      background: #A5D7E8;
+    }
+
+    .detail-box {
+      background: #F8F9FA;
+      border: 1px solid #A5D7E8;
+      border-radius: 6px;
+      color: #0B2447;
+      padding: 10px 12px;
+      width: 100%;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+    .detail-box ul {
+      list-style: none;
+      padding: 0;
+    }
+    .detail-box ul li::before {
+      content: "•";
+      color: #576CBC;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    /* ── FOUNDATION SECTION ── */
+    .foundation-section-label {
+      background: #495057;
+    }
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .pillar-box {
+      background: #E9ECEF;
+      border: 1px solid #CED4DA;
+      border-radius: 6px;
+      color: #212529;
+      padding: 14px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .pillar-box .pillar-num {
+      font-size: 11px;
+      color: #576CBC;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .pillar-box .pillar-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0B2447;
+      letter-spacing: 0.03em;
+    }
+    .pillar-box .pillar-sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: #495057;
+      margin-top: 4px;
+    }
+
+    @media (max-width: 640px) {
+      .phases-row { flex-direction: column; gap: 8px; }
+      .phase-arrow { display: none; }
+      .phase-col { width: 100%; }
+      .pillars-grid { grid-template-columns: 1fr; }
+      .header-card .title { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="diagram">
+
+  <!-- HEADER -->
+  <div class="header-card">
+    <div class="title">REVENUE ARCHITECTURE PROGRAM (RAP) 2026</div>
+    <div class="subtitle">The Operating System for Predictable Growth</div>
+  </div>
+
+  <!-- Arrow: Header → Engine -->
+  <div class="arrow-down">
+    <div class="shaft"></div>
+    <div class="head"></div>
+  </div>
+
+  <!-- ENGINE SECTION -->
+  <div class="section-wrapper">
+    <div class="section-label">THE 4 PHASES OF THE ENGINE</div>
+    <div class="section-body">
+      <div class="phases-row">
+
+        <!-- Phase 0 -->
+        <div class="phase-col">
+          <div class="phase-box">
+            <div class="phase-num">[0]</div>
+            <div class="phase-name">DIAGNOSIS</div>
+            <div class="phase-q">Where does it leak?</div>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="detail-box">
+            <ul>
+              <li>Pipeline Architecture</li>
+              <li>CRM Steering</li>
+              <li>Reliable Data</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Arrow → -->
+        <div class="phase-arrow">
+          <div class="h-shaft"></div>
+          <div class="h-head"></div>
+        </div>
+
+        <!-- Phase 1 -->
+        <div class="phase-col">
+          <div class="phase-box">
+            <div class="phase-num">[1]</div>
+            <div class="phase-name">MODEL</div>
+            <div class="phase-q">What should it look like?</div>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="detail-box">
+            <ul>
+              <li>Pipeline Coverage</li>
+              <li>Win Rate Logic</li>
+              <li>Trigger Thresholds</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Arrow → -->
+        <div class="phase-arrow">
+          <div class="h-shaft"></div>
+          <div class="h-head"></div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="phase-col">
+          <div class="phase-box">
+            <div class="phase-num">[2]</div>
+            <div class="phase-name">FLOW</div>
+            <div class="phase-q">How does it move?</div>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="detail-box">
+            <ul>
+              <li>Opp. Creation</li>
+              <li>Sales Conversion</li>
+              <li>Revenue Retention</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Arrow → -->
+        <div class="phase-arrow">
+          <div class="h-shaft"></div>
+          <div class="h-head"></div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="phase-col">
+          <div class="phase-box">
+            <div class="phase-num">[3]</div>
+            <div class="phase-name">PERFORMANCE</div>
+            <div class="phase-q">Is it governed?</div>
+          </div>
+          <div class="phase-connector"></div>
+          <div class="detail-box">
+            <ul>
+              <li>90-Day Cycles</li>
+              <li>Monthly Reviews</li>
+              <li>Escalation Rules</li>
+            </ul>
+          </div>
+        </div>
+
+      </div><!-- /phases-row -->
+    </div><!-- /section-body -->
+  </div><!-- /engine section -->
+
+  <!-- Arrow: Engine → Foundation -->
+  <div class="arrow-down">
+    <div class="shaft"></div>
+    <div class="head"></div>
+  </div>
+
+  <!-- FOUNDATION SECTION -->
+  <div class="section-wrapper">
+    <div class="section-label foundation-section-label">
+      THE 4 STRUCTURAL PILLARS &nbsp;·&nbsp; Architecture Before Activation
+    </div>
+    <div class="section-body">
+      <div class="pillars-grid">
+
+        <div class="pillar-box">
+          <div class="pillar-num">[01]</div>
+          <div class="pillar-title">COMMERCIAL FOUNDATION</div>
+          <div class="pillar-sub">ICP, positioning, value prop, messaging</div>
+        </div>
+
+        <div class="pillar-box">
+          <div class="pillar-num">[02]</div>
+          <div class="pillar-title">PIPELINE ARCHITECTURE</div>
+          <div class="pillar-sub">Stage logic, qualification, velocity, conversion</div>
+        </div>
+
+        <div class="pillar-box">
+          <div class="pillar-num">[03]</div>
+          <div class="pillar-title">KPI &amp; FORECAST DESIGN</div>
+          <div class="pillar-sub">Leading indicators, forecasting, dashboards</div>
+        </div>
+
+        <div class="pillar-box">
+          <div class="pillar-num">[04]</div>
+          <div class="pillar-title">LEADERSHIP &amp; PERFORMANCE</div>
+          <div class="pillar-sub">Operating rhythm, decisions, alignment</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- /diagram -->
+</body>
+</html>
