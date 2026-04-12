@@ -15,7 +15,9 @@ const state = {
     assessmentDay: 1,
     activities: [],
     // Live interview state
-    liveInterview: null
+    liveInterview: null,
+    // Analysis areas: areaId -> { answers: { qIndex: string }, maturity: { qIndex: 1|2|3|4 } }
+    areaAnswers: {}
 };
 
 // === Persistence (localStorage) ===
@@ -29,7 +31,8 @@ function saveState() {
         reportData: state.reportData,
         assessmentDay: state.assessmentDay,
         activities: state.activities,
-        liveInterview: state.liveInterview
+        liveInterview: state.liveInterview,
+        areaAnswers: state.areaAnswers
     };
     localStorage.setItem('structsales_diagnostic', JSON.stringify(data));
 }
@@ -142,6 +145,7 @@ function renderAll() {
     renderStakeholders();
     renderInterviews();
     renderSignals();
+    renderAreas();
     renderGaps();
     renderReport();
     renderRoadmap();
@@ -154,6 +158,7 @@ function renderView(view) {
         case 'stakeholders': renderStakeholders(); break;
         case 'interviews': renderInterviews(); break;
         case 'signals': renderSignals(); break;
+        case 'areas': renderAreas(); break;
         case 'gaps': renderGaps(); break;
         case 'report': renderReport(); break;
         case 'roadmap': renderRoadmap(); break;
@@ -206,6 +211,22 @@ function renderDashboard() {
             '<span class="gt-count" style="color:' + t.color + '">' + count + '</span>' +
         '</div>';
     }).join('');
+
+    // Architecture Maturity Summary
+    const maturityEl = document.getElementById('maturity-summary');
+    if (maturityEl) {
+        maturityEl.innerHTML = ANALYSIS_AREAS.map(area => {
+            const m = getAreaMaturity(area.id);
+            const lbl = m ? getMaturityLabel(m.score) : { label: 'Ej bedömd', color: '#6b7280' };
+            const pct = m ? m.percent : 0;
+            return '<div class="maturity-row" onclick="switchView(\'areas\')">' +
+                '<span class="maturity-icon" style="color:' + area.color + '">' + area.icon + '</span>' +
+                '<span class="maturity-name">' + area.name + '</span>' +
+                '<div class="maturity-bar"><div class="maturity-fill" style="width:' + pct + '%;background:' + lbl.color + '"></div></div>' +
+                '<span class="maturity-pct" style="color:' + lbl.color + '">' + (m ? pct + '%' : '—') + '</span>' +
+            '</div>';
+        }).join('');
+    }
 
     // Activity Feed
     const feed = document.getElementById('activity-feed');
@@ -1119,10 +1140,21 @@ function autoGenerateFullReport(signalHits) {
         const topTagEntry = Object.entries(tagCounts).sort((a,b) => b[1] - a[1])[0];
         const tagData = topTagEntry ? GAP_TAGS.find(t => t.id === topTagEntry[0]) : null;
 
+        // Architecture maturity insights from ANALYSIS_AREAS
+        const areaScores = ANALYSIS_AREAS.map(a => ({ area: a, maturity: getAreaMaturity(a.id) }))
+            .filter(s => s.maturity);
+        const weakAreas = areaScores.filter(s => s.maturity.score < 2.5)
+            .sort((a, b) => a.maturity.score - b.maturity.score);
+
         if (!state.reportData['S1_coreFinding']) {
-            state.reportData['S1_coreFinding'] = 'Den kommersiella arkitekturen uppvisar ' + gaps.length + ' strukturella gaps' +
+            let finding = 'Den kommersiella arkitekturen uppvisar ' + gaps.length + ' strukturella gaps' +
                 (tagData ? ', med koncentration inom ' + tagData.module : '') + '. ' +
                 (highGaps.length > 0 ? highGaps.length + ' av dessa blockerar tillväxt direkt.' : 'Majoriteten skapar operativ friktion som begränsar skalbarhet.');
+            if (weakAreas.length > 0) {
+                const names = weakAreas.slice(0, 3).map(w => w.area.name).join(', ');
+                finding += ' Arkitekturell mognadsmätning visar särskilt låg strukturell nivå inom ' + names + '.';
+            }
+            state.reportData['S1_coreFinding'] = finding;
         }
 
         if (!state.reportData['S1_primaryRisk']) {
@@ -1508,6 +1540,180 @@ function toggleSignal(id) {
     }
     saveState();
     renderSignals();
+    renderDashboard();
+}
+
+// === Analysis Areas ===
+const MATURITY_LEVELS = [
+    { value: 4, label: 'Arkitekturerad', description: 'Dokumenterat, ägarskap, skalbart', color: '#10b981' },
+    { value: 3, label: 'Delvis byggt', description: 'Finns delar, inte komplett system', color: '#f59e0b' },
+    { value: 2, label: 'Improviserat', description: 'Beror på individer/vanor', color: '#ef4444' },
+    { value: 1, label: 'Saknas', description: 'Ingen struktur existerar', color: '#7f1d1d' }
+];
+
+function getAreaMaturity(areaId) {
+    const data = state.areaAnswers[areaId];
+    if (!data || !data.maturity) return null;
+    const values = Object.values(data.maturity).filter(v => v);
+    if (values.length === 0) return null;
+    const avg = values.reduce((a, b) => a + b, 0) / values.length;
+    return {
+        score: avg,
+        answered: values.length,
+        percent: Math.round(((avg - 1) / 3) * 100)
+    };
+}
+
+function getMaturityLabel(score) {
+    if (score >= 3.5) return { label: 'Arkitekturerad', color: '#10b981' };
+    if (score >= 2.5) return { label: 'Delvis byggt', color: '#f59e0b' };
+    if (score >= 1.5) return { label: 'Improviserat', color: '#ef4444' };
+    return { label: 'Ej strukturerat', color: '#7f1d1d' };
+}
+
+function renderAreas() {
+    const container = document.getElementById('areas-content');
+    if (!container) return;
+
+    // Overall architecture maturity summary
+    const areaScores = ANALYSIS_AREAS.map(a => ({
+        area: a,
+        maturity: getAreaMaturity(a.id)
+    }));
+    const answeredAreas = areaScores.filter(s => s.maturity);
+    const overallScore = answeredAreas.length > 0
+        ? answeredAreas.reduce((sum, s) => sum + s.maturity.score, 0) / answeredAreas.length
+        : null;
+
+    let summaryHtml = '<div class="areas-scorecard">';
+    summaryHtml += '<div class="areas-scorecard-header">';
+    summaryHtml += '<div><h3>Arkitekturell mognad</h3><p class="areas-scorecard-sub">Sammanvägd bedömning per område. Låga värden indikerar strukturella brister i den kommersiella arkitekturen.</p></div>';
+    if (overallScore !== null) {
+        const lbl = getMaturityLabel(overallScore);
+        summaryHtml += '<div class="areas-overall"><div class="areas-overall-value" style="color:' + lbl.color + '">' +
+            Math.round(((overallScore - 1) / 3) * 100) + '%</div>' +
+            '<div class="areas-overall-label" style="color:' + lbl.color + '">' + lbl.label + '</div></div>';
+    }
+    summaryHtml += '</div>';
+
+    summaryHtml += '<div class="areas-scorecard-grid">';
+    areaScores.forEach(({area, maturity}) => {
+        const pct = maturity ? maturity.percent : 0;
+        const lbl = maturity ? getMaturityLabel(maturity.score) : { label: 'Ej bedömd', color: '#6b7280' };
+        summaryHtml += '<a href="#area-' + area.id + '" class="areas-score-chip" style="border-color:' + lbl.color + '33">' +
+            '<div class="areas-score-chip-top">' +
+                '<span class="areas-score-icon" style="color:' + area.color + '">' + area.icon + '</span>' +
+                '<span class="areas-score-name">' + area.name + '</span>' +
+            '</div>' +
+            '<div class="areas-score-bar"><div class="areas-score-fill" style="width:' + pct + '%;background:' + lbl.color + '"></div></div>' +
+            '<div class="areas-score-bottom">' +
+                '<span style="color:' + lbl.color + '">' + (maturity ? pct + '%' : '—') + '</span>' +
+                '<span class="areas-score-status">' + lbl.label + '</span>' +
+            '</div>' +
+        '</a>';
+    });
+    summaryHtml += '</div></div>';
+
+    // Area cards
+    let areasHtml = '';
+    ANALYSIS_AREAS.forEach(area => {
+        const maturity = getAreaMaturity(area.id);
+        const data = state.areaAnswers[area.id] || { answers: {}, maturity: {} };
+        const lbl = maturity ? getMaturityLabel(maturity.score) : null;
+
+        areasHtml += '<div class="area-card" id="area-' + area.id + '" style="border-left-color:' + area.color + '">';
+        areasHtml += '<div class="area-card-header">';
+        areasHtml += '<div class="area-card-title">';
+        areasHtml += '<span class="area-icon" style="background:' + area.color + '1f;color:' + area.color + '">' + area.icon + '</span>';
+        areasHtml += '<div><h3>' + area.name + '</h3><p class="area-purpose">' + escapeHtml(area.purpose) + '</p></div>';
+        areasHtml += '</div>';
+        if (maturity) {
+            areasHtml += '<div class="area-score"><div class="area-score-value" style="color:' + lbl.color + '">' +
+                maturity.percent + '%</div><div class="area-score-label" style="color:' + lbl.color + '">' + lbl.label + '</div></div>';
+        }
+        areasHtml += '</div>';
+
+        areasHtml += '<div class="area-lens"><span class="area-lens-label">Arkitekturlins</span>' +
+            '<span class="area-lens-text">' + escapeHtml(area.architecturalLens) + '</span></div>';
+
+        // Related signals + tags
+        areasHtml += '<div class="area-related">';
+        if (area.relatedSignals && area.relatedSignals.length) {
+            areasHtml += '<div class="area-related-group"><span class="area-related-label">Relaterade signaler:</span>';
+            area.relatedSignals.forEach(sid => {
+                const sig = DIAGNOSTIC_SIGNALS.find(s => s.id === sid);
+                if (sig) {
+                    const detected = state.detectedSignals[sig.id];
+                    areasHtml += '<span class="area-sig-chip ' + (detected ? 'detected' : '') + '" style="background:' + sig.tagColor + '1f;color:' + sig.tagColor + '">' +
+                        (detected ? '&#9679; ' : '') + escapeHtml(sig.name) + '</span>';
+                }
+            });
+            areasHtml += '</div>';
+        }
+        if (area.relatedTags && area.relatedTags.length) {
+            areasHtml += '<div class="area-related-group"><span class="area-related-label">RAP-moduler:</span>';
+            area.relatedTags.forEach(tid => {
+                const tag = GAP_TAGS.find(t => t.id === tid);
+                if (tag) {
+                    areasHtml += '<span class="area-tag-chip" style="background:' + tag.color + '1f;color:' + tag.color + '">' + tag.module + '</span>';
+                }
+            });
+            areasHtml += '</div>';
+        }
+        areasHtml += '</div>';
+
+        // Questions
+        areasHtml += '<div class="area-questions">';
+        area.questions.forEach((q, idx) => {
+            const currentAnswer = (data.answers && data.answers[idx]) || '';
+            const currentMaturity = (data.maturity && data.maturity[idx]) || 0;
+            areasHtml += '<div class="area-question">';
+            areasHtml += '<div class="area-q-num">Q' + (idx + 1) + '</div>';
+            areasHtml += '<div class="area-q-content">';
+            areasHtml += '<div class="area-q-text">' + escapeHtml(q) + '</div>';
+            areasHtml += '<textarea class="area-q-answer" placeholder="Dokumentera kundens svar — lyssna efter arkitektur vs. improvisation" ' +
+                'onchange="updateAreaAnswer(\'' + area.id + '\', ' + idx + ', this.value)">' + escapeHtml(currentAnswer) + '</textarea>';
+            areasHtml += '<div class="area-maturity"><span class="area-maturity-label">Arkitekturell mognad:</span>';
+            MATURITY_LEVELS.forEach(m => {
+                const active = currentMaturity === m.value;
+                areasHtml += '<button class="area-maturity-btn ' + (active ? 'active' : '') + '" ' +
+                    'style="' + (active ? 'background:' + m.color + ';color:white;border-color:' + m.color : 'color:' + m.color + ';border-color:' + m.color + '55') + '" ' +
+                    'onclick="updateAreaMaturity(\'' + area.id + '\', ' + idx + ', ' + m.value + ')" ' +
+                    'title="' + escapeHtml(m.description) + '">' + m.label + '</button>';
+            });
+            areasHtml += '</div>';
+            areasHtml += '</div></div>';
+        });
+        areasHtml += '</div></div>';
+    });
+
+    container.innerHTML = summaryHtml + areasHtml;
+}
+
+function updateAreaAnswer(areaId, qIndex, value) {
+    if (!state.areaAnswers[areaId]) state.areaAnswers[areaId] = { answers: {}, maturity: {} };
+    if (!state.areaAnswers[areaId].answers) state.areaAnswers[areaId].answers = {};
+    state.areaAnswers[areaId].answers[qIndex] = value;
+    saveState();
+}
+
+function updateAreaMaturity(areaId, qIndex, value) {
+    if (!state.areaAnswers[areaId]) state.areaAnswers[areaId] = { answers: {}, maturity: {} };
+    if (!state.areaAnswers[areaId].maturity) state.areaAnswers[areaId].maturity = {};
+    // Toggle: clicking same value clears it
+    if (state.areaAnswers[areaId].maturity[qIndex] === value) {
+        delete state.areaAnswers[areaId].maturity[qIndex];
+    } else {
+        state.areaAnswers[areaId].maturity[qIndex] = value;
+        const area = ANALYSIS_AREAS.find(a => a.id === areaId);
+        const level = MATURITY_LEVELS.find(m => m.value === value);
+        if (area && level && value <= 2) {
+            addActivity('Arkitekturbrist noterad i <strong>' + area.name + '</strong> (' + level.label + ')',
+                area.color + '22', area.color, area.icon);
+        }
+    }
+    saveState();
+    renderAreas();
     renderDashboard();
 }
 

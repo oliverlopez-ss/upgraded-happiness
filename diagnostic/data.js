@@ -264,6 +264,128 @@ const SEVERITY_LEVELS = [
     { id: 'low', label: 'Låg', color: '#6b7280', description: 'Suboptimalt men hanterbart' }
 ];
 
+// Analysis areas — cross-cutting diagnostic dimensions
+const ANALYSIS_AREAS = [
+    {
+        id: 'affarsmal',
+        name: 'Affärsmål',
+        icon: '&#9678;',
+        color: '#4a7cff',
+        purpose: 'Avslöja om tillväxtmålet är strukturellt härlett ur arkitekturen eller en önskesiffra utan modellstöd.',
+        architecturalLens: 'En tillväxtplan utan arkitektur är en prognos utan fundament. Vi testar om målet kan härledas från konvertering × volym × velocity × deal size — eller om det bygger på hopp.',
+        relatedSignals: ['forecast-vagueness', 'misaligned-expectations'],
+        relatedTags: ['Forecast', 'Alignment'],
+        questions: [
+            'Kan ni härleda tillväxtmålet ur en dokumenterad modell (pipeline-volym × konvertering × deal size × velocity) — eller är det en top-down-siffra utan underliggande arkitektur?',
+            'Finns en strukturerad nedbrytning från ARR-mål till pipeline-mål till aktivitetsmål per roll — eller är kopplingen underförstådd?',
+            'Vem äger vilken del av målet, och finns en formaliserad governance-rytm där strukturell progression mäts — eller följs det upp när siffrorna redan missats?',
+            'När antagandena bakom målet ändras (konvertering sjunker, cycle time ökar) — finns en arkitekturell respons-loop som justerar plan och resurser, eller upptäcks avvikelsen först i efterhand?',
+            'Om en extern revisor frågade "vilka 5 mätbara antaganden måste vara sanna för att målet ska nås?" — kan ni svara med arkitektur, eller med övertygelse?',
+            'Är tillväxtmålet strukturellt försvarbart (härledbart, reviderbart, spårbart) eller vilar det på enskilda individers leverans?'
+        ]
+    },
+    {
+        id: 'budskap',
+        name: 'Budskap',
+        icon: '&#9788;',
+        color: '#f59e0b',
+        purpose: 'Testa om värdebudskapet är en arkitekturerad tillgång eller tre parallella berättelser som sälj, marketing och CS bär var för sig.',
+        architecturalLens: 'Budskapsarkitektur existerar när samma värdepåstående återfinns i samma form genom hela funnel:n. Utan den blir varje interaktion en improvisation.',
+        relatedSignals: ['misaligned-expectations', 'qualification-drift'],
+        relatedTags: ['Foundation', 'Alignment'],
+        questions: [
+            'Finns en dokumenterad budskapsarkitektur (Messaging House, Value Framework) som sälj, marketing och CS styr efter — eller improviserar varje funktion sin egen version?',
+            'Är budskapet strukturellt kopplat till ICP-segment (differentierat per persona/segment) — eller levereras samma generiska pitch till alla?',
+            'När affärer förloras på "vi valde annan lösning" — finns en arkitekturell loop som systematiskt matar tillbaka insikten till budskaps- och positioneringsarbetet, eller hamnar feedbacken i glömska?',
+            'Är värdeerbjudandet kvantifierat i en ROI-modell eller cases-bibliotek med siffror — och tillgängligt som strukturerad tillgång i säljrörelsen?',
+            'Finns governance för budskapet (ägare, uppdateringsrytm, versionshantering) — eller lever den "sanna" versionen i marketingchefens huvud?',
+            'Testas budskapet strukturellt (win/loss-intervjuer, A/B-test, konvertering per segment) — eller utvärderas det på magkänsla?'
+        ]
+    },
+    {
+        id: 'kunder',
+        name: 'Kunder',
+        icon: '&#9673;',
+        color: '#10b981',
+        purpose: 'Exponera om kundförståelsen är operationaliserad i arkitekturen eller ligger som tribal kunskap hos enskilda.',
+        architecturalLens: 'ICP-arkitektur syns inte i slides — den syns i CRM-filter, kvalificeringslogik, prissättning och CS-motion. Där ingen arkitektur finns, behandlas alla kunder likartat.',
+        relatedSignals: ['qualification-drift', 'misaligned-expectations'],
+        relatedTags: ['Foundation', 'Alignment'],
+        questions: [
+            'Är er ICP kodifierad i CRM som filtrerings- och kvalificeringslogik som styr dagligt beslutsfattande — eller är den en slide som inte påverkar vem ni prospekterar eller tar möte med?',
+            'Finns en segmentarkitektur där sälj-motion, pris och CS-modell är strukturellt differentierade per segment — eller behandlas alla kunder med samma generiska modell?',
+            'Är buyer personas dokumenterade på en operativ nivå (triggers, språk, objections, beslutsrytm) där en ny säljare kan använda dem i riktiga samtal — eller är de abstrakta marketingartefakter?',
+            'Finns en arkitekturerad kundinsikts-loop (vem samlar, vem äger, vem distribuerar insikter från sälj, CS, support till strategi) — eller sker det ad hoc via Slack-fragment?',
+            'Spåras leading indicators av kundhälsa (produktanvändning, NPS, engagemang) strukturellt och kopplat till retention- och expansion-beslut — eller reagerar ni först vid uppsägning?',
+            'Finns en strukturell återkoppling från "dåliga" kunder (hög cost-to-serve, tidig churn, dålig fit) tillbaka till ICP och kvalificering — eller upprepar ni samma misstag?'
+        ]
+    },
+    {
+        id: 'processer',
+        name: 'Processer',
+        icon: '&#10148;',
+        color: '#8b5cf6',
+        purpose: 'Mäta om den kommersiella motorn är arkitekturerad och repeterbar — eller en emergent produkt av individuell improvisation.',
+        architecturalLens: 'Processarkitektur är skillnaden mellan "vi brukar göra så här" och "detta är så vi gör, dokumenterat, med ägare och mätpunkter". Den ena skalar, den andra inte.',
+        relatedSignals: ['stage-ambiguity', 'conversion-silence', 'hero-dependency'],
+        relatedTags: ['Pipeline', 'Dependency'],
+        questions: [
+            'Finns en dokumenterad revenue process-karta (lead → förnyelse) med beteendemässiga stage-definitioner, exit-kriterier och ägare — eller lever processen bara som CRM-dropdownvärden?',
+            'Är handoffs (MQL→SQL, Sälj→CS, CS→Expansion) formaliserade med trigger-kriterier, SLA:er och dokumenterad överlämning — eller hanteras de via Slack och mejl?',
+            'När processen bryts (deal tyst, kund klagar, forecast missas) — finns en strukturerad eskalerings- och root-cause-loop, eller hanteras varje incident reaktivt och isolerat?',
+            'Mäts processhälsa arkitekturellt (stage conversion, velocity, stuck deals per stage) och finns en tydlig ägare av processarkitekturen — eller är ansvaret utspritt?',
+            'Finns en arkitekturerad onboarding så en ny säljare/CSM blir produktiv på definierad tid — eller beror ramp-time på vem som råkar handleda dem?',
+            'Är playbooks, templates och frameworks strukturerade tillgångar med versionshantering och ägare — eller är det Google Docs utspridda över Drive som ingen underhåller?'
+        ]
+    },
+    {
+        id: 'team',
+        name: 'Team',
+        icon: '&#9670;',
+        color: '#ef4444',
+        purpose: 'Bedöma om organisationen är arkitekturerad utifrån strategi och rollstruktur — eller en produkt av historiska rekryteringar.',
+        architecturalLens: 'En arkitekturerad organisation designar roller före personer. En emergent organisation bygger om strukturen runt individerna som råkar finnas — vilket skapar strukturellt hjälteberoende.',
+        relatedSignals: ['hero-dependency', 'forecast-vagueness'],
+        relatedTags: ['Dependency', 'Foundation'],
+        questions: [
+            'Är er kommersiella organisation ritad utifrån en rollarkitektur (SDR, AE, CSM, RevOps, Enablement) härledd från strategin — eller har strukturen vuxit fram runt vilka ni råkat anställa?',
+            'Finns en dokumenterad ansvars- och beslutsmatris (t.ex. RACI) för kommersiella beslut — eller beror utfallet på vem som är i rummet?',
+            'Hur stor del av intäkten genereras av top-2 performers, och finns arkitektur (playbooks, enablement, system) som strukturellt överför deras kunskap till resten av teamet?',
+            'Är comp-planen arkitekturerad så att incentives speglar nuvarande strategiska prioriteringar — eller belönar den beteenden från ett tidigare skede av bolaget?',
+            'Finns en strukturerad coaching- och enablement-arkitektur (frekvens, ramverk, ägare, progressionsmätning) — eller sker utveckling ad hoc när chefen har tid?',
+            'Om era 2 bästa kommersiella medarbetare slutar samma vecka — vad i arkitekturen (processer, system, dokumentation) skyddar intäkten de kommande 90 dagarna?'
+        ]
+    },
+    {
+        id: 'system',
+        name: 'System / Verktyg',
+        icon: '&#9881;',
+        color: '#2a9d8f',
+        purpose: 'Validera om tech-stacken är arkitekturerad för att driva affären — eller ett lapptäcke av ackumulerade verktygsbeslut.',
+        architecturalLens: 'Systemarkitektur handlar inte om vilka verktyg ni har, utan om hur de är integrerade för att producera strukturellt korrekta beslut. Utan arkitektur blir CRM administration, inte infrastruktur.',
+        relatedSignals: ['conversion-silence', 'attribution-blindness'],
+        relatedTags: ['Pipeline', 'Alignment'],
+        questions: [
+            'Finns en dokumenterad systemarkitektur (data flow, source of truth per entitet, integrationskarta) — eller är stacken en arkeologisk samling av historiska upphandlingar?',
+            'Är datamodellen i CRM designad för att driva affären (pipeline-hygien, forecast-integritet, attribution) — eller används CRM primärt som administrativ rapporteringsyta?',
+            'Vilka strategiska beslut fattas idag på opålitlig eller saknad data — och vilken arkitektur saknas för att flytta dem till evidensbaserade?',
+            'Är automationen arkitekturerad kring strategiska moments (lead routing, handoff, at-risk-signal) — eller är den ett lapptäcke av punktvisa Zapier-flöden?',
+            'Finns en governance-funktion (RevOps eller motsvarande) som äger systemarkitekturen — eller förvaltas den utspritt, där varje team lägger till verktyg utan helhetsperspektiv?',
+            'När nya system införs — finns en strukturerad utvärdering av arkitekturell fit (data, integration, processstöd) — eller drivs införandet av enskilda teamchefers preferenser?'
+        ]
+    }
+];
+
+// Mapping from role-based questions to analysis areas (index-based for existing STAKEHOLDER_ROLES.questions)
+// Each array matches the question order in STAKEHOLDER_ROLES[n].questions
+const ROLE_QUESTION_AREAS = {
+    'CEO / Founder': ['affarsmal', 'affarsmal', 'kunder', 'team', 'processer', 'processer', 'affarsmal'],
+    'Head of Sales': ['processer', 'processer', 'processer', 'processer', 'processer', 'kunder', 'team'],
+    'Marketing Lead': ['kunder', 'processer', 'system', 'kunder', 'processer', 'processer', 'processer'],
+    'CS / Retention Lead': ['processer', 'kunder', 'kunder', 'kunder', 'processer', 'processer', 'processer'],
+    'CFO / Finance': ['system', 'system', 'system', 'affarsmal', 'team', 'affarsmal', 'affarsmal']
+};
+
 // Call structure template
 const CALL_STRUCTURE = [
     { phase: 'Öppning', duration: '5 min', description: 'Framställ syftet. Bekräfta konfidentialitet. Förtydliga att detta är diagnostiskt, inte utvärderande.' },

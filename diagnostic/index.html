@@ -110,6 +110,9 @@
                 </div>
                 <div class="sidebar-section">
                     <div class="sidebar-label">ANALYS</div>
+                    <button class="sidebar-item" data-view="areas" onclick="switchView('areas')">
+                        <span class="si-icon">&#9635;</span> Analysområden
+                    </button>
                     <button class="sidebar-item" data-view="gaps" onclick="switchView('gaps')">
                         <span class="si-icon">&#10006;</span> Gap-analys
                     </button>
@@ -172,6 +175,11 @@
                             <div id="gap-tag-chart" class="gap-tag-chart"></div>
                         </div>
                         <div class="card card-wide">
+                            <h3>Arkitekturell mognad per område</h3>
+                            <p class="view-sub" style="margin-bottom:1rem">Låga värden = improviserat eller personberoende. Höga värden = dokumenterat, ägarskap, skalbart.</p>
+                            <div id="maturity-summary" class="maturity-summary"></div>
+                        </div>
+                        <div class="card card-wide">
                             <h3>Senaste aktivitet</h3>
                             <div id="activity-feed" class="activity-feed"></div>
                         </div>
@@ -219,6 +227,17 @@
                         </div>
                     </div>
                     <div id="signals-grid" class="signals-grid"></div>
+                </div>
+
+                <!-- ANALYSIS AREAS VIEW -->
+                <div id="view-areas" class="view">
+                    <div class="view-header">
+                        <div>
+                            <h2>Analysområden</h2>
+                            <p class="view-sub">Sex tvärgående arkitekturdimensioner — varje fråga är designad för att exponera om området är strukturellt byggt eller improviserat</p>
+                        </div>
+                    </div>
+                    <div id="areas-content" class="areas-content"></div>
                 </div>
 
                 <!-- GAP ANALYSIS VIEW -->
