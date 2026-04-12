@@ -264,6 +264,63 @@ const SEVERITY_LEVELS = [
     { id: 'low', label: 'Låg', color: '#6b7280', description: 'Suboptimalt men hanterbart' }
 ];
 
+// Severity scoring model — 4 weighted dimensions
+// Each dimension scored 1-3. Sum 10-12 = High, 7-9 = Medium, 4-6 = Low.
+const SEVERITY_CRITERIA = [
+    {
+        id: 'revenue',
+        label: 'Revenue Impact',
+        question: 'Hur direkt påverkar detta intäkten?',
+        levels: [
+            { value: 1, label: 'Ineffektivitet', description: 'Skapar operativ friktion men påverkar inte intäkt direkt' },
+            { value: 2, label: 'Begränsar tillväxt', description: 'Hindrar förmågan att skala intäkt' },
+            { value: 3, label: 'Blockerar/läcker intäkt', description: 'Intäkt förloras eller saknas just nu p.g.a. detta' }
+        ]
+    },
+    {
+        id: 'depth',
+        label: 'Strukturellt djup',
+        question: 'Hur djupt sitter problemet i arkitekturen?',
+        levels: [
+            { value: 1, label: 'Operativt', description: 'Ytligt — kan lösas inom befintliga system/processer' },
+            { value: 2, label: 'Process/system', description: 'Kräver omdesign av process eller systemintegration' },
+            { value: 3, label: 'Fundamentalt', description: 'Berör ICP, intäktsmodell eller organisationsdesign' }
+        ]
+    },
+    {
+        id: 'reversibility',
+        label: 'Reversibilitet',
+        question: 'Hur svårt/dyrt är det att åtgärda?',
+        levels: [
+            { value: 1, label: '< 3 månader', description: 'Kan åtgärdas taktiskt med befintliga resurser' },
+            { value: 2, label: '3–6 månader', description: 'Kräver riktat projekt med dedikerade resurser' },
+            { value: 3, label: '6–12+ månader', description: 'Kräver strukturell omdesign, change management, nya kompetenser' }
+        ]
+    },
+    {
+        id: 'corroboration',
+        label: 'Bekräftelsegrad',
+        question: 'Hur validerat är fyndet?',
+        levels: [
+            { value: 1, label: '1 källa', description: 'Hört från en stakeholder, ej korsvaliderat' },
+            { value: 2, label: '2 stakeholders', description: 'Bekräftat av minst två oberoende källor' },
+            { value: 3, label: '3+ eller data', description: 'Bekräftat av tre+ källor, eller direkt observerbart i data/system' }
+        ]
+    }
+];
+
+// Severity computation: sum of 4 dimensions (range 4-12)
+// 10-12 = High, 7-9 = Medium, 4-6 = Low
+function computeSeverityFromScores(scores) {
+    if (!scores) return null;
+    const values = SEVERITY_CRITERIA.map(c => scores[c.id] || 0).filter(v => v > 0);
+    if (values.length < SEVERITY_CRITERIA.length) return null;
+    const sum = values.reduce((a, b) => a + b, 0);
+    if (sum >= 10) return 'high';
+    if (sum >= 7) return 'medium';
+    return 'low';
+}
+
 // Analysis areas — cross-cutting diagnostic dimensions
 const ANALYSIS_AREAS = [
     {

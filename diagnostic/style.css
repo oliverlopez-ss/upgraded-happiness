@@ -1837,6 +1837,109 @@ body {
     .metrics-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* === Severity 4-dimension Scoring === */
+.form-help {
+    font-size: 0.8rem; color: var(--text-secondary);
+    margin: 0.25rem 0 0.75rem 0; line-height: 1.5;
+}
+.sev-criterion {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.85rem;
+    margin-bottom: 0.6rem;
+}
+.sev-crit-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;
+}
+.sev-crit-label {
+    font-weight: 700; font-size: 0.85rem; color: var(--text-primary);
+    letter-spacing: 0.02em;
+}
+.sev-crit-question {
+    font-size: 0.78rem; color: var(--text-secondary); font-style: italic;
+}
+.sev-crit-options {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;
+}
+.sev-level {
+    display: flex; flex-direction: column; gap: 0.2rem;
+    padding: 0.55rem 0.65rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    color: var(--text-secondary);
+    transition: all 0.15s ease;
+}
+.sev-level:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+.sev-level.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--text-primary);
+}
+.sev-level-num {
+    font-size: 0.7rem; font-weight: 800; color: var(--accent);
+}
+.sev-level-label {
+    font-size: 0.8rem; font-weight: 600;
+}
+.sev-level-desc {
+    font-size: 0.7rem; color: var(--text-muted); line-height: 1.4;
+}
+.sev-level.active .sev-level-desc { color: var(--text-secondary); }
+
+.sev-computed {
+    margin-top: 0.85rem;
+    padding: 0.7rem 0.85rem;
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+}
+.sev-computed-empty { color: var(--text-muted); font-style: italic; }
+.sev-computed-label { color: var(--text-secondary); font-weight: 600; }
+.sev-computed-sum { color: var(--text-muted); font-size: 0.8rem; }
+
+/* Severity breakdown on gap cards */
+.gap-sev-breakdown {
+    margin-top: 0.65rem;
+    padding: 0.65rem;
+    background: var(--bg);
+    border-radius: 6px;
+    display: flex; flex-wrap: wrap; gap: 0.75rem;
+    align-items: center;
+}
+.gap-sev-sum {
+    font-size: 0.75rem; color: var(--text-secondary);
+    padding-right: 0.75rem; border-right: 1px solid var(--border);
+}
+.gap-sev-dim {
+    display: inline-flex; flex-direction: column; gap: 0.1rem;
+}
+.gap-sev-dim-label { font-size: 0.7rem; color: var(--text-muted); }
+.gap-sev-dim-val {
+    display: inline-block;
+    width: 1.5rem; height: 1.5rem; line-height: 1.5rem;
+    text-align: center; border-radius: 4px;
+    font-weight: 700; font-size: 0.8rem;
+}
+.gap-sev-dim-val.dim-1 { background: rgba(107,114,128,0.2); color: #9ca3af; }
+.gap-sev-dim-val.dim-2 { background: var(--yellow-soft); color: var(--yellow); }
+.gap-sev-dim-val.dim-3 { background: var(--red-soft); color: var(--red); }
+.gap-sev-dim-desc { font-size: 0.65rem; color: var(--text-secondary); }
+
+@media (max-width: 600px) {
+    .sev-crit-options { grid-template-columns: 1fr; }
+}
+
 /* === Analysis Areas === */
 .areas-content { display: flex; flex-direction: column; gap: 1.5rem; }
 
