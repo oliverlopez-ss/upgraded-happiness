@@ -3,17 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#4ade80">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>FutbolLingo - Lär dig fotbollsspanska</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icon-192.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon-192.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        .back-to-hub {
+            position: fixed; top: 12px; left: 12px; z-index: 999;
+            background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+            text-decoration: none; border-radius: 8px;
+            padding: 6px 12px; font-size: 0.75rem; font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+        .back-to-hub:hover { background: rgba(255,255,255,0.15); color: #fff; }
+    </style>
 </head>
 <body>
     <div class="bg-glow bg-glow-1"></div>
     <div class="bg-glow bg-glow-2"></div>
     <div class="bg-glow bg-glow-3"></div>
     <div id="confetti-container"></div>
+
+    <!-- Level Up Overlay -->
+    <div id="levelup-overlay" class="levelup-overlay">
+        <div class="levelup-content">
+            <div class="levelup-icon">&#11088;</div>
+            <div class="levelup-text">Nivå upp!</div>
+            <div class="levelup-level" id="levelup-level"></div>
+            <div class="levelup-title" id="levelup-title"></div>
+        </div>
+    </div>
+
+    <a href="../" class="back-to-hub">&#8592; Alla appar</a>
 
     <div id="app">
         <!-- Start Screen -->
@@ -24,6 +54,19 @@
                 </div>
                 <h1>Futbol<span class="accent">Lingo</span></h1>
                 <p class="tagline">Lär dig spanska på fotbollsplanen</p>
+            </div>
+
+            <!-- XP Bar -->
+            <div class="xp-bar">
+                <div class="xp-header">
+                    <span class="xp-level" id="xp-level">Nivå 1</span>
+                    <span class="xp-title" id="xp-title">Bollkalle</span>
+                    <span class="xp-amount" id="xp-amount">0 XP</span>
+                </div>
+                <div class="xp-progress">
+                    <div class="xp-fill" id="xp-fill"></div>
+                </div>
+                <div class="xp-next" id="xp-next">0/50 XP till Ungdomsspelare</div>
             </div>
 
             <div class="stats-bar">
@@ -124,6 +167,10 @@
                 <button class="mode-btn" data-mode="listen">
                     <span class="mode-icon">&#128266;</span>
                     <span>Lyssna</span>
+                </button>
+                <button class="mode-btn" data-mode="sentences">
+                    <span class="mode-icon">&#128172;</span>
+                    <span>Meningar</span>
                 </button>
             </div>
 
@@ -252,11 +299,35 @@
             </div>
         </div>
 
+        <!-- Sentence Screen -->
+        <div id="sentence-screen" class="screen">
+            <div class="top-bar">
+                <button class="icon-btn sentence-back-btn">&#8592;</button>
+                <div class="progress-container">
+                    <div class="progress-bar"><div id="sentence-progress-fill" class="progress-fill"></div></div>
+                    <span id="sentence-progress-text" class="progress-text">0/0</span>
+                </div>
+                <div class="streak-display"><span class="streak-fire">&#128293;</span><span id="sentence-streak">0</span></div>
+            </div>
+            <div class="quiz-container">
+                <div class="sentence-situation" id="sentence-situation"></div>
+                <div class="sentence-direction" id="sentence-direction"></div>
+                <div class="sentence-prompt" id="sentence-prompt"></div>
+                <div class="quiz-options" id="sentence-options"></div>
+                <div class="quiz-feedback" id="sentence-feedback"></div>
+                <button class="primary-btn sentence-next-btn" id="sentence-next" style="display:none">
+                    <span>Nästa</span>
+                    <span class="btn-arrow">&#8594;</span>
+                </button>
+            </div>
+        </div>
+
         <!-- Results Screen -->
         <div id="results-screen" class="screen">
             <div class="results-container">
                 <div class="results-trophy">&#127942;</div>
                 <h2>Bra jobbat!</h2>
+                <div class="result-xp" id="result-xp">+0 XP</div>
                 <div class="results-stats">
                     <div class="result-stat correct">
                         <span class="result-number" id="result-correct">0</span>
